@@ -95,23 +95,20 @@ function App() {
     try {
       // 檢查是否已設定有效的 Google Script URL
       const isConfigured = GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes('YOUR_GOOGLE_SCRIPT_URL');
-      
-      if (isConfigured) {
-        // 使用 URLSearchParams 封裝資料，這是最穩定的傳送方式
-        const params = new URLSearchParams();
-        for (const key in submissionData) {
-          params.append(key, submissionData[key]);
-        }
 
+      if (isConfigured) {
+        // 使用最標準的 fetch POST 方式
         await fetch(GOOGLE_SCRIPT_URL, {
           method: 'POST',
-          mode: 'no-cors', // 關鍵：繞過 CORS 檢查
+          mode: 'no-cors',
+          cache: 'no-cache',
           headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            'Content-Type': 'application/json',
           },
-          body: params.toString(),
+          body: JSON.stringify(submissionData),
         });
-      } else {
+      }
+ else {
         console.warn('尚未設定 GOOGLE_SCRIPT_URL，僅模擬提交');
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
