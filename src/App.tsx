@@ -6,12 +6,20 @@ import './App.css'
 function App() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessions, setSessions] = useState<{name: string, price: number}[]>([]);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [submissions, setSubmissions] = useState<any[][]>([]);
+  const [adminTab, setAdminTab] = useState<'sessions' | 'submissions'>('sessions');
+  const [newSession, setNewSession] = useState({ name: '', price: '' });
+
   const [formData, setFormData] = useState({
     email: '',
     name: '',
     phone: '',
     contactEmail: '',
-    session: '5/2(六)新港市集+沉浸體驗特別場（早鳥/現場價$650/份）',
+    session: '',
     quantity: '1',
     players: '',
     totalAmount: '',
@@ -28,17 +36,68 @@ function App() {
   // 請在此處填入您部署後的 Google Apps Script URL
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOdLH2XHxJR7wEcCJYsPne_ZjciEPBKbZr7OmaafuG3l1VQrUtLzhlD2aADa-gOSZ1/exec';
 
-  // 價格邏輯
+  // 1. 初始載入場次
+  useEffect(() => {
+    fetch(`${GOOGLE_SCRIPT_URL}?action=getSessions`)
+      .then(res => res.json())
+      .then(data => {
+        setSessions(data);
+        if (data.length > 0) setFormData(prev => ({ ...prev, session: data[0].name }));
+      })
+      .catch(err => console.error('無法載入場次:', err));
+  }, []);
+
+  // 2. 價格邏輯
   useEffect(() => {
     const qty = parseInt(formData.quantity) || 0;
-    let price = 650;
-    
-    if (formData.session.includes('團體優惠')) price = 550;
-    else if (formData.session.includes('校園團體')) price = 500;
-    else if (formData.session.includes('單人購買')) price = 600;
-    
+    const sessionObj = sessions.find(s => s.name === formData.session);
+    const price = sessionObj ? sessionObj.price : 650;
     setCalculatedTotal(qty * price);
-  }, [formData.quantity, formData.session]);
+  }, [formData.quantity, formData.session, sessions]);
+
+  // 3. 管理員登入
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // 驗證密碼：直接嘗試獲取報名清單，如果成功即代表密碼正確
+    try {
+      const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getSubmissions&pw=${adminPassword}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setSubmissions(data);
+        setIsAdmin(true);
+        setShowAdminLogin(false);
+      } else {
+        alert('密碼錯誤');
+      }
+    } catch (err) {
+      alert('登入失敗，請確認網路連線');
+    }
+  };
+
+  // 4. 管理操作：新增場次
+  const handleAddSession = async () => {
+    if (!newSession.name || !newSession.price) return;
+    setIsSubmitting(true);
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ action: 'addSession', pw: adminPassword, ...newSession })
+    });
+    alert('已送出新增要求，請重新整理');
+    window.location.reload();
+  };
+
+  // 5. 管理操作：刪除場次
+  const handleDeleteSession = async (name: string) => {
+    if (!window.confirm(`確定要刪除場次「${name}」嗎？`)) return;
+    await fetch(GOOGLE_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      body: JSON.stringify({ action: 'deleteSession', pw: adminPassword, name })
+    });
+    alert('已送出刪除要求，請重新整理');
+    window.location.reload();
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -47,24 +106,12 @@ function App() {
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
-      // 防呆：如果是週一(1)或週二(2)，則不進行更新
       const day = date.getDay();
       if (day === 1 || day === 2) return;
-
-      // 如果選取的時間不在 09:00 - 15:00 之間（例如點選日期後預設的 00:00），則強制設為 09:00
       const hours = date.getHours();
-      if (hours < 9 || hours > 15) {
-        date.setHours(9, 0, 0);
-      }
-
-      // 轉換為 YYYY-MM-DD HH:mm 格式字串存入 formData
+      if (hours < 9 || hours > 15) date.setHours(9, 0, 0);
       const formattedDate = date.toLocaleString('zh-TW', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false
+        year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
       }).replace(/\//g, '-');
       setFormData(prev => ({ ...prev, pickupTime: formattedDate }));
     }
@@ -84,41 +131,27 @@ function App() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // 根據付款方式決定末五碼內容
     const bankLast5 = formData.paymentMethod === '銀行轉帳/ATM' ? formData.bankLast5 : '無';
-
-    // 準備要傳送的資料
     const submissionData: any = {
       ...formData,
-      players: formData.players.trim() || '1', // 若未填寫則預設為 1
-      notes: formData.notes.trim() || '無',    // 若未填寫則預設為 無
-      paymentMethod: formData.paymentMethod.split(' (')[0], // 只取 "Line Pay" 或 "親至..."，過濾括號後的網址
+      players: formData.players.trim() || '1',
+      notes: formData.notes.trim() || '無',
+      paymentMethod: formData.paymentMethod.split(' (')[0],
       bankLast5: bankLast5,
       totalAmount: calculatedTotal,
       referral: formData.referral.join(', '),
-      timestamp: new Date().toLocaleString('zh-TW')
+      timestamp: new Date().toLocaleString('zh-TW'),
+      action: 'addRegistration'
     };
 
     try {
-      // 檢查是否已設定有效的 Google Script URL
-      const isConfigured = GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes('YOUR_GOOGLE_SCRIPT_URL');
-
-      if (isConfigured) {
-        // 使用最標準的 fetch POST 方式
-        await fetch(GOOGLE_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          cache: 'no-cache',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(submissionData),
-        });
-      } else {
-        console.warn('尚未設定 GOOGLE_SCRIPT_URL，僅模擬提交');
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-      
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        cache: 'no-cache',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(submissionData),
+      });
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (error) {
@@ -131,24 +164,64 @@ function App() {
 
   const resetForm = () => {
     setFormData({
-      email: '',
-      name: '',
-      phone: '',
-      contactEmail: '',
-      session: '5/2(六)新港市集+沉浸體驗特別場（早鳥/現場價$650/份）',
-      quantity: '1',
-      players: '',
-      totalAmount: '',
-      paymentMethod: '親至新港文教基金會繳費',
-      bankLast5: '',
-      pickupTime: '',
-      pickupLocation: '新港文教基金會(閱讀館)',
-      referral: [] as string[],
-      notes: ''
+      email: '', name: '', phone: '', contactEmail: '', session: sessions[0]?.name || '',
+      quantity: '1', players: '', totalAmount: '', paymentMethod: '親至新港文教基金會繳費',
+      bankLast5: '', pickupTime: '', pickupLocation: '新港文教基金會(閱讀館)',
+      referral: [] as string[], notes: ''
     });
     setSubmitted(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  // 管理員後台 UI
+  if (isAdmin) {
+    return (
+      <div className="container admin-dashboard">
+        <header className="header">
+          <h1>管理後台</h1>
+          <div className="admin-nav">
+            <button onClick={() => setAdminTab('sessions')} className={adminTab === 'sessions' ? 'active' : ''}>場次管理</button>
+            <button onClick={() => setAdminTab('submissions')} className={adminTab === 'submissions' ? 'active' : ''}>報名清單</button>
+            <button onClick={() => setIsAdmin(false)}>登出</button>
+          </div>
+        </header>
+
+        {adminTab === 'sessions' ? (
+          <section className="admin-section">
+            <h3>目前場次</h3>
+            <div className="session-list">
+              {sessions.map(s => (
+                <div key={s.name} className="session-item">
+                  <span>{s.name} - ${s.price}</span>
+                  <button onClick={() => handleDeleteSession(s.name)} className="delete-btn">刪除</button>
+                </div>
+              ))}
+            </div>
+            <div className="add-session-form">
+              <h3>新增場次</h3>
+              <input type="text" placeholder="場次名稱" value={newSession.name} onChange={e => setNewSession({...newSession, name: e.target.value})} />
+              <input type="number" placeholder="價格" value={newSession.price} onChange={e => setNewSession({...newSession, price: e.target.value})} />
+              <button onClick={handleAddSession} disabled={isSubmitting}>新增場次</button>
+            </div>
+          </section>
+        ) : (
+          <section className="admin-section submissions-table-container">
+            <h3>報名清單</h3>
+            <table className="submissions-table">
+              <thead>
+                <tr>{submissions[0]?.map((h: any, i: number) => <th key={i}>{h}</th>)}</tr>
+              </thead>
+              <tbody>
+                {submissions.slice(1).map((row, i) => (
+                  <tr key={i}>{row.map((cell: any, j: number) => <td key={j}>{cell}</td>)}</tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
@@ -181,6 +254,21 @@ function App() {
 
   return (
     <div className="container">
+      {showAdminLogin && (
+        <div className="modal-overlay">
+          <div className="admin-login-modal">
+            <h2>管理員登入</h2>
+            <form onSubmit={handleAdminLogin}>
+              <input type="password" placeholder="請輸入密碼" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} autoFocus />
+              <div className="modal-actions">
+                <button type="submit">登入</button>
+                <button type="button" onClick={() => setShowAdminLogin(false)}>取消</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <header className="header">
         <div className="era-badge">光緒 x 昭和</div>
         <h1>【新港八卦迷蹤】</h1>
@@ -235,17 +323,14 @@ function App() {
           <form onSubmit={handleSubmit} className="reg-form">
             <div className="form-card">
               <h3 className="form-section-title">基本資料</h3>
-              
               <div className="form-group">
                 <label>報名人 姓名 *</label>
                 <input type="text" name="name" required value={formData.name} onChange={handleInputChange} placeholder="請輸入姓名" />
               </div>
-
               <div className="form-group">
                 <label>聯絡電話(手機為主) *</label>
                 <input type="tel" name="phone" required value={formData.phone} onChange={handleInputChange} placeholder="0912-345-678" />
               </div>
-
               <div className="form-group">
                 <label>Email (會寄送行前通知) *</label>
                 <input type="email" name="email" required value={formData.email} onChange={handleInputChange} placeholder="您的電子郵件" />
@@ -254,22 +339,20 @@ function App() {
 
             <div className="form-card">
               <h3 className="form-section-title">報名資訊</h3>
-              
               <div className="form-group">
                 <label>【報名場次】 *</label>
                 <select name="session" value={formData.session} onChange={handleInputChange}>
-                  <option value="5/2(六)新港市集+沉浸體驗特別場（早鳥/現場價$650/份）">5/2(六)新港市集+沉浸體驗特別場 ($650)</option>
-                  <option value="團體優惠價（5份以上/含導覽/需電話預約）$550/份">團體優惠價 (5份以上/含導覽) $550</option>
-                  <option value="校園團體（請電洽新港文教基金會）$500/份">校園團體 $500</option>
-                  <option value="單人購買（隨時出發/無導覽/無參與活動）$600/份">單人購買 (隨時出發) $600</option>
+                  {sessions.length > 0 ? (
+                    sessions.map(s => <option key={s.name} value={s.name}>{s.name} (${s.price})</option>)
+                  ) : (
+                    <option disabled>載入中...</option>
+                  )}
                 </select>
               </div>
-
               <div className="form-group">
                 <label>份數 *</label>
                 <input type="number" name="quantity" min="1" required value={formData.quantity} onChange={handleInputChange} />
               </div>
-
               <div className="form-group">
                 <label>當天遊玩人數 (如為單人購買可不填)</label>
                 <input type="text" name="players" value={formData.players} onChange={handleInputChange} placeholder="例如：4人" />
@@ -278,7 +361,6 @@ function App() {
 
             <div className="form-card">
               <h3 className="form-section-title">繳費與取件</h3>
-              
               <div className="form-group">
                 <label>繳費方式 *</label>
                 <div className="radio-group">
@@ -340,7 +422,6 @@ function App() {
                   ))}
                 </div>
               </div>
-
               <div className="form-group">
                 <label>其他/備註</label>
                 <textarea name="notes" value={formData.notes} onChange={handleInputChange} rows={3}></textarea>
@@ -361,7 +442,7 @@ function App() {
       </main>
 
       <footer className="footer">
-        <div className="footer-content">
+        <div className="footer-content" onClick={() => setShowAdminLogin(true)} style={{cursor: 'pointer'}}>
           <h3>聯絡資訊</h3>
           <p>新港文教基金會</p>
           <p>電話：05-3745074 分機 73 林先生</p>
@@ -379,5 +460,6 @@ function App() {
     </div>
   )
 }
+
 
 export default App
