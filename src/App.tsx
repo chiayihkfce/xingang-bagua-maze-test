@@ -93,7 +93,10 @@ function App() {
     };
 
     try {
-      if (GOOGLE_SCRIPT_URL !== 'YOUR_GOOGLE_SCRIPT_URL_HERE') {
+      // 檢查是否已設定有效的 Google Script URL
+      const isConfigured = GOOGLE_SCRIPT_URL && !GOOGLE_SCRIPT_URL.includes('YOUR_GOOGLE_SCRIPT_URL');
+      
+      if (isConfigured) {
         // 使用 URLSearchParams 封裝資料，這是最穩定的傳送方式
         const params = new URLSearchParams();
         for (const key in submissionData) {
