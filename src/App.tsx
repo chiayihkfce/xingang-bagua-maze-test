@@ -238,8 +238,8 @@ function App() {
       <footer className="footer">
         <div className="footer-content">
           <h3>聯絡資訊</h3>
-          <p>新港文教基金會 林先生</p>
-          <p>電話：05-3745074 分機 73</p>
+          <p>新港文教基金會</p>
+          <p>電話：05-3745074 分機 73 林先生</p>
           <div className="refund-policy">
             <h4>退費說明：</h4>
             <ul>
