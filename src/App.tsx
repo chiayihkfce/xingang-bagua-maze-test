@@ -90,6 +90,7 @@ function App() {
     // 準備要傳送的資料
     const submissionData: any = {
       ...formData,
+      paymentMethod: formData.paymentMethod.split(' (')[0], // 只取 "Line Pay" 或 "親至..."，過濾括號後的網址
       bankLast5: bankLast5,
       totalAmount: calculatedTotal,
       referral: formData.referral.join(', '),
