@@ -93,7 +93,7 @@ function App() {
           <p>我們已收到您的報名資訊，請確認以下明細並完成繳費。</p>
           <div className="summary-box">
             <p><strong>報名場次：</strong>{formData.session}</p>
-            <p><strong>預計領取時間：</strong>{formData.pickupTime}</p>
+            <p><strong>預計遊玩時間：</strong>{formData.pickupTime}</p>
             <p><strong>訂單總額：</strong>NT$ {calculatedTotal}</p>
             <p><strong>付款方式：</strong>{formData.paymentMethod.split(' (')[0]}</p>
             {formData.paymentMethod === '銀行轉帳/ATM' && <p className="bank-alert">請記得轉帳至：(617) 00817220606250</p>}
@@ -234,7 +234,7 @@ function App() {
               )}
 
               <div className="form-group">
-                <label>預計領取日期 & 時間 (開放日 09:00-15:00，週一二不開放) *</label>
+                <label>預計遊玩日期 & 時間 (開放日 09:00-15:00，週一二不開放) *</label>
                 <DatePicker
                   selected={formData.pickupTime ? new Date(formData.pickupTime) : null}
                   onChange={handleDateChange}
@@ -244,7 +244,7 @@ function App() {
                   timeCaption="時間"
                   dateFormat="yyyy-MM-dd HH:mm"
                   className="date-picker-input"
-                  placeholderText="請選擇領取時間"
+                  placeholderText="請選擇遊玩時間"
                   required
                   minDate={new Date()}
                   filterDate={(date) => date.getDay() !== 1 && date.getDay() !== 2}
