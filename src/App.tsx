@@ -84,9 +84,13 @@ function App() {
     e.preventDefault();
     setIsSubmitting(true);
 
+    // 根據付款方式決定末五碼內容
+    const bankLast5 = formData.paymentMethod === '銀行轉帳/ATM' ? formData.bankLast5 : '無';
+
     // 準備要傳送的資料
     const submissionData: any = {
       ...formData,
+      bankLast5: bankLast5,
       totalAmount: calculatedTotal,
       referral: formData.referral.join(', '),
       timestamp: new Date().toLocaleString('zh-TW')
@@ -107,8 +111,7 @@ function App() {
           },
           body: JSON.stringify(submissionData),
         });
-      }
- else {
+      } else {
         console.warn('尚未設定 GOOGLE_SCRIPT_URL，僅模擬提交');
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -121,6 +124,27 @@ function App() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      email: '',
+      name: '',
+      phone: '',
+      contactEmail: '',
+      session: '5/2(六)新港市集+沉浸體驗特別場（早鳥/現場價$650/份）',
+      quantity: '1',
+      players: '',
+      totalAmount: '',
+      paymentMethod: '親至新港文教基金會繳費',
+      bankLast5: '',
+      pickupTime: '',
+      pickupLocation: '新港文教基金會(閱讀館)',
+      referral: [] as string[],
+      notes: ''
+    });
+    setSubmitted(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   if (submitted) {
@@ -146,7 +170,7 @@ function App() {
               </div>
             )}
           </div>
-          <button onClick={() => setSubmitted(false)} className="cta-button">返回首頁</button>
+          <button onClick={resetForm} className="cta-button">返回首頁</button>
         </div>
       </div>
     );
