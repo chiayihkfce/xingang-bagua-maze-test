@@ -134,11 +134,6 @@ function App() {
               <h3 className="form-section-title">基本資料</h3>
               
               <div className="form-group">
-                <label>Email *</label>
-                <input type="email" name="email" required value={formData.email} onChange={handleInputChange} placeholder="您的電子郵件" />
-              </div>
-
-              <div className="form-group">
                 <label>報名人 姓名 *</label>
                 <input type="text" name="name" required value={formData.name} onChange={handleInputChange} placeholder="請輸入姓名" />
               </div>
@@ -146,6 +141,11 @@ function App() {
               <div className="form-group">
                 <label>聯絡電話(手機為主) *</label>
                 <input type="tel" name="phone" required value={formData.phone} onChange={handleInputChange} placeholder="0912-345-678" />
+              </div>
+
+              <div className="form-group">
+                <label>Email (會寄送行前通知) *</label>
+                <input type="email" name="email" required value={formData.email} onChange={handleInputChange} placeholder="您的電子郵件" />
               </div>
             </div>
 
