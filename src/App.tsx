@@ -230,6 +230,13 @@ function App() {
   // 7. 管理操作：開啟修改視窗
   const startEditSubmission = (row: any[], index: number) => {
     setEditingRowIndex(index);
+    
+    // 處理時間格式化，移除 ISO 格式的 T 和 Z
+    let rawTime = row[11] || '';
+    if (typeof rawTime === 'string' && rawTime.includes('T')) {
+      rawTime = formatDateTime(new Date(rawTime)).substring(0, 16);
+    }
+
     setEditData({
       timestamp: row[0],
       email: row[1],
@@ -242,7 +249,7 @@ function App() {
       totalAmount: row[8],
       paymentMethod: row[9],
       bankLast5: row[10],
-      pickupTime: row[11],
+      pickupTime: rawTime,
       pickupLocation: row[12],
       referral: row[13],
       notes: row[14]
@@ -394,6 +401,7 @@ function App() {
                   <div className="form-group"><label>份數</label><input type="number" value={editData.quantity} onChange={e => setEditData({...editData, quantity: e.target.value})} /></div>
                   <div className="form-group"><label>遊玩人數</label><input type="text" value={editData.players} onChange={e => setEditData({...editData, players: e.target.value})} /></div>
                   <div className="form-group"><label>遊玩日期時間</label><input type="text" value={editData.pickupTime} onChange={e => setEditData({...editData, pickupTime: e.target.value})} /></div>
+                  <div className="form-group"><label>轉帳帳戶(末五碼)</label><input type="text" value={editData.bankLast5} onChange={e => setEditData({...editData, bankLast5: e.target.value})} /></div>
                   <div className="form-group"><label>領取地點</label>
                     <select value={editData.pickupLocation} onChange={e => setEditData({...editData, pickupLocation: e.target.value})}>
                       <option value="新港文教基金會(閱讀館)">新港文教基金會(閱讀館)</option>
