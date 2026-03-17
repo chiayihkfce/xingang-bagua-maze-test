@@ -390,13 +390,14 @@ function App() {
   const handleConfirmSubmit = async () => {
     // --- 機器人驗證 (Honeypot & Speed Check) ---
     if (formData.hp_field !== '') {
-      console.warn('機器人行為檢測：陷阱欄位已填寫');
-      return; // 靜默攔截
+      console.warn('機器人行為檢測：陷阱欄位被填寫，值為:', formData.hp_field);
+      alert('檢測到異常行為（可能是自動填寫功能干擾），請重新整理頁面再試一次。');
+      return; 
     }
 
     const timeDiff = (Date.now() - loadTime) / 1000;
-    if (timeDiff < 5) {
-      alert('【送出失敗】填表速度異常過快，請確認資訊後再試。');
+    if (timeDiff < 3) { // 將 5 秒放寬到 3 秒
+      alert('【送出失敗】填表速度過快，請稍候再按送出。');
       return;
     }
 
