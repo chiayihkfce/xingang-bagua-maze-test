@@ -640,7 +640,7 @@ function App() {
       </main>
 
       <footer className="footer">
-        <div className="footer-content" onClick={() => setShowAdminLogin(true)} style={{cursor: 'pointer'}}>
+        <div className="footer-content">
           <h3>聯絡資訊</h3>
           <p>新港文教基金會</p>
           <p>電話：05-3745074 分機 73 林先生</p>
@@ -653,7 +653,13 @@ function App() {
             </ul>
           </div>
         </div>
-        <p className="copy">&copy; 2024 新港文教基金會 | 新港八卦迷蹤 製作團隊</p>
+        
+        <div className="footer-bottom">
+          <div className="admin-trigger" onClick={() => setShowAdminLogin(true)}>
+            <img src="footer-logo.svg" alt="HKFCE Logo" className="footer-admin-logo" />
+          </div>
+          <p className="copy">&copy; 2024 新港文教基金會 | 新港八卦迷蹤 製作團隊</p>
+        </div>
       </footer>
     </div>
   )

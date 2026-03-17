@@ -482,12 +482,47 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 
 .refund-policy h4 { color: var(--accent-orange); }
 
-.copy {
+/* 頁尾底部與管理入口 */
+.footer-bottom {
   margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  position: relative;
+  flex-wrap: wrap;
+}
+
+.admin-trigger {
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.admin-trigger:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 0 8px var(--primary-gold));
+}
+
+.footer-admin-logo {
+  height: 40px; /* 您可以根據圖片大小調整 */
+  width: auto;
+  opacity: 0.8;
+}
+
+.copy {
+  margin: 0 !important;
   font-size: 0.9rem;
   color: #666;
   text-align: center;
-  width: 100%;
+}
+
+@media (max-width: 600px) {
+  .footer-bottom {
+    flex-direction: column;
+    gap: 1rem;
+  }
 }
 
 /* Loading 動畫 */
