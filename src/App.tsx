@@ -18,6 +18,8 @@ function App() {
   const [editingRowIndex, setEditingRowIndex] = useState<number | null>(null);
   const [editData, setEditData] = useState<any>(null);
 
+  const [sessionType, setSessionType] = useState<'一般預約' | '特別預約'>('一般預約');
+
   const [formData, setFormData] = useState({
     email: '',
     name: '',
