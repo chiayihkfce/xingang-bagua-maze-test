@@ -140,7 +140,14 @@ function App() {
       let valA = a[index];
       let valB = b[index];
 
-      // 數值型排序處理
+      // 1. 針對時間戳記 (第 0 欄) 進行日期排序
+      if (index === 0) {
+        const dateA = new Date(valA).getTime();
+        const dateB = new Date(valB).getTime();
+        return direction === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+
+      // 2. 數值型排序處理
       if (!isNaN(Number(valA)) && !isNaN(Number(valB))) {
         return direction === 'asc' ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
       }
