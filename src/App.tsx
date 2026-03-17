@@ -481,11 +481,11 @@ function App() {
               
               {isDataLoading && <div className="loading-overlay">資料讀取中</div>}
               
-              <div className="modal-actions" style={{display: 'flex', flexDirection: 'row', gap: '1rem', marginTop: '2.5rem'}}>
-                <button type="button" onClick={() => setShowAdminLogin(false)} className="cta-button" style={{flex: 1, margin: 0, height: '50px'}}>
+              <div className="modal-actions admin-login-actions">
+                <button type="button" onClick={() => setShowAdminLogin(false)} className="cancel-btn">
                   取消
                 </button>
-                <button type="submit" className="submit-btn" style={{flex: 1, height: '50px', padding: 0}} disabled={isDataLoading}>
+                <button type="submit" className="submit-btn" disabled={isDataLoading}>
                   {isDataLoading ? '驗證中...' : '登入後台'}
                 </button>
               </div>

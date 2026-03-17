@@ -596,11 +596,11 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 /* 登入彈窗一致化 */
 .admin-login-modal {
   background: var(--card-bg);
-  padding: 3rem 2rem;
+  padding: 3rem 2.5rem;
   border-radius: 20px;
   border: 2px solid var(--primary-gold);
   width: 90%;
-  max-width: 400px;
+  max-width: 450px;
   text-align: center;
   box-shadow: 0 30px 60px rgba(0,0,0,0.8);
 }
@@ -611,7 +611,46 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   border-radius: 12px;
   background: rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(241, 196, 15, 0.3);
-  margin-top: 0.5rem;
+  margin-top: 0.8rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.admin-login-modal label {
+  font-size: 1.1rem;
+  margin-bottom: 0.8rem;
+}
+
+/* 登入彈窗按鈕佈局 */
+.admin-login-actions {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  margin-top: 2.5rem;
+}
+
+.admin-login-actions button {
+  flex: 1;
+  height: 50px;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* 表格樣式優化 */
