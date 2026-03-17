@@ -472,11 +472,10 @@ function App() {
       {showAdminLogin && (
         <div className="modal-overlay">
           <div className="admin-login-modal form-card">
-            <h2 className="form-section-title">管理員登入</h2>
+            <h2 className="form-section-title admin-login-title">管理員登入</h2>
             <form onSubmit={handleAdminLogin}>
               <div className="form-group">
-                <label>請輸入管理密碼</label>
-                <input type="password" placeholder="密碼" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} autoFocus />
+                <input type="password" placeholder="請輸入管理密碼" value={adminPassword} onChange={e => setAdminPassword(e.target.value)} autoFocus />
               </div>
               
               {isDataLoading && <div className="loading-overlay">資料讀取中</div>}
@@ -486,7 +485,7 @@ function App() {
                   取消
                 </button>
                 <button type="submit" className="submit-btn" disabled={isDataLoading}>
-                  {isDataLoading ? '驗證中...' : '登入後台'}
+                  {isDataLoading ? '驗證中...' : '登入'}
                 </button>
               </div>
             </form>
