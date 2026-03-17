@@ -42,6 +42,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
   const [loadTime] = useState(Date.now()); // 紀錄頁面載入時間
+  const [adminFilterDate, setAdminFilterDate] = useState<Date | null>(null);
 
   // 請在此處填入您部署後的 Google Apps Script URL
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOdLH2XHxJR7wEcCJYsPne_ZjciEPBKbZr7OmaafuG3l1VQrUtLzhlD2aADa-gOSZ1/exec';
@@ -95,6 +96,31 @@ function App() {
   }, [formData.quantity, formData.session, sessions]);
 
   const [isDataLoading, setIsDataLoading] = useState(false);
+
+  // 3.1 根據日期篩選報名資料
+  const handleDateFilter = async (date: Date | null) => {
+    setAdminFilterDate(date);
+    if (!date) {
+      loadPage(1); // 如果清除日期，回歸分頁顯示
+      return;
+    }
+    
+    setIsDataLoading(true);
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    
+    try {
+      const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getSubmissionsByDate&pw=${adminPassword}&date=${formattedDate}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setSubmissions(data);
+        setTotalRows(data.length - 1); // 扣掉標題列
+      }
+    } catch (err) {
+      alert('篩選失敗');
+    } finally {
+      setIsDataLoading(false);
+    }
+  };
 
   // 3. 管理員登入
   const handleAdminLogin = async (e: React.FormEvent) => {
@@ -637,12 +663,37 @@ function App() {
         ) : (
           <section className="admin-section form-card submissions-table-container">
             <div className="admin-section-header">
-              <h3 className="form-section-title" style={{margin: 0}}>報名清單 (共 {totalRows} 筆)</h3>
-              <div className="pagination">
-                <button onClick={() => loadPage(currentPage - 1)} disabled={currentPage === 1 || isDataLoading}>上一頁</button>
-                <span className="copy" style={{color: 'var(--primary-gold)'}}>第 {currentPage} 頁 / 共 {Math.ceil(totalRows / 50)} 頁</span>
-                <button onClick={() => loadPage(currentPage + 1)} disabled={currentPage >= Math.ceil(totalRows / 50) || isDataLoading}>下一頁</button>
+              <div style={{display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                <h3 className="form-section-title" style={{margin: 0}}>報名清單 (共 {totalRows} 筆)</h3>
+                <div className="admin-filter-bar" style={{display: 'flex', alignItems: 'center', gap: '1rem', background: '#333', padding: '0.8rem', borderRadius: '8px'}}>
+                  <span style={{color: 'var(--text-light)', fontSize: '0.9rem'}}>🔍 依遊玩日期篩選：</span>
+                  <DatePicker
+                    selected={adminFilterDate}
+                    onChange={handleDateFilter}
+                    dateFormat="yyyy-MM-dd"
+                    placeholderText="選擇日期"
+                    className="date-picker-input"
+                    isClearable
+                    style={{width: '150px'}}
+                  />
+                  {adminFilterDate && (
+                    <button 
+                      onClick={() => handleDateFilter(null)} 
+                      className="cancel-btn" 
+                      style={{padding: '0.3rem 0.8rem', fontSize: '0.8rem'}}
+                    >
+                      清除篩選
+                    </button>
+                  )}
+                </div>
               </div>
+              {!adminFilterDate && (
+                <div className="pagination">
+                  <button onClick={() => loadPage(currentPage - 1)} disabled={currentPage === 1 || isDataLoading}>上一頁</button>
+                  <span className="copy" style={{color: 'var(--primary-gold)'}}>第 {currentPage} 頁 / 共 {Math.ceil(totalRows / 50)} 頁</span>
+                  <button onClick={() => loadPage(currentPage + 1)} disabled={currentPage >= Math.ceil(totalRows / 50) || isDataLoading}>下一頁</button>
+                </div>
+              )}
             </div>
             <table className="submissions-table">
               <thead>
