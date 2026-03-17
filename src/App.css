@@ -633,11 +633,14 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   flex-direction: row;
   gap: 1rem;
   margin-top: 2.5rem;
+  width: 100%;
 }
 
 .admin-login-actions button {
-  flex: 1;
-  height: 52px; /* 固定高度 */
+  width: 50% !important; /* 強制寬度平分 */
+  height: 52px !important; /* 強制高度一致 */
+  padding: 0 !important;   /* 移除可能導致寬度差異的內邊距 */
+  margin: 0 !important;
   border-radius: 50px;
   font-weight: bold;
   font-size: 1.1rem;
@@ -645,19 +648,19 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box; /* 確保邊框計算在內 */
+  box-sizing: border-box !important;
   transition: all 0.3s ease;
+  min-width: 0 !important; /* 移除預設最小寬度限制 */
 }
 
 .cancel-btn {
   background: rgba(255, 255, 255, 0.1);
   color: white;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.2) !important;
 }
 
 .admin-login-actions .submit-btn {
-  border: 2px solid transparent; /* 加入透明邊框以對齊取消按鈕的厚度 */
-  padding: 0;
+  border: 2px solid transparent !important; /* 確保佔位完全一致 */
 }
 
 .cancel-btn:hover {
