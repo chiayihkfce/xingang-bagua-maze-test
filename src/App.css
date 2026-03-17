@@ -605,6 +605,15 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   box-shadow: 0 30px 60px rgba(0,0,0,0.8);
 }
 
+.admin-login-modal input[type="password"] {
+  padding: 1.2rem;
+  font-size: 1.2rem;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(241, 196, 15, 0.3);
+  margin-top: 0.5rem;
+}
+
 /* 表格樣式優化 */
 .submissions-table {
   width: 100%;
