@@ -457,7 +457,7 @@ function App() {
       email: '', name: '', phone: '', contactEmail: '', session: sessions[0]?.name || '',
       quantity: '1', players: '', totalAmount: '', paymentMethod: '親至新港文教基金會繳費',
       bankLast5: '', pickupTime: '', pickupLocation: '新港文教基金會(閱讀館)',
-      referral: [] as string[], notes: ''
+      referral: [] as string[], notes: '', hp_field: ''
     });
     setSubmitted(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
