@@ -909,16 +909,30 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   }
 }
 
-.submissions-table th, .submissions-table td {
+.submissions-table th, 
+.submissions-table td,
+.submissions-table thead th,
+.submissions-table tbody td {
   padding: 0.8rem;
-  text-align: left;
+  text-align: center !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   white-space: nowrap;
+  vertical-align: middle;
 }
 
-.submissions-table th {
+.sort-btn {
+  background: none;
+  border: none;
   color: var(--primary-gold);
-  background: rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  margin-left: 5px;
+  font-size: 0.8rem;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.sort-btn:hover, .sort-btn.active {
+  opacity: 1;
 }
 
 /* 時間時段按鈕組 */

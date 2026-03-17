@@ -43,6 +43,7 @@ function App() {
   const [totalRows, setTotalRows] = useState(0);
   const [loadTime] = useState(Date.now()); // 紀錄頁面載入時間
   const [adminFilterDate, setAdminFilterDate] = useState<Date | null>(null);
+  const [sortConfig, setSortConfig] = useState<{ key: number, direction: 'asc' | 'desc' } | null>(null);
 
   // 請在此處填入您部署後的 Google Apps Script URL
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOdLH2XHxJR7wEcCJYsPne_ZjciEPBKbZr7OmaafuG3l1VQrUtLzhlD2aADa-gOSZ1/exec';
@@ -122,6 +123,37 @@ function App() {
     } finally {
       setIsDataLoading(false);
     }
+  };
+
+  // 3.6 排序邏輯
+  const handleSort = (index: number) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === index && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key: index, direction });
+
+    const header = submissions[0];
+    const data = submissions.slice(1);
+
+    const sortedData = [...data].sort((a, b) => {
+      let valA = a[index];
+      let valB = b[index];
+
+      // 數值型排序處理
+      if (!isNaN(Number(valA)) && !isNaN(Number(valB))) {
+        return direction === 'asc' ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
+      }
+
+      // 字串型排序處理
+      valA = String(valA).toLowerCase();
+      valB = String(valB).toLowerCase();
+      if (valA < valB) return direction === 'asc' ? -1 : 1;
+      if (valA > valB) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    setSubmissions([header, ...sortedData]);
   };
 
   // 3. 管理員登入
@@ -700,7 +732,20 @@ function App() {
               <thead>
                 <tr>
                   <th>操作</th>
-                  {submissions[0]?.map((h: any, i: number) => <th key={i}>{h}</th>)}
+                  {submissions[0]?.map((h: any, i: number) => (
+                    <th key={i}>
+                      <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+                        {h}
+                        <button 
+                          className={`sort-btn ${sortConfig?.key === i ? 'active' : ''}`} 
+                          onClick={() => handleSort(i)}
+                          title="點擊排序"
+                        >
+                          {sortConfig?.key === i ? (sortConfig.direction === 'asc' ? '▲' : '▼') : '↕'}
+                        </button>
+                      </div>
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
