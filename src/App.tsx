@@ -107,7 +107,8 @@ function App() {
     }
     
     setIsDataLoading(true);
-    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    // 修改搜尋格式為 M/D/YYYY 以符合試算表中的存儲格式
+    const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
     
     try {
       const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getSubmissionsByDate&pw=${adminPassword}&date=${formattedDate}`);
