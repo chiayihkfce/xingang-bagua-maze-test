@@ -504,7 +504,11 @@ function App() {
                   filterDate={(date) => date.getDay() !== 1 && date.getDay() !== 2}
                   filterTime={(time) => {
                     const hours = time.getHours();
-                    return hours >= 9 && hours <= 15;
+                    const minutes = time.getMinutes();
+                    // 9:00 到 15:00，且 15:00 之後的分鐘數必須為 0
+                    if (hours >= 9 && hours < 15) return true;
+                    if (hours === 15 && minutes === 0) return true;
+                    return false;
                   }}
                 />
               </div>
