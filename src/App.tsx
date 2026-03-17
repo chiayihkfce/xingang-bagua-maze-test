@@ -7,13 +7,13 @@ function App() {
   // --- 1. 狀態與變數定義 ---
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [sessions, setSessions] = useState<{name: string, price: number}[]>([]);
+  const [sessions, setSessions] = useState<{name: string, price: number, fixedDate?: string, fixedTime?: string}[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   const [submissions, setSubmissions] = useState<any[][]>([]);
   const [adminTab, setAdminTab] = useState<'sessions' | 'submissions'>('sessions');
-  const [newSession, setNewSession] = useState({ name: '', price: '' });
+  const [newSession, setNewSession] = useState({ name: '', price: '', fixedDate: '', fixedTime: '' });
   const [isEditing, setIsEditing] = useState(false);
   const [editingRowIndex, setEditingRowIndex] = useState<number | null>(null);
   const [editData, setEditData] = useState<any>(null);
@@ -40,16 +40,6 @@ function App() {
   // 請在此處填入您部署後的 Google Apps Script URL
   const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOdLH2XHxJR7wEcCJYsPne_ZjciEPBKbZr7OmaafuG3l1VQrUtLzhlD2aADa-gOSZ1/exec';
 
-  // --- 2. 工具函式 ---
-  const formatDateTime = (date: Date) => {
-    const pad = (n: number) => String(n).padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
-           `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-  };
-
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalRows, setTotalRows] = useState(0);
-
   // 1. 初始載入場次
   useEffect(() => {
     const fetchSessions = async () => {
@@ -58,7 +48,13 @@ function App() {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           setSessions(data);
-          setFormData(prev => ({ ...prev, session: data[0].name }));
+          // 初始選中第一個，並檢查是否需要自動填入時間
+          const first = data[0];
+          setFormData(prev => ({ 
+            ...prev, 
+            session: first.name,
+            pickupTime: (first.fixedDate && first.fixedTime) ? `${first.fixedDate} ${first.fixedTime}` : ''
+          }));
         } else {
           setSessions([{ name: '暫無開放場次，請洽管理員', price: 0 }]);
         }
@@ -70,6 +66,7 @@ function App() {
     fetchSessions();
   }, []);
 
+  // 2. 價格與場次聯動邏輯
   useEffect(() => {
     const qty = parseInt(formData.quantity) || 0;
     const sessionObj = sessions.find(s => s.name === formData.session);
@@ -84,7 +81,6 @@ function App() {
     e.preventDefault();
     setIsDataLoading(true);
     try {
-      // 合併請求：一次抓取場次與第一頁資料
       const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=adminLogin&pw=${adminPassword}`);
       const result = await res.json();
       
@@ -113,7 +109,6 @@ function App() {
       const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getSubmissionsPage&pw=${adminPassword}&page=${page}`);
       const data = await res.json();
       if (Array.isArray(data)) {
-        // 如果是第一頁，保留標題；否則僅更新內容
         if (page === 1) {
           setSubmissions(data);
         } else {
@@ -129,7 +124,7 @@ function App() {
   };
 
   const [isEditingSession, setIsEditingSession] = useState(false);
-  const [editingSession, setEditingSession] = useState({ oldName: '', newName: '', newPrice: '' });
+  const [editingSession, setEditingSession] = useState({ oldName: '', newName: '', newPrice: '', fixedDate: '', fixedTime: '' });
 
   // 4. 管理操作：新增場次
   const handleAddSession = async () => {
@@ -144,7 +139,7 @@ function App() {
       const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getSessions`);
       const data = await res.json();
       setSessions(data);
-      setNewSession({ name: '', price: '' });
+      setNewSession({ name: '', price: '', fixedDate: '', fixedTime: '' });
       alert('新增成功');
     } catch (err) {
       alert('新增失敗');
@@ -154,8 +149,14 @@ function App() {
   };
 
   // 4.5 管理操作：開啟修改場次視窗
-  const startEditSession = (session: {name: string, price: number}) => {
-    setEditingSession({ oldName: session.name, newName: session.name, newPrice: String(session.price) });
+  const startEditSession = (session: any) => {
+    setEditingSession({ 
+      oldName: session.name, 
+      newName: session.name, 
+      newPrice: String(session.price),
+      fixedDate: session.fixedDate || '',
+      fixedTime: session.fixedTime || ''
+    });
     setIsEditingSession(true);
   };
 
@@ -173,12 +174,10 @@ function App() {
           ...editingSession 
         })
       });
-      // 靜態更新 UI
-      setSessions(prev => prev.map(s => 
-        s.name === editingSession.oldName 
-          ? { name: editingSession.newName, price: Number(editingSession.newPrice) } 
-          : s
-      ));
+      // 重新載入以確保同步
+      const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getSessions`);
+      const data = await res.json();
+      setSessions(data);
       setIsEditingSession(false);
       alert('修改成功');
     } catch (err) {
@@ -300,6 +299,16 @@ function App() {
       const filteredValue = value.replace(/[0-9]/g, ''); // 僅移除數字
       if (filteredValue.length > 20) return;
       setFormData(prev => ({ ...prev, [name]: filteredValue }));
+      return;
+    }
+
+    // 當場次改變時，檢查是否為固定時間場次
+    if (name === 'session') {
+      const selectedSession = sessions.find(s => s.name === value);
+      const fixedTime = (selectedSession?.fixedDate && selectedSession?.fixedTime) 
+        ? `${selectedSession.fixedDate} ${selectedSession.fixedTime}` 
+        : '';
+      setFormData(prev => ({ ...prev, session: value, pickupTime: fixedTime }));
       return;
     }
 
@@ -469,13 +478,23 @@ function App() {
             </div>
             <div className="add-session-form">
               <h3 className="form-section-title">新增場次</h3>
-              <div className="form-group">
-                <label>場次名稱</label>
-                <input type="text" placeholder="例如：5/2(六)市集場" value={newSession.name} onChange={e => setNewSession({...newSession, name: e.target.value})} />
-              </div>
-              <div className="form-group">
-                <label>價格</label>
-                <input type="number" placeholder="650" value={newSession.price} onChange={e => setNewSession({...newSession, price: e.target.value})} />
+              <div className="edit-form-grid">
+                <div className="form-group">
+                  <label>場次名稱</label>
+                  <input type="text" placeholder="例如：5/2(六)市集場" value={newSession.name} onChange={e => setNewSession({...newSession, name: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>價格</label>
+                  <input type="number" placeholder="650" value={newSession.price} onChange={e => setNewSession({...newSession, price: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>固定日期 (非強選場次請留空)</label>
+                  <input type="text" placeholder="例如：2026-05-02" value={newSession.fixedDate} onChange={e => setNewSession({...newSession, fixedDate: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>固定時間 (非強選場次請留空)</label>
+                  <input type="text" placeholder="例如：10:00" value={newSession.fixedTime} onChange={e => setNewSession({...newSession, fixedTime: e.target.value})} />
+                </div>
               </div>
               <button onClick={handleAddSession} disabled={isSubmitting} className="submit-btn" style={{width: '100%', marginTop: '1rem'}}>
                 確認新增場次
@@ -701,9 +720,10 @@ function App() {
                   timeIntervals={30}
                   timeCaption="時間"
                   dateFormat="yyyy-MM-dd HH:mm"
-                  className="date-picker-input"
+                  className={`date-picker-input ${sessions.find(s => s.name === formData.session)?.fixedDate ? 'fixed-readonly' : ''}`}
                   placeholderText="請選擇遊玩時間"
                   required
+                  readOnly={!!sessions.find(s => s.name === formData.session)?.fixedDate}
                   minDate={new Date()}
                   filterDate={(date) => date.getDay() !== 1 && date.getDay() !== 2}
                   minTime={new Date(new Date().setHours(9, 0, 0))}
