@@ -50,26 +50,24 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRows, setTotalRows] = useState(0);
 
-  // --- 3. 副作用處理 (useEffect) ---
+  // 1. 初始載入場次
   useEffect(() => {
-    fetch(`${GOOGLE_SCRIPT_URL}?action=getSessions`)
-      .then(res => res.json())
-      .then(data => {
+    const fetchSessions = async () => {
+      try {
+        const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getSessions`);
+        const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           setSessions(data);
           setFormData(prev => ({ ...prev, session: data[0].name }));
         } else {
-          const defaultSession = { name: '暫無開放場次，請洽管理員', price: 0 };
-          setSessions([defaultSession]);
-          setFormData(prev => ({ ...prev, session: defaultSession.name }));
+          setSessions([{ name: '暫無開放場次，請洽管理員', price: 0 }]);
         }
-      })
-      .catch(err => {
+      } catch (err) {
         console.error('無法載入場次:', err);
-        const errorSession = { name: '載入場次失敗，請重新整理', price: 0 };
-        setSessions([errorSession]);
-        setFormData(prev => ({ ...prev, session: errorSession.name }));
-      });
+        setSessions([{ name: '載入場次失敗，請重新整理', price: 0 }]);
+      }
+    };
+    fetchSessions();
   }, []);
 
   useEffect(() => {
