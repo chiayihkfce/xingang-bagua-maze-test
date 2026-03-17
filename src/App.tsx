@@ -812,10 +812,10 @@ function App() {
                     });
                     
                     if (conflicts.length > 0) {
+                      const conflictTimes = conflicts.map(c => c.fixedTime?.replace(/,/g, '、')).join(' ; ');
                       return (
                         <div className="conflict-notice">
-                          ★ 提醒：您目前選擇的日期已有特別場次（{conflicts.map(c => c.name).join('、')}），
-                          場次時段：{conflicts.map(c => c.fixedTime?.replace(/,/g, '、')).join(' ; ')} 不開放一般預約。
+                          ★ 提醒：您目前選擇的日期有特別場，特別場次時段：{conflictTimes} 不開放一般場次預約，如有這些時段需求請選擇特別場次。
                         </div>
                       );
                     }
