@@ -722,12 +722,20 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 }
 
 .submissions-table th {
-  background: rgba(0, 0, 0, 0.5) !important;
+  position: sticky;
+  top: 0;
+  z-index: 5; /* 降低表格標題的層級 */
+  background: rgba(30, 41, 51, 0.95) !important; /* 加深背景確保標題清晰且不透明 */
   color: var(--primary-gold);
   padding: 1.2rem 1rem;
   text-align: center;
   font-family: 'Noto Serif TC', serif;
   border-bottom: 2px solid var(--accent-orange);
+}
+
+/* 確保 DatePicker 下拉選單層級最高，防止被 Sticky Header 擋住 */
+.react-datepicker-popper {
+  z-index: 2000 !important;
 }
 
 .submissions-table td {
