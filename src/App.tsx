@@ -786,22 +786,33 @@ function App() {
               <div className="form-group">
                 <label>預計遊玩日期 & 時間 (開放日 09:00-15:00，週一二不開放) *</label>
                 
-                {/* 新增固定場次提示文字 */}
+                {/* 顯示固定場次或衝突告示 */}
                 {(() => {
                   const selectedSession = sessions.find(s => s.name === formData.session);
+                  const currentDateStr = formData.pickupTime.split(' ')[0];
+
+                  // 情況 A：目前選的就是特別場次 -> 顯示固定資訊
                   if (selectedSession?.fixedDate || selectedSession?.fixedTime) {
-                    // 格式化日期：移除 T00:00:00.000Z 等 ISO 資訊
                     let displayDate = selectedSession.fixedDate || '不限日期';
-                    if (displayDate.includes('T')) {
-                      displayDate = displayDate.split('T')[0];
-                    }
-                    
+                    if (displayDate.includes('T')) displayDate = displayDate.split('T')[0];
                     return (
                       <div className="fixed-session-hint">
                         ★ 此場次固定於 {displayDate}，
                         開放時段：{selectedSession.fixedTime ? selectedSession.fixedTime.replace(/,/g, '、') : '全時段'}
                       </div>
                     );
+                  }
+
+                  // 情況 B：目前選的是普通場次，但選中的日期有特別場次 -> 顯示衝突告示
+                  if (currentDateStr) {
+                    const conflicts = sessions.filter(s => s.fixedDate === currentDateStr);
+                    if (conflicts.length > 0) {
+                      return (
+                        <div className="conflict-notice">
+                          ★ 提醒：{currentDateStr} 當天已有特別場次（{conflicts.map(c => c.name).join('、')}），相關時段不開放一般預約。
+                        </div>
+                      );
+                    }
                   }
                   return null;
                 })()}
@@ -824,15 +835,23 @@ function App() {
                   maxTime={new Date(new Date().setHours(15, 0, 0))}
                   filterTime={(time) => {
                     const selectedSession = sessions.find(s => s.name === formData.session);
-                    const fixedTimes = selectedSession?.fixedTime ? selectedSession.fixedTime.split(',') : [];
+                    const timeStr = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
                     
-                    // 如果有設定固定時段，則只顯示那些時段
-                    if (fixedTimes.length > 0) {
-                      const timeStr = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
+                    // 如果目前選的是特別場次 -> 只允許顯示固定的那幾個時段
+                    if (selectedSession?.fixedDate || selectedSession?.fixedTime) {
+                      const fixedTimes = selectedSession.fixedTime ? selectedSession.fixedTime.split(',') : [];
                       return fixedTimes.includes(timeStr);
                     }
                     
-                    // 否則顯示預設的 09:00 - 15:00
+                    // 如果目前選的是普通場次 -> 過濾掉「任何」其他場次的固定時段
+                    const currentDateStr = formData.pickupTime.split(' ')[0];
+                    const isTakenBySpecial = sessions.some(s => 
+                      s.fixedDate === currentDateStr && 
+                      s.fixedTime?.split(',').includes(timeStr)
+                    );
+                    if (isTakenBySpecial) return false;
+
+                    // 基礎時段限制 09:00 - 15:00
                     const hours = time.getHours();
                     const minutes = time.getMinutes();
                     if (hours >= 9 && hours < 15) return true;
