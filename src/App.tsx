@@ -41,10 +41,22 @@ function App() {
     fetch(`${GOOGLE_SCRIPT_URL}?action=getSessions`)
       .then(res => res.json())
       .then(data => {
-        setSessions(data);
-        if (data.length > 0) setFormData(prev => ({ ...prev, session: data[0].name }));
+        if (Array.isArray(data) && data.length > 0) {
+          setSessions(data);
+          setFormData(prev => ({ ...prev, session: data[0].name }));
+        } else {
+          // 如果試算表是空的，設定一個預設選項
+          const defaultSession = { name: '暫無開放場次，請洽管理員', price: 0 };
+          setSessions([defaultSession]);
+          setFormData(prev => ({ ...prev, session: defaultSession.name }));
+        }
       })
-      .catch(err => console.error('無法載入場次:', err));
+      .catch(err => {
+        console.error('無法載入場次:', err);
+        const errorSession = { name: '載入場次失敗，請重新整理', price: 0 };
+        setSessions([errorSession]);
+        setFormData(prev => ({ ...prev, session: errorSession.name }));
+      });
   }, []);
 
   // 2. 價格邏輯
