@@ -4,6 +4,7 @@ import "react-datepicker/dist/react-datepicker.css"
 import './App.css'
 
 function App() {
+  // --- 1. 狀態與變數定義 ---
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sessions, setSessions] = useState<{name: string, price: number}[]>([]);
@@ -17,14 +18,36 @@ function App() {
   const [editingRowIndex, setEditingRowIndex] = useState<number | null>(null);
   const [editData, setEditData] = useState<any>(null);
 
-  // 0. 時間格式化工具 (YYYY-MM-DD HH:mm:ss)
+  const [formData, setFormData] = useState({
+    email: '',
+    name: '',
+    phone: '',
+    contactEmail: '',
+    session: '',
+    quantity: '1',
+    players: '',
+    totalAmount: '',
+    paymentMethod: '親至新港文教基金會繳費',
+    bankLast5: '',
+    pickupTime: '',
+    pickupLocation: '新港文教基金會(閱讀館)',
+    referral: [] as string[],
+    notes: ''
+  });
+
+  const [calculatedTotal, setCalculatedTotal] = useState(0);
+
+  // 請在此處填入您部署後的 Google Apps Script URL
+  const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzOdLH2XHxJR7wEcCJYsPne_ZjciEPBKbZr7OmaafuG3l1VQrUtLzhlD2aADa-gOSZ1/exec';
+
+  // --- 2. 工具函式 ---
   const formatDateTime = (date: Date) => {
     const pad = (n: number) => String(n).padStart(2, '0');
     return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
            `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   };
 
-  // 1. 初始載入場次
+  // --- 3. 副作用處理 (useEffect) ---
   useEffect(() => {
     fetch(`${GOOGLE_SCRIPT_URL}?action=getSessions`)
       .then(res => res.json())
@@ -46,7 +69,6 @@ function App() {
       });
   }, []);
 
-  // 2. 價格邏輯
   useEffect(() => {
     const qty = parseInt(formData.quantity) || 0;
     const sessionObj = sessions.find(s => s.name === formData.session);
