@@ -17,6 +17,8 @@ function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingRowIndex, setEditingRowIndex] = useState<number | null>(null);
   const [editData, setEditData] = useState<any>(null);
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [auditTarget, setAuditTarget] = useState<{index: number, row: any[]} | null>(null);
 
   const [sessionType, setSessionType] = useState<'一般預約' | '特別預約'>('一般預約');
 
@@ -215,15 +217,15 @@ function App() {
   // 7. 管理操作：開啟修改視窗 (報名資料)
   const startEditSubmission = (row: any[], index: number) => {
     setEditingRowIndex(index);
-    let rawTime = row[11] || '';
+    let rawTime = row[12] || ''; // 欄位全部後移一位
     if (typeof rawTime === 'string' && rawTime.includes('T')) {
       rawTime = formatDateTime(new Date(rawTime)).substring(0, 16);
     }
     setEditData({
-      timestamp: row[0], email: row[1], name: row[2], phone: row[3], contactEmail: row[4],
-      session: row[5], quantity: row[6], players: row[7], totalAmount: row[8],
-      paymentMethod: row[9], bankLast5: row[10], pickupTime: rawTime,
-      pickupLocation: row[12], referral: row[13], notes: row[14]
+      timestamp: row[0], status: row[1], email: row[2], name: row[3], phone: row[4], 
+      contactEmail: row[5], session: row[6], quantity: row[7], players: row[8], 
+      totalAmount: row[9], paymentMethod: row[10], bankLast5: row[11], 
+      pickupTime: rawTime, pickupLocation: row[13], referral: row[14], notes: row[15]
     });
     setIsEditing(true);
   };
@@ -241,10 +243,10 @@ function App() {
       const newSubmissions = [...submissions];
       if (editingRowIndex !== null) {
         newSubmissions[editingRowIndex] = [
-          editData.timestamp, editData.email, editData.name, editData.phone, editData.contactEmail,
-          editData.session, editData.quantity, editData.players, editData.totalAmount, 
-          editData.paymentMethod, editData.bankLast5, editData.pickupTime, editData.pickupLocation,
-          editData.referral, editData.notes
+          editData.timestamp, editData.status, editData.email, editData.name, editData.phone,
+          editData.contactEmail, editData.session, editData.quantity, editData.players, 
+          editData.totalAmount, editData.paymentMethod, editData.bankLast5, 
+          editData.pickupTime, editData.pickupLocation, editData.referral, editData.notes
         ];
         setSubmissions(newSubmissions);
       }
@@ -563,6 +565,40 @@ function App() {
   if (isAdmin) {
     return (
       <div className="container admin-dashboard">
+        {showAuditModal && auditTarget && (
+          <div className="modal-overlay">
+            <div className="admin-login-modal form-card" style={{maxWidth: '500px'}}>
+              <h2 className="form-section-title">報名資料審核</h2>
+              <div className="audit-details" style={{textAlign: 'left', marginBottom: '1.5rem', lineHeight: '1.8'}}>
+                <p><strong>報名人：</strong>{auditTarget.row[3]}</p>
+                <p><strong>報名場次：</strong>{auditTarget.row[6]}</p>
+                <p><strong>份數：</strong>{auditTarget.row[7]} 份</p>
+                <p><strong>總金額：</strong><span style={{color: 'var(--primary-gold)', fontWeight: 'bold'}}>NT$ {auditTarget.row[9]}</span></p>
+                <p><strong>當前狀態：</strong>{auditTarget.row[1] || '待審核'}</p>
+              </div>
+              <div className="modal-actions admin-login-actions" style={{flexDirection: 'column', gap: '0.8rem'}}>
+                <button 
+                  onClick={() => {
+                    handleVerifyPayment(auditTarget.index, '通過');
+                    setShowAuditModal(false);
+                  }} 
+                  className="submit-btn" 
+                  style={{width: '100%', background: '#27ae60'}}
+                >
+                  確認付款完成 (標記為通過)
+                </button>
+                <button 
+                  onClick={() => setShowAuditModal(false)} 
+                  className="cancel-btn" 
+                  style={{width: '100%'}}
+                >
+                  關閉
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {isEditing && (
           <div className="modal-overlay">
             <div className="admin-login-modal form-card" style={{maxWidth: '800px', width: '95%'}}>
@@ -787,7 +823,7 @@ function App() {
                 {submissions.slice(1).map((row, i) => (
                   <tr key={i}>
                     <td className="action-cell">
-                      <button onClick={() => handleVerifyPayment(i + 1, '通過')} className="edit-btn" style={{background: '#27ae60', color: 'white'}}>付款完成</button>
+                      <button onClick={() => { setAuditTarget({index: i + 1, row}); setShowAuditModal(true); }} className="edit-btn" style={{background: '#f39c12', color: 'white'}}>審核</button>
                       <button onClick={() => startEditSubmission(row, i + 1)} className="edit-btn">修改</button>
                       <button onClick={() => handleDeleteSubmission(i + 1)} className="delete-btn">刪除</button>
                     </td>
@@ -795,7 +831,7 @@ function App() {
                       <td key={j}>
                         {j === 0 && cell && cell.includes('T') 
                           ? formatDateTime(new Date(cell)) 
-                          : (j === 15 ? (
+                          : (j === 1 ? (
                               <span style={{
                                 padding: '0.3rem 0.8rem', 
                                 borderRadius: '50px', 
