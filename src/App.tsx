@@ -397,7 +397,13 @@ function App() {
                       <button onClick={() => startEditSubmission(row, i + 1)} className="edit-btn">修改</button>
                       <button onClick={() => handleDeleteSubmission(i + 1)} className="delete-btn">刪除</button>
                     </td>
-                    {row.map((cell: any, j: number) => <td key={j}>{cell}</td>)}
+                    {row.map((cell: any, j: number) => (
+                      <td key={j}>
+                        {j === 0 && cell && cell.includes('T') 
+                          ? formatDateTime(new Date(cell)) 
+                          : cell}
+                      </td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
