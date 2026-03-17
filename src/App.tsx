@@ -805,11 +805,16 @@ function App() {
 
                   // 情況 B：目前選的是普通場次，但選中的日期有特別場次 -> 顯示衝突告示
                   if (currentDateStr) {
-                    const conflicts = sessions.filter(s => s.fixedDate === currentDateStr);
+                    const conflicts = sessions.filter(s => {
+                      let sDate = s.fixedDate || '';
+                      if (sDate.includes('T')) sDate = sDate.split('T')[0];
+                      return sDate === currentDateStr;
+                    });
+                    
                     if (conflicts.length > 0) {
                       return (
                         <div className="conflict-notice">
-                          ★ 提醒：{currentDateStr} 當天已有特別場次（{conflicts.map(c => c.name).join('、')}），相關時段不開放一般預約。
+                          ★ 提醒：您目前選擇的日期已有特別場次（{conflicts.map(c => c.name).join('、')}），相關時段不開放一般預約。
                         </div>
                       );
                     }
@@ -837,21 +842,23 @@ function App() {
                     const selectedSession = sessions.find(s => s.name === formData.session);
                     const timeStr = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
                     
-                    // 如果目前選的是特別場次 -> 只允許顯示固定的那幾個時段
+                    // 1. 如果目前選的是特別場次 -> 只允許顯示固定的那幾個時段
                     if (selectedSession?.fixedDate || selectedSession?.fixedTime) {
                       const fixedTimes = selectedSession.fixedTime ? selectedSession.fixedTime.split(',') : [];
                       return fixedTimes.includes(timeStr);
                     }
                     
-                    // 如果目前選的是普通場次 -> 過濾掉「任何」其他場次的固定時段
+                    // 2. 如果目前選的是普通場次 -> 過濾掉「任何」其他場次的固定時段
                     const currentDateStr = formData.pickupTime.split(' ')[0];
-                    const isTakenBySpecial = sessions.some(s => 
-                      s.fixedDate === currentDateStr && 
-                      s.fixedTime?.split(',').includes(timeStr)
-                    );
+                    const isTakenBySpecial = sessions.some(s => {
+                      let sDate = s.fixedDate || '';
+                      if (sDate.includes('T')) sDate = sDate.split('T')[0];
+                      return sDate === currentDateStr && s.fixedTime?.split(',').includes(timeStr);
+                    });
+                    
                     if (isTakenBySpecial) return false;
 
-                    // 基礎時段限制 09:00 - 15:00
+                    // 3. 基礎時段限制 09:00 - 15:00
                     const hours = time.getHours();
                     const minutes = time.getMinutes();
                     if (hours >= 9 && hours < 15) return true;
