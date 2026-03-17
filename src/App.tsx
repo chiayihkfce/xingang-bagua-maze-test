@@ -128,6 +128,9 @@ function App() {
     }
   };
 
+  const [isEditingSession, setIsEditingSession] = useState(false);
+  const [editingSession, setEditingSession] = useState({ oldName: '', newName: '', newPrice: '' });
+
   // 4. 管理操作：新增場次
   const handleAddSession = async () => {
     if (!newSession.name || !newSession.price) return;
@@ -138,7 +141,6 @@ function App() {
         mode: 'no-cors',
         body: JSON.stringify({ action: 'addSession', pw: adminPassword, ...newSession })
       });
-      // 靜態更新：重新載入場次，不重新整理頁面
       const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getSessions`);
       const data = await res.json();
       setSessions(data);
@@ -146,6 +148,41 @@ function App() {
       alert('新增成功');
     } catch (err) {
       alert('新增失敗');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // 4.5 管理操作：開啟修改場次視窗
+  const startEditSession = (session: {name: string, price: number}) => {
+    setEditingSession({ oldName: session.name, newName: session.name, newPrice: String(session.price) });
+    setIsEditingSession(true);
+  };
+
+  // 4.6 管理操作：送出修改場次
+  const handleUpdateSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await fetch(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: JSON.stringify({ 
+          action: 'updateSession', 
+          pw: adminPassword, 
+          ...editingSession 
+        })
+      });
+      // 靜態更新 UI
+      setSessions(prev => prev.map(s => 
+        s.name === editingSession.oldName 
+          ? { name: editingSession.newName, price: Number(editingSession.newPrice) } 
+          : s
+      ));
+      setIsEditingSession(false);
+      alert('修改成功');
+    } catch (err) {
+      alert('修改失敗');
     } finally {
       setIsSubmitting(false);
     }
@@ -362,6 +399,28 @@ function App() {
           </div>
         )}
 
+        {isEditingSession && (
+          <div className="modal-overlay">
+            <div className="admin-login-modal form-card" style={{maxWidth: '500px'}}>
+              <h2 className="form-section-title">修改場次資訊</h2>
+              <form onSubmit={handleUpdateSession}>
+                <div className="form-group">
+                  <label>場次名稱</label>
+                  <input type="text" value={editingSession.newName} onChange={e => setEditingSession({...editingSession, newName: e.target.value})} />
+                </div>
+                <div className="form-group">
+                  <label>價格</label>
+                  <input type="number" value={editingSession.newPrice} onChange={e => setEditingSession({...editingSession, newPrice: e.target.value})} />
+                </div>
+                <div className="modal-actions admin-login-actions">
+                  <button type="button" onClick={() => setIsEditingSession(false)} className="cancel-btn">取消</button>
+                  <button type="submit" className="submit-btn" disabled={isSubmitting}>儲存修改</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         <header className="header">
           <h1>管理後台</h1>
           <div className="admin-nav">
@@ -377,8 +436,11 @@ function App() {
             <div className="session-list">
               {sessions.map(s => (
                 <div key={s.name} className="session-item">
-                  <span style={{color: 'var(--text-light)'}}>{s.name} - ${s.price}</span>
-                  <button onClick={() => handleDeleteSession(s.name)} className="delete-btn">刪除</button>
+                  <span style={{color: 'var(--text-light)', flex: 1}}>{s.name} - ${s.price}</span>
+                  <div className="action-cell">
+                    <button onClick={() => startEditSession(s)} className="edit-btn">修改</button>
+                    <button onClick={() => handleDeleteSession(s.name)} className="delete-btn">刪除</button>
+                  </div>
                 </div>
               ))}
             </div>
