@@ -535,7 +535,7 @@ function App() {
                   <label>固定日期 (非強選場次請留空)</label>
                   <DatePicker
                     selected={newSession.fixedDate ? new Date(newSession.fixedDate) : null}
-                    onChange={(date) => {
+                    onChange={(date: Date | null) => {
                       if (date) {
                         const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
                         setNewSession({...newSession, fixedDate: formatted});
