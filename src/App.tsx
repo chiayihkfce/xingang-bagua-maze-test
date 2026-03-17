@@ -76,9 +76,12 @@ function App() {
     setCalculatedTotal(qty * price);
   }, [formData.quantity, formData.session, sessions]);
 
+  const [isDataLoading, setIsDataLoading] = useState(false);
+
   // 3. 管理員登入
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsDataLoading(true);
     try {
       const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getSubmissions&pw=${adminPassword}`);
       const data = await res.json();
@@ -91,6 +94,8 @@ function App() {
       }
     } catch (err) {
       alert('登入失敗，請確認網路連線');
+    } finally {
+      setIsDataLoading(false);
     }
   };
 
