@@ -771,7 +771,6 @@ function App() {
                   <select 
                     value={editingSession.isSpecial ? 'special' : 'general'} 
                     onChange={e => setEditingSession({...editingSession, isSpecial: e.target.value === 'special'})}
-                    style={{width: '100%', padding: '0.8rem', borderRadius: '4px', background: '#444', color: 'white', border: '1px solid #666'}}
                   >
                     <option value="general">📅 一般預約場次 (存入「一般場次」分頁)</option>
                     <option value="special">✨ 固定特別場次 (存入「特別場次」分頁)</option>
