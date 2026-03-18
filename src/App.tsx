@@ -1284,201 +1284,207 @@ function App() {
                 </select>
               </div>
 
-              {/* 只有在選了類型後才顯示詳細場次區塊 */}
+              {/* 選定場次類型後才展開後續表單 */}
               {sessionType !== '' && (
-                <div className="form-group">
-                  <label>【詳細場次】 *</label>
-                  {sessionType === '一般預約' ? (
-                    <div className="general-session-info" style={{ 
-                      padding: '1rem', 
-                      background: 'rgba(212, 175, 55, 0.1)', 
-                      border: '1px solid var(--primary-gold)', 
-                      borderRadius: '8px',
-                      color: 'var(--primary-gold)',
-                      fontSize: '0.95rem',
-                      lineHeight: '1.6'
-                    }}>
-                      <p style={{ margin: 0, fontWeight: 'bold' }}>
-                        ⚡ 系統已自動選定：{formData.session || '正在計算中...'}
-                      </p>
-                      <div className="discount-hint" style={{ marginTop: '0.5rem', color: '#ccc', fontSize: '0.85rem' }}>
-                        ★ 優惠提醒：一般預約滿 5 份(含)以上可享有團體優惠價唷!!!!!!
-                      </div>
-                    </div>
-                  ) : (
-                    <select 
-                      name="session" 
-                      value={formData.session} 
-                      onChange={handleInputChange}
-                      required
-                    >
-                      {sessions.length > 0 ? (
-                        sessions
-                          .filter(s => (s.fixedDate || s.fixedTime))
-                          .map(s => <option key={s.name} value={s.name}>{s.name} (${s.price})</option>)
-                      ) : (
-                        <option disabled>載入中...</option>
-                      )}
-                    </select>
-                  )}
-                </div>
-              )}
-              <div className="form-group">
-                <label>份數 *</label>
-                <input type="number" name="quantity" min="1" required value={formData.quantity} onChange={handleInputChange} />
-              </div>
-              <div className="form-group">
-                <label>當天遊玩人數 (每份解謎包建議 1-4 人) *</label>
-                <select name="players" value={formData.players} onChange={handleInputChange}>
-                  {Array.from({ length: Number(formData.quantity) * 4 }, (_, i) => i + 1).map(num => (
-                    <option key={num} value={num}>{num}人</option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div className="form-card">
-              <h3 className="form-section-title">繳費與取件</h3>
-              <div className="form-group">
-                <label>繳費方式 *</label>
-                <div className="radio-group">
-                  <label><input type="radio" name="paymentMethod" value="親至新港文教基金會繳費" checked={formData.paymentMethod === '親至新港文教基金會繳費'} onChange={handleInputChange} /> 親至新港文教基金會繳費</label>
-                  <label><input type="radio" name="paymentMethod" value="銀行轉帳/ATM" checked={formData.paymentMethod === '銀行轉帳/ATM'} onChange={handleInputChange} /> 銀行轉帳/ATM</label>
-                  <label>
-                    <input type="radio" name="paymentMethod" value="Line Pay (https://qrcodepay.line.me/qr/payment/t1pM7jY1P9C5oOEJ7gc7o%252FnGCvoXh75q7xD7BSn4lKJxf9hIkbwGfT9i8EeGD2QC)" checked={formData.paymentMethod.includes('Line Pay')} onChange={handleInputChange} /> 
-                    Line Pay
-                  </label>
-                </div>
-              </div>
-
-              {formData.paymentMethod === '銀行轉帳/ATM' && (
-                <div className="form-group bank-info">
-                  <p>匯款銀行：新港鄉農會 (代碼 617)</p>
-                  <p>帳號：00817220606250</p>
-                  <label>轉帳帳戶後五碼</label>
-                  <input type="text" name="bankLast5" value={formData.bankLast5} onChange={handleInputChange} placeholder="請輸入後五碼" />
-                </div>
-              )}
-
-              <div className="form-group">
-                <label>預計遊玩日期 & 時間 (開放日 09:00-15:00，週一二不開放) *</label>
-                
-                {/* 顯示固定場次或衝突告示 */}
-                {(() => {
-                  const selectedSession = sessions.find(s => s.name === formData.session);
-                  const currentDateStr = formData.pickupTime.split(' ')[0];
-
-                  // 情況 A：目前選的就是特別場次 -> 顯示固定資訊
-                  if (selectedSession?.fixedDate || selectedSession?.fixedTime) {
-                    let displayDate = selectedSession.fixedDate || '不限日期';
-                    if (displayDate.includes('T')) displayDate = displayDate.split('T')[0];
-                    return (
-                      <div className="fixed-session-hint">
-                        ★ 此場次固定於 {displayDate}，
-                        開放時段：{selectedSession.fixedTime ? selectedSession.fixedTime.replace(/,/g, '、') : '全時段'}
-                      </div>
-                    );
-                  }
-
-                  // 情況 B：目前選的是普通場次，但選中的日期有特別場次 -> 顯示衝突告示
-                  if (currentDateStr) {
-                    const conflicts = sessions.filter(s => {
-                      let sDate = s.fixedDate || '';
-                      if (sDate.includes('T')) sDate = sDate.split('T')[0];
-                      return sDate === currentDateStr;
-                    });
-                    
-                    if (conflicts.length > 0) {
-                      const conflictTimes = conflicts.map(c => c.fixedTime?.replace(/,/g, '、')).join(' ; ');
-                      return (
-                        <div className="conflict-notice">
-                          ★ 提醒：您目前選擇的日期有特別場，特別場次時段：{conflictTimes} 不開放一般場次預約，如有這些時段需求請選擇特別場次。
+                <>
+                  <div className="form-group">
+                    <label>【詳細場次】 *</label>
+                    {sessionType === '一般預約' ? (
+                      <div className="general-session-info" style={{ 
+                        padding: '1rem', 
+                        background: 'rgba(212, 175, 55, 0.1)', 
+                        border: '1px solid var(--primary-gold)', 
+                        borderRadius: '8px',
+                        color: 'var(--primary-gold)',
+                        fontSize: '0.95rem',
+                        lineHeight: '1.6'
+                      }}>
+                        <p style={{ margin: 0, fontWeight: 'bold' }}>
+                          ⚡ 系統已自動選定：{formData.session || '正在計算中...'}
+                        </p>
+                        <div className="discount-hint" style={{ marginTop: '0.5rem', color: '#ccc', fontSize: '0.85rem' }}>
+                          ★ 優惠提醒：一般預約滿 5 份(含)以上可享有團體優惠價唷!!!!!!
                         </div>
-                      );
-                    }
-                  }
-                  return null;
-                })()}
-
-                <DatePicker
-                  selected={formData.pickupTime ? new Date(formData.pickupTime) : null}
-                  onChange={handleDateChange}
-                  showTimeSelect
-                  timeFormat="HH:mm"
-                  timeIntervals={30}
-                  timeCaption="時間"
-                  dateFormat="yyyy-MM-dd HH:mm"
-                  className={`date-picker-input ${sessions.find(s => s.name === formData.session)?.fixedDate ? 'fixed-readonly' : ''}`}
-                  placeholderText="請選擇遊玩時間"
-                  required
-                  readOnly={!!sessions.find(s => s.name === formData.session)?.fixedDate}
-                  minDate={new Date()}
-                  filterDate={(date) => date.getDay() !== 1 && date.getDay() !== 2}
-                  minTime={new Date(new Date().setHours(9, 0, 0))}
-                  maxTime={new Date(new Date().setHours(15, 0, 0))}
-                  filterTime={(time) => {
-                    const selectedSession = sessions.find(s => s.name === formData.session);
-                    const timeStr = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
-                    
-                    // 1. 如果目前選的是特別場次 -> 只允許顯示固定的那幾個時段
-                    if (selectedSession?.fixedDate || selectedSession?.fixedTime) {
-                      const fixedTimes = selectedSession.fixedTime ? selectedSession.fixedTime.split(',') : [];
-                      return fixedTimes.includes(timeStr);
-                    }
-                    
-                    // 2. 如果目前選的是普通場次 -> 過濾掉「任何」其他場次的固定時段
-                    const currentDateStr = formData.pickupTime.split(' ')[0];
-                    const isTakenBySpecial = sessions.some(s => {
-                      let sDate = s.fixedDate || '';
-                      if (sDate.includes('T')) sDate = sDate.split('T')[0];
-                      return sDate === currentDateStr && s.fixedTime?.split(',').includes(timeStr);
-                    });
-                    
-                    if (isTakenBySpecial) return false;
-
-                    // 3. 基礎時段限制 09:00 - 15:00
-                    const hours = time.getHours();
-                    const minutes = time.getMinutes();
-                    if (hours >= 9 && hours < 15) return true;
-                    if (hours === 15 && minutes === 0) return true;
-                    return false;
-                  }}
-                />
-              </div>
-              <div className="form-group">
-                <label>領取地點 *</label>
-                <select name="pickupLocation" value={formData.pickupLocation} onChange={handleInputChange}>
-                  <option value="新港文教基金會(閱讀館)">新港文教基金會(閱讀館)</option>
-                  <option value="培桂堂(建議選此處，可同時參觀)">培桂堂</option>
-                </select>
-              </div>
+                      </div>
+                    ) : (
+                      <select 
+                        name="session" 
+                        value={formData.session} 
+                        onChange={handleInputChange}
+                        required
+                      >
+                        {sessions.length > 0 ? (
+                          sessions
+                            .filter(s => (s.fixedDate || s.fixedTime))
+                            .map(s => <option key={s.name} value={s.name}>{s.name} (${s.price})</option>)
+                        ) : (
+                          <option disabled>載入中...</option>
+                        )}
+                      </select>
+                    )}
+                  </div>
+                  <div className="form-group">
+                    <label>份數 *</label>
+                    <input type="number" name="quantity" min="1" required value={formData.quantity} onChange={handleInputChange} />
+                  </div>
+                  <div className="form-group">
+                    <label>當天遊玩人數 (每份解謎包建議 1-4 人) *</label>
+                    <select name="players" value={formData.players} onChange={handleInputChange}>
+                      {Array.from({ length: Number(formData.quantity) * 4 }, (_, i) => i + 1).map(num => (
+                        <option key={num} value={num}>{num}人</option>
+                      ))}
+                    </select>
+                  </div>
+                </>
+              )}
             </div>
 
-            <div className="form-card">
-              <h3 className="form-section-title">其他</h3>
-              <div className="form-group">
-                <label>如何得知本活動內容? (可多選)</label>
-                <div className="checkbox-grid">
-                  {['基金會FB', '基金會LINE', '基金會電子報', '活動現場', '親友介紹', '其他FB社團', '海報/摺頁'].map(item => (
-                    <label key={item}><input type="checkbox" value={item} checked={formData.referral.includes(item)} onChange={handleCheckboxChange} /> {item}</label>
-                  ))}
+            {sessionType !== '' && (
+              <>
+                <div className="form-card">
+                  <h3 className="form-section-title">繳費與取件</h3>
+                  <div className="form-group">
+                    <label>繳費方式 *</label>
+                    <div className="radio-group">
+                      <label><input type="radio" name="paymentMethod" value="親至新港文教基金會繳費" checked={formData.paymentMethod === '親至新港文教基金會繳費'} onChange={handleInputChange} /> 親至新港文教基金會繳費</label>
+                      <label><input type="radio" name="paymentMethod" value="銀行轉帳/ATM" checked={formData.paymentMethod === '銀行轉帳/ATM'} onChange={handleInputChange} /> 銀行轉帳/ATM</label>
+                      <label>
+                        <input type="radio" name="paymentMethod" value="Line Pay (https://qrcodepay.line.me/qr/payment/t1pM7jY1P9C5oOEJ7gc7o%252FnGCvoXh75q7xD7BSn4lKJxf9hIkbwGfT9i8EeGD2QC)" checked={formData.paymentMethod.includes('Line Pay')} onChange={handleInputChange} /> 
+                        Line Pay
+                      </label>
+                    </div>
+                  </div>
+
+                  {formData.paymentMethod === '銀行轉帳/ATM' && (
+                    <div className="form-group bank-info">
+                      <p>匯款銀行：新港鄉農會 (代碼 617)</p>
+                      <p>帳號：00817220606250</p>
+                      <label>轉帳帳戶後五碼</label>
+                      <input type="text" name="bankLast5" value={formData.bankLast5} onChange={handleInputChange} placeholder="請輸入後五碼" />
+                    </div>
+                  )}
+
+                  <div className="form-group">
+                    <label>預計遊玩日期 & 時間 (開放日 09:00-15:00，週一二不開放) *</label>
+                    
+                    {/* 顯示固定場次或衝突告示 */}
+                    {(() => {
+                      const selectedSession = sessions.find(s => s.name === formData.session);
+                      const currentDateStr = formData.pickupTime.split(' ')[0];
+
+                      // 情況 A：目前選的就是特別場次 -> 顯示固定資訊
+                      if (selectedSession?.fixedDate || selectedSession?.fixedTime) {
+                        let displayDate = selectedSession.fixedDate || '不限日期';
+                        if (displayDate.includes('T')) displayDate = displayDate.split('T')[0];
+                        return (
+                          <div className="fixed-session-hint">
+                            ★ 此場次固定於 {displayDate}，
+                            開放時段：{selectedSession.fixedTime ? selectedSession.fixedTime.replace(/,/g, '、') : '全時段'}
+                          </div>
+                        );
+                      }
+
+                      // 情況 B：目前選的是普通場次，但選中的日期有特別場次 -> 顯示衝突告示
+                      if (currentDateStr) {
+                        const conflicts = sessions.filter(s => {
+                          let sDate = s.fixedDate || '';
+                          if (sDate.includes('T')) sDate = sDate.split('T')[0];
+                          return sDate === currentDateStr;
+                        });
+                        
+                        if (conflicts.length > 0) {
+                          const conflictTimes = conflicts.map(c => c.fixedTime?.replace(/,/g, '、')).join(' ; ');
+                          return (
+                            <div className="conflict-notice">
+                              ★ 提醒：您目前選擇的日期有特別場，特別場次時段：{conflictTimes} 不開放一般場次預約，如有這些時段需求請選擇特別場次。
+                            </div>
+                          );
+                        }
+                      }
+                      return null;
+                    })()}
+
+                    <DatePicker
+                      selected={formData.pickupTime ? new Date(formData.pickupTime) : null}
+                      onChange={handleDateChange}
+                      showTimeSelect
+                      timeFormat="HH:mm"
+                      timeIntervals={30}
+                      timeCaption="時間"
+                      dateFormat="yyyy-MM-dd HH:mm"
+                      className={`date-picker-input ${sessions.find(s => s.name === formData.session)?.fixedDate ? 'fixed-readonly' : ''}`}
+                      placeholderText="請選擇遊玩時間"
+                      required
+                      readOnly={!!sessions.find(s => s.name === formData.session)?.fixedDate}
+                      minDate={new Date()}
+                      filterDate={(date) => date.getDay() !== 1 && date.getDay() !== 2}
+                      minTime={new Date(new Date().setHours(9, 0, 0))}
+                      maxTime={new Date(new Date().setHours(15, 0, 0))}
+                      filterTime={(time) => {
+                        const selectedSession = sessions.find(s => s.name === formData.session);
+                        const timeStr = `${String(time.getHours()).padStart(2, '0')}:${String(time.getMinutes()).padStart(2, '0')}`;
+                        
+                        // 1. 如果目前選的是特別場次 -> 只允許顯示固定的那幾個時段
+                        if (selectedSession?.fixedDate || selectedSession?.fixedTime) {
+                          const fixedTimes = selectedSession.fixedTime ? selectedSession.fixedTime.split(',') : [];
+                          return fixedTimes.includes(timeStr);
+                        }
+                        
+                        // 2. 如果目前選的是普通場次 -> 過濾掉「任何」其他場次的固定時段
+                        const currentDateStr = formData.pickupTime.split(' ')[0];
+                        const isTakenBySpecial = sessions.some(s => {
+                          let sDate = s.fixedDate || '';
+                          if (sDate.includes('T')) sDate = sDate.split('T')[0];
+                          return sDate === currentDateStr && s.fixedTime?.split(',').includes(timeStr);
+                        });
+                        
+                        if (isTakenBySpecial) return false;
+
+                        // 3. 基礎時段限制 09:00 - 15:00
+                        const hours = time.getHours();
+                        const minutes = time.getMinutes();
+                        if (hours >= 9 && hours < 15) return true;
+                        if (hours === 15 && minutes === 0) return true;
+                        return false;
+                      }}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>領取地點 *</label>
+                    <select name="pickupLocation" value={formData.pickupLocation} onChange={handleInputChange}>
+                      <option value="新港文教基金會(閱讀館)">新港文教基金會(閱讀館)</option>
+                      <option value="培桂堂(建議選此處，可同時參觀)">培桂堂</option>
+                    </select>
+                  </div>
                 </div>
-              </div>
-              <div className="form-group">
-                <label>其他/備註</label>
-                <textarea name="notes" value={formData.notes} onChange={handleInputChange} rows={3}></textarea>
-              </div>
-            </div>
 
-            <div className="submit-container">
-              <div className="total-display">
-                <span>估計總額：</span>
-                <span className="amount">NT$ {calculatedTotal}</span>
-              </div>
-              <button type="submit" className="submit-btn" disabled={isSubmitting}>
-                {isSubmitting ? '正在送出...' : '送出報名表單'}
-              </button>
-            </div>
+                <div className="form-card">
+                  <h3 className="form-section-title">其他</h3>
+                  <div className="form-group">
+                    <label>如何得知本活動內容? (可多選)</label>
+                    <div className="checkbox-grid">
+                      {['基金會FB', '基金會LINE', '基金會電子報', '活動現場', '親友介紹', '其他FB社團', '海報/摺頁'].map(item => (
+                        <label key={item}><input type="checkbox" value={item} checked={formData.referral.includes(item)} onChange={handleCheckboxChange} /> {item}</label>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label>其他/備註</label>
+                    <textarea name="notes" value={formData.notes} onChange={handleInputChange} rows={3}></textarea>
+                  </div>
+                </div>
+
+                <div className="submit-container">
+                  <div className="total-display">
+                    <span>估計總額：</span>
+                    <span className="amount">NT$ {calculatedTotal}</span>
+                  </div>
+                  <button type="submit" className="submit-btn" disabled={isSubmitting}>
+                    {isSubmitting ? '正在送出...' : '送出報名表單'}
+                  </button>
+                </div>
+              </>
+            )}
           </form>
         </section>
       </main>
