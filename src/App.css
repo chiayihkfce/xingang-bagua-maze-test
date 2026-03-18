@@ -1298,9 +1298,9 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 
 @keyframes silkyLeg {
   0%, 100% { transform: scaleY(1) rotate(0deg); }
-  30% { transform: scaleY(1.6) rotate(-35deg); } /* 強力拉伸蹬地 */
-  60% { transform: scaleY(1) rotate(20deg); }    /* 最高點收回 */
-  85% { transform: scaleY(0.8) rotate(45deg); }  /* 落地前跨越預備 */
+  30% { transform: scaleY(1.6) rotate(45deg); } /* 修正：逆時針強力向後蹬地 */
+  60% { transform: scaleY(1) rotate(-20deg); }   /* 最高點收回腹部 */
+  85% { transform: scaleY(0.8) rotate(-45deg); }  /* 落地前大跨步向前跨越 */
 }
 
 @keyframes silkySpine {
