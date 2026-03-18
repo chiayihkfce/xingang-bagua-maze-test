@@ -85,9 +85,9 @@ function App() {
 
   const formatDateTime = (date: Date) => {
     const pad = (n: number) => String(n).padStart(2, '0');
-    // 修改為 3/14/2026 11:42 格式
-    return `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()} ` +
-           `${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    // 統一格式為 2026-03-11 13:26:05
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ` +
+           `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
   };
 
   // 1. 初始載入場次 (加入快取與 Loading 邏輯)
