@@ -322,39 +322,51 @@ function App() {
   // 8. 管理操作：送出修改 (報名資料)
   const handleUpdateSubmission = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (editingRowIndex === null) return;
+    
     setIsSubmitting(true);
     try {
+      // 找出該資料在原始 submissions 中的位置 (如果是過濾狀態，index 可能不同)
+      // 這裡直接傳送 rowIndex，GAS 端應處理 +1 的邏輯
+      const payload = { 
+        action: 'updateSubmission', 
+        pw: adminPassword, 
+        rowIndex: editingRowIndex, 
+        ...editData 
+      };
+
       await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
-        body: JSON.stringify({ action: 'updateSubmission', pw: adminPassword, rowIndex: editingRowIndex, ...editData })
+        body: JSON.stringify(payload)
       });
+
+      // 同步本地狀態，確保畫面立刻更新
       const newSubmissions = [...submissions];
-      if (editingRowIndex !== null) {
-        // 對齊 15 欄位順序儲存至本地狀態
-        newSubmissions[editingRowIndex] = [
-          editData.timestamp, 
-          editData.status, 
-          editData.name, 
-          editData.phone, 
-          editData.email,
-          editData.session, 
-          editData.quantity, 
-          editData.players, 
-          editData.totalAmount, 
-          editData.paymentMethod, 
-          editData.bankLast5, 
-          editData.pickupTime, 
-          editData.pickupLocation, 
-          editData.referral, 
-          editData.notes
-        ];
-        setSubmissions(newSubmissions);
-      }
+      newSubmissions[editingRowIndex] = [
+        editData.timestamp, 
+        editData.status, 
+        editData.name, 
+        editData.phone, 
+        editData.email,
+        editData.session, 
+        editData.quantity, 
+        editData.players, 
+        editData.totalAmount, 
+        editData.paymentMethod, 
+        editData.bankLast5, 
+        editData.pickupTime, 
+        editData.pickupLocation, 
+        editData.referral, 
+        editData.notes
+      ];
+      
+      setSubmissions(newSubmissions);
       setIsEditing(false);
-      alert('修改成功');
+      alert('修改成功 (資料已同步至試算表)');
     } catch (err) {
-      alert('修改失敗');
+      console.error('更新失敗:', err);
+      alert('更新失敗，請檢查網路連線');
     } finally {
       setIsSubmitting(false);
     }
