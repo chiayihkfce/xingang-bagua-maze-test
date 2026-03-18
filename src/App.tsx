@@ -829,9 +829,12 @@ function App() {
                       }}
                     >
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="12" cy="12" r="3" stroke="var(--primary-gold)" strokeWidth="1.5"/>
-                        <path d="M12 2V5M12 19V22M4.93 4.93L7.05 7.05M16.95 16.95L19.07 19.07M2 12H5M19 12H22M4.93 19.07L7.05 16.95M16.95 7.05L19.07 4.93" stroke="var(--primary-gold)" strokeWidth="1.5" strokeLinecap="round"/>
-                        <path d="M12 8V10M12 14V16M8 12H10M14 12H16" stroke="var(--primary-gold)" strokeWidth="1" strokeLinecap="round"/>
+                        {/* 八卦外框 */}
+                        <path d="M8 2H16L22 8V16L16 22H8L2 16V8L8 2Z" stroke="var(--primary-gold)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        {/* 內部設定橫線 */}
+                        <path d="M7 9H17M7 12H17M7 15H17" stroke="var(--primary-gold)" strokeWidth="1.5" strokeLinecap="round"/>
+                        {/* 裝飾點 */}
+                        <circle cx="12" cy="12" r="1" fill="var(--primary-gold)"/>
                       </svg>
                     </button>
                     {showColumnFilter && (
