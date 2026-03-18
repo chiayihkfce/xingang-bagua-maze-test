@@ -594,13 +594,13 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.85);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid; /* 使用 Grid 控制置中與間距 */
+  place-items: center;
   z-index: 2000;
   backdrop-filter: blur(5px);
-  padding: 3rem 1.5rem; /* 增加上下的內邊距 */
+  padding: 60px 20px; /* 增加明確的上下內邊距 */
   box-sizing: border-box;
+  overflow-y: auto;
 }
 
 /* 管理區塊卡片化與一致化 */
@@ -654,9 +654,9 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   max-width: 480px;
   text-align: center;
   box-shadow: 0 30px 60px rgba(0,0,0,0.8);
-  max-height: 85vh; /* 調降最大高度，增加外部空間 */
+  max-height: 75vh; /* 進一步調降最大高度 */
   overflow-y: auto;
-  margin: auto; /* 確保在彈性容器中置中並保有邊距 */
+  margin: 60px auto; /* 強制增加外部邊距 */
 }
 
 .admin-login-modal input[type="password"] {
@@ -894,17 +894,14 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 /* 編輯彈窗手機版優化 */
 @media (max-width: 768px) {
   .modal-overlay {
-    padding: 2rem 1rem; /* 手機版稍微縮小 padding 但保留邊界 */
-    align-items: flex-start; /* 手機版靠上對齊，配合 padding 效果更好 */
-    overflow-y: auto; /* 允許遮罩層捲動 */
+    padding: 40px 10px; /* 手機版保留邊界 */
   }
 
   .admin-login-modal {
     padding: 2rem 1.5rem !important;
     width: 95% !important;
-    max-height: 85vh; /* 統一手機版的最大高度 */
-    margin: auto 0; /* 垂直置中並保有間距 */
-    overflow-y: auto; /* 允許內容捲動 */
+    max-height: 75vh !important; /* 統一手機版的最大高度 */
+    margin: 40px auto; /* 確保間距 */
   }
 
   .admin-nav {
