@@ -792,7 +792,26 @@ function App() {
                     setShowAuditModal(false);
                   }} 
                   className="submit-btn" 
-                  style={{width: '100%', height: '55px', background: '#27ae60', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(39, 174, 96, 0.3)'}}
+                  style={{
+                    width: '100%', 
+                    height: '50px', 
+                    background: '#27ae60', 
+                    fontSize: '1rem', 
+                    fontWeight: 'bold',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 15px rgba(39, 174, 96, 0.2)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.background = '#2ecc71';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.background = '#27ae60';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
                 >
                   確認付款完成 (標記為通過)
                 </button>
@@ -806,15 +825,20 @@ function App() {
                     border: '1px solid rgba(255,255,255,0.1)',
                     color: '#ccc',
                     fontSize: '1rem',
+                    fontWeight: 'bold',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
                     transition: 'all 0.3s'
                   }}
                   onMouseOver={(e) => {
                     e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
                     e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
                   }}
                   onMouseOut={(e) => {
                     e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
                     e.currentTarget.style.color = '#ccc';
+                    e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
                   關閉
