@@ -284,7 +284,7 @@ function App() {
     setEditingRowIndex(index);
     let rawTime = row[12] || ''; // 欄位全部後移一位
     if (typeof rawTime === 'string' && rawTime.includes('T')) {
-      rawTime = formatDateTime(new Date(rawTime));
+      rawTime = formatDateTimeMinute(new Date(rawTime));
     }
     setEditData({
       timestamp: row[0], status: row[1], email: row[2], name: row[3], phone: row[4], 
@@ -528,8 +528,8 @@ function App() {
       const hours = date.getHours();
       if (hours < 9 || hours > 15) date.setHours(9, 0, 0);
       
-      // 改用統一的時間格式處理器
-      const formattedDate = formatDateTime(date); 
+      // 改用不含秒的時間格式處理器 (YYYY-MM-DD HH:mm)
+      const formattedDate = formatDateTimeMinute(date); 
       setFormData(prev => ({ ...prev, pickupTime: formattedDate }));
     }
   };
@@ -593,7 +593,7 @@ function App() {
       bankLast5: bankLast5,
       totalAmount: calculatedTotal,
       referral: formData.referral.join(', '),
-      timestamp: formatDateTime(new Date()), // 使用精確的本地時間格式
+      timestamp: formatFullDateTime(new Date()), // 使用包含秒數的完整格式
       action: 'addRegistration'
     };
 
@@ -618,7 +618,7 @@ function App() {
   const resetForm = () => {
     setFormData({
       email: '', name: '', phone: '', contactEmail: '', session: sessions[0]?.name || '',
-      quantity: '1', players: '', totalAmount: '', paymentMethod: '親至新港文教基金會繳費',
+      quantity: '1', players: '1', totalAmount: '', paymentMethod: '親至新港文教基金會繳費',
       bankLast5: '', pickupTime: '', pickupLocation: '新港文教基金會(閱讀館)',
       referral: [] as string[], notes: '', hp_field: ''
     });
@@ -880,7 +880,7 @@ function App() {
                     >
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--primary-gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 Winston 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                       </svg>
                     </button>
                     {showColumnFilter && (
@@ -952,7 +952,7 @@ function App() {
                     {row.map((cell: any, j: number) => visibleColumns.includes(j) && (
                       <td key={j}>
                         {j === 0 && cell && cell.includes('T') 
-                          ? formatDateTime(new Date(cell)) 
+                          ? formatFullDateTime(new Date(cell)) 
                           : (j === 1 ? (
                               <span style={{
                                 padding: '0.3rem 0.8rem', 
