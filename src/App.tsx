@@ -1267,6 +1267,9 @@ function App() {
         </div>
       )}
 
+      {/* 小白兔跳動裝飾 */}
+      <div className="bunny-decoration">🐇</div>
+
       {showAdminLogin && (
         <div className="modal-overlay">
           <div className="admin-login-modal form-card">

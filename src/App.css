@@ -1239,3 +1239,38 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   font-weight: bold;
   box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
 }
+
+/* 小白兔跳動裝飾 */
+.bunny-decoration {
+  position: fixed;
+  bottom: 10px;
+  left: -50px;
+  font-size: 2.5rem;
+  z-index: 9999;
+  pointer-events: none; /* 重要：點擊會穿透，不影響按鈕操作 */
+  user-select: none;
+  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+  animation: bunnyWander 25s infinite linear, bunnyHop 0.6s infinite ease-out alternate;
+}
+
+@keyframes bunnyHop {
+  from { transform: translateY(0) scaleX(1.1); }
+  to { transform: translateY(-40px) scaleX(0.9); }
+}
+
+@keyframes bunnyWander {
+  0% { left: -50px; opacity: 0; }
+  5% { opacity: 1; }
+  45% { transform: scaleX(1); }
+  50% { left: calc(100vw - 50px); transform: scaleX(-1); } /* 撞到右邊轉頭 */
+  95% { opacity: 1; }
+  100% { left: -50px; opacity: 0; transform: scaleX(-1); }
+}
+
+/* 在手機上縮小一點，避免太突兀 */
+@media (max-width: 600px) {
+  .bunny-decoration {
+    font-size: 1.8rem;
+    bottom: 5px;
+  }
+}
