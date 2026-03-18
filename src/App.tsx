@@ -148,9 +148,12 @@ function App() {
   useEffect(() => {
     const qty = parseInt(formData.quantity) || 0;
     const sessionObj = sessions.find(s => s.name === formData.session);
-    const price = sessionObj ? sessionObj.price : 650;
+    
+    // 修正：如果沒有選擇場次(sessionType === '')，價格為 0；否則若找不到 sessionObj 則預設 650
+    const price = sessionType === '' ? 0 : (sessionObj ? sessionObj.price : 650);
+    
     setCalculatedTotal(qty * price);
-  }, [formData.quantity, formData.session, sessions]);
+  }, [formData.quantity, formData.session, sessions, sessionType]);
 
   const [isDataLoading, setIsDataLoading] = useState(false);
 
