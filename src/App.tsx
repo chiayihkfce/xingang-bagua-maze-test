@@ -156,6 +156,18 @@ function App() {
         }
       } catch (err) {
         console.error('❌ [Error] 抓取失敗，原因:', err);
+        
+        // --- 本地測試開發補丁：如果抓取失敗且在 localhost，載入測試資料 ---
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+          console.warn('🛠️ [Local Dev] 偵測到本地開發環境且連線失敗，自動載入測試場次資料。');
+          const mockData = [
+            { name: '【測試】一般場次 A', price: 650 },
+            { name: '【測試】團體優惠場次', price: 600 },
+            { name: '【測試】特別場次 B (固定日期)', price: 750, fixedDate: '2026-05-20', fixedTime: '09:00,13:00' }
+          ];
+          setSessions(mockData);
+          localStorage.setItem('bagua_maze_sessions', JSON.stringify(mockData));
+        }
       } finally {
         // 無論成功失敗，或是沒有快取，最後都要確保動畫關閉
         triggerExitAnimation();
