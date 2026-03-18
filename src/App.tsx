@@ -791,54 +791,41 @@ function App() {
                     handleVerifyPayment(auditTarget.index, '通過');
                     setShowAuditModal(false);
                   }} 
-                  className="submit-btn" 
+                  className="submit-btn audit-confirm-btn" 
                   style={{
                     width: '100%', 
                     height: '50px', 
                     background: '#27ae60', 
-                    fontSize: '1rem', 
                     fontWeight: 'bold',
                     borderRadius: '12px',
                     boxShadow: '0 4px 15px rgba(39, 174, 96, 0.2)',
                     border: 'none',
                     cursor: 'pointer',
-                    transition: 'all 0.3s'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = '#2ecc71';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = '#27ae60';
-                    e.currentTarget.style.transform = 'translateY(0)';
+                    transition: 'all 0.3s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    whiteSpace: 'nowrap'
                   }}
                 >
-                  確認付款完成 (標記為通過)
+                  確認付款完成
                 </button>
                 <button 
                   onClick={() => setShowAuditModal(false)} 
-                  className="cancel-btn" 
+                  className="cancel-btn audit-cancel-btn" 
                   style={{
                     width: '100%', 
                     height: '50px', 
                     background: 'rgba(255,255,255,0.05)', 
                     border: '1px solid rgba(255,255,255,0.1)',
                     color: '#ccc',
-                    fontSize: '1rem',
                     fontWeight: 'bold',
                     borderRadius: '12px',
                     cursor: 'pointer',
-                    transition: 'all 0.3s'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                    e.currentTarget.style.color = 'white';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                    e.currentTarget.style.color = '#ccc';
-                    e.currentTarget.style.transform = 'translateY(0)';
+                    transition: 'all 0.3s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                 >
                   關閉
