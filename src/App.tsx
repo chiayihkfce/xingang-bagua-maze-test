@@ -766,39 +766,54 @@ function App() {
                   <label>價格</label>
                   <input type="number" value={editingSession.newPrice} onChange={e => setEditingSession({...editingSession, newPrice: e.target.value})} />
                 </div>
-                <div className="form-group">
-                  <label>固定日期 (非強選場次請留空)</label>
-                  <DatePicker
-                    selected={editingSession.fixedDate ? new Date(editingSession.fixedDate) : null}
-                    onChange={(date: Date | null) => {
-                      if (date) {
-                        const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                        setEditingSession({...editingSession, fixedDate: formatted});
-                      } else {
-                        setEditingSession({...editingSession, fixedDate: ''});
-                      }
-                    }}
-                    dateFormat="yyyy-MM-dd"
-                    className="date-picker-input"
-                    placeholderText="點擊選擇日期"
-                    isClearable
-                  />
-                </div>
                 <div className="form-group" style={{gridColumn: '1 / -1'}}>
-                  <label>固定開放時段 (可多選，不選則代表全時段開放)</label>
-                  <div className="time-slot-grid">
-                    {TIME_SLOTS.map(t => (
-                      <button 
-                        key={t} 
-                        type="button"
-                        className={`time-slot-btn ${editingSession.fixedTime.split(',').includes(t) ? 'active' : ''}`}
-                        onClick={() => toggleFixedTime(t, true)}
-                      >
-                        {t}
-                      </button>
-                    ))}
-                  </div>
+                  <label>場次分組 (決定儲存分頁) *</label>
+                  <select 
+                    value={editingSession.isSpecial ? 'special' : 'general'} 
+                    onChange={e => setEditingSession({...editingSession, isSpecial: e.target.value === 'special'})}
+                    style={{width: '100%', padding: '0.8rem', borderRadius: '4px', background: '#444', color: 'white', border: '1px solid #666'}}
+                  >
+                    <option value="general">📅 一般預約場次 (存入「一般場次」分頁)</option>
+                    <option value="special">✨ 固定特別場次 (存入「特別場次」分頁)</option>
+                  </select>
                 </div>
+                {editingSession.isSpecial && (
+                  <>
+                    <div className="form-group">
+                      <label>固定日期</label>
+                      <DatePicker
+                        selected={editingSession.fixedDate ? new Date(editingSession.fixedDate) : null}
+                        onChange={(date: Date | null) => {
+                          if (date) {
+                            const formatted = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                            setEditingSession({...editingSession, fixedDate: formatted});
+                          } else {
+                            setEditingSession({...editingSession, fixedDate: ''});
+                          }
+                        }}
+                        dateFormat="yyyy-MM-dd"
+                        className="date-picker-input"
+                        placeholderText="點擊選擇日期"
+                        isClearable
+                      />
+                    </div>
+                    <div className="form-group" style={{gridColumn: '1 / -1'}}>
+                      <label>固定開放時段 (可多選，不選則代表全時段開放)</label>
+                      <div className="time-slot-grid">
+                        {TIME_SLOTS.map(t => (
+                          <button 
+                            key={t} 
+                            type="button"
+                            className={`time-slot-btn ${editingSession.fixedTime.split(',').includes(t) ? 'active' : ''}`}
+                            onClick={() => toggleFixedTime(t, true)}
+                          >
+                            {t}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
                 <div className="modal-actions admin-login-actions">
                   <button type="button" onClick={() => setIsEditingSession(false)} className="cancel-btn">取消</button>
                   <button type="submit" className="submit-btn" disabled={isSubmitting}>儲存修改</button>
