@@ -21,7 +21,7 @@ function App() {
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditTarget, setAuditTarget] = useState<{index: number, row: any[]} | null>(null);
 
-  const [sessionType, setSessionType] = useState<'一般預約' | '特別預約'>('一般預約');
+  const [sessionType, setSessionType] = useState<'一般預約' | '特別預約' | ''>('');
 
   const [formData, setFormData] = useState({
     email: '',
@@ -132,17 +132,6 @@ function App() {
           if (isDataChanged) {
             setSessions(newData);
             localStorage.setItem('bagua_maze_sessions', JSON.stringify(newData));
-            
-            // 3. 預設場次設定
-            const first = newData[0];
-            const times = first.fixedTime ? first.fixedTime.split(',') : [];
-            const autoTime = (first.fixedDate && times.length === 1) ? `${first.fixedDate} ${times[0]}` : '';
-            
-            setFormData(prev => ({ 
-              ...prev, 
-              session: first.name,
-              pickupTime: autoTime
-            }));
           }
         }
       } catch (err) {
