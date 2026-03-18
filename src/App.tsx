@@ -184,8 +184,8 @@ function App() {
     }
     
     setIsDataLoading(true);
-    // 修改搜尋格式為 M/D/YYYY 以符合試算表中的存儲格式
-    const formattedDate = `${date.getMonth() + 1}/${date.getDate()}/${date.getFullYear()}`;
+    // 統一搜尋格式為 YYYY-MM-DD (例如 2026-03-18) 以符合目前的 pickupTime 存儲格式
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
     
     try {
       const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=getSubmissionsByDate&pw=${adminPassword}&date=${formattedDate}`);
