@@ -1240,7 +1240,7 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
 }
 
-/* 萌系小白兔裝飾 - 全靈魂動態版 */
+/* 自然風小白兔裝飾 */
 .bunny-container {
   position: fixed;
   bottom: 20px;
@@ -1252,60 +1252,31 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 }
 
 .bunny-sprite {
-  width: 80px;
-  height: 80px;
+  width: 65px;
+  height: 50px;
   position: relative;
-  /* 加入旋轉中心設定 */
   transform-origin: center bottom;
-  animation: bunnyVividHop 0.8s infinite ease-in-out;
+  animation: bunnyNaturalHop 0.8s infinite ease-out;
 }
 
-/* 眨眼動畫 */
-.bunny-eye-pupil {
-  animation: eyeBlink 4s infinite;
-  transform-origin: center;
+/* 腳部與各部位獨立動畫 */
+.bunny-part-leg { animation: naturalLeg 0.8s infinite; transform-origin: center; }
+.bunny-part-ear { animation: naturalEar 0.8s infinite; transform-origin: bottom; }
+
+@keyframes bunnyNaturalHop {
+  0%, 100% { transform: translateY(0) scaleY(0.9); }
+  40% { transform: translateY(-45px) scaleY(1.05) rotate(2deg); }
 }
 
-/* 耳朵靈動動畫 */
-.bunny-ear-l { animation: earSwingLeft 0.8s infinite ease-in-out; transform-origin: 45px 30px; }
-.bunny-ear-r { animation: earSwingRight 0.8s infinite ease-in-out; transform-origin: 55px 30px; }
-
-/* 蝴蝶結微震 */
-.bunny-bow-group { animation: bowJiggle 0.8s infinite ease-in-out; transform-origin: 50px 70px; }
-
-@keyframes bunnyVividHop {
-  0%, 100% { 
-    transform: translateY(0) scaleY(0.8) scaleX(1.1) rotate(0deg); 
-  }
-  20% { 
-    transform: translateY(5px) scaleY(0.7) scaleX(1.2) rotate(0deg); /* 蓄力 */
-  }
-  50% { 
-    transform: translateY(-55px) scaleY(1.1) scaleX(0.9) rotate(5deg); /* 起跳前傾 */
-  }
-  80% { 
-    transform: translateY(-10px) scaleY(0.95) scaleX(1.05) rotate(-2deg); /* 預備落地後仰 */
-  }
+@keyframes naturalLeg {
+  0%, 100% { transform: scaleY(1); }
+  10% { transform: scaleY(1.3) translateY(2px); } /* 蹬地 */
+  40% { transform: scaleY(0.8) translateY(-2px); } /* 收腿 */
 }
 
-@keyframes eyeBlink {
-  0%, 90%, 100% { transform: scaleY(1); }
-  95% { transform: scaleY(0.1); }
-}
-
-@keyframes earSwingLeft {
-  0%, 100% { transform: rotate(0) scaleY(1); }
-  50% { transform: rotate(-15deg) scaleY(1.2); } /* 跳起時拉長並向外晃 */
-}
-
-@keyframes earSwingRight {
-  0%, 100% { transform: rotate(0) scaleY(1); }
-  50% { transform: rotate(15deg) scaleY(1.2); }
-}
-
-@keyframes bowJiggle {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(2px) scale(1.1); }
+@keyframes naturalEar {
+  0%, 100% { transform: rotate(0); }
+  40% { transform: rotate(-8deg) scaleY(1.1); }
 }
 
 .bunny-shadow {
@@ -1313,17 +1284,17 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   bottom: -5px;
   left: 50%;
   transform: translateX(-50%);
-  width: 40px;
-  height: 8px;
-  background: rgba(0,0,0,0.15);
+  width: 45px;
+  height: 6px;
+  background: rgba(0,0,0,0.12);
   border-radius: 50%;
   filter: blur(2px);
-  animation: shadowScale 0.8s infinite ease-in-out;
+  animation: shadowScale 0.8s infinite ease-out;
 }
 
 @keyframes shadowScale {
-  0%, 20%, 100% { transform: translateX(-50%) scale(1.2); opacity: 1; }
-  50% { transform: translateX(-50%) scale(0.5); opacity: 0.3; }
+  0%, 100% { transform: translateX(-50%) scale(1.1); opacity: 1; }
+  40% { transform: translateX(-50%) scale(0.6); opacity: 0.3; }
 }
 
 @keyframes bunnyWander {
@@ -1336,7 +1307,7 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 
 @media (max-width: 600px) {
   .bunny-container {
-    transform: scale(0.65);
+    transform: scale(0.7);
     bottom: 15px;
   }
 }
