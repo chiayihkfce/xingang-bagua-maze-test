@@ -218,7 +218,11 @@ function App() {
       
       if (result.submissions) {
         setSubmissions(result.submissions);
-        setSessions(result.sessions);
+        // 如果目前已經有場次資料且後端傳回的場次資料一致，則不強制更新
+        if (result.sessions && result.sessions.length > 0) {
+          setSessions(result.sessions);
+          localStorage.setItem('bagua_maze_sessions', JSON.stringify(result.sessions));
+        }
         setTotalRows(result.totalRows);
         setCurrentPage(1);
         setIsAdmin(true);
