@@ -10,7 +10,6 @@ function App() {
   const [sessions, setSessions] = useState<{name: string, price: number, fixedDate?: string, fixedTime?: string}[]>([]);
   
   // 進場動畫相關狀態
-  const [isInitialLoading, setIsInitialLoading] = useState(true); 
   const [isEntryAnimating, setIsEntryAnimating] = useState(true); 
   const [shouldRenderEntry, setShouldRenderEntry] = useState(true);
 
@@ -133,7 +132,6 @@ function App() {
         
         // 等待剩餘的動畫時間後，執行退場動畫
         setTimeout(() => {
-          setIsInitialLoading(false); // 標記 API 資料已就緒
           setIsEntryAnimating(false); // 觸發 CSS 退場動畫
           
           // 等待 CSS 動畫結束 (0.8s) 後徹底移除組件
@@ -1539,7 +1537,7 @@ function App() {
                 </div>
               </>
             )}
-          </main>
+          </form>
         </section>
       </main>
 
