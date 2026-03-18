@@ -1240,10 +1240,16 @@ function App() {
                 <label>【場次類型】 *</label>
                 <select 
                   value={sessionType} 
+                  required
                   onChange={(e) => {
-                    const newType = e.target.value as '一般預約' | '特別預約';
+                    const newType = e.target.value as '一般預約' | '特別預約' | '';
                     setSessionType(newType);
                     
+                    if (newType === '') {
+                      setFormData(prev => ({ ...prev, session: '', pickupTime: '' }));
+                      return;
+                    }
+
                     // 切換類型後，過濾出該類型的場次
                     const filtered = sessions.filter(s => 
                       newType === '特別預約' ? (s.fixedDate || s.fixedTime) : (!s.fixedDate && !s.fixedTime)
@@ -1262,13 +1268,14 @@ function App() {
                         }
                       }
                       
-                      // 更新場次，並觸發連動邏輯（如固定時間更新）
+                      // 更新場次，並觸發連動邏輯
                       handleInputChange({ 
                         target: { name: 'session', value: targetValue } 
                       } as any);
                     }
                   }}
                 >
+                  <option value="">-------請選擇場次類型--------</option>
                   <option value="一般預約">📅 一般預約 (自由選擇遊玩時段)</option>
                   <option value="特別預約">✨ 特別預約 (固定日期與特定時段)</option>
                 </select>
