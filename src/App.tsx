@@ -572,6 +572,40 @@ function App() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // --- JavaScript 硬性驗證 (防範 F12 惡意修改 HTML) ---
+    const requiredFields = [
+      { key: 'name', label: '【報名人姓名】' },
+      { key: 'phone', label: '【聯絡電話】' },
+      { key: 'email', label: '【Email】' }
+    ];
+
+    // 1. 檢查基本資料
+    for (const field of requiredFields) {
+      const value = formData[field.key as keyof typeof formData];
+      if (!value || (typeof value === 'string' && value.trim() === '')) {
+        alert(`【送出失敗】請填寫${field.label}，此為必填欄位。`);
+        return;
+      }
+    }
+
+    // 2. 檢查場次類型
+    if (sessionType === '') {
+      alert('【送出失敗】請先選擇【場次類型】');
+      return;
+    }
+
+    // 3. 檢查詳細場次與時間
+    if (!formData.session || formData.session.trim() === '') {
+      alert('【送出失敗】尚未選定詳細場次。');
+      return;
+    }
+
+    if (!formData.pickupTime || formData.pickupTime.trim() === '') {
+      alert('【送出失敗】請選擇【預計遊玩日期與時間】');
+      return;
+    }
+
     setShowConfirmation(true);
   };
 
