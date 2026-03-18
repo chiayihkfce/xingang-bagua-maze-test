@@ -24,6 +24,12 @@ body {
   padding: 2rem 1.5rem;
 }
 
+@media (max-width: 600px) {
+  .container {
+    padding: 1.5rem 0.8rem;
+  }
+}
+
 /* Header Styles */
 .header {
   text-align: center;
@@ -431,6 +437,8 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   text-align: center;
   padding: 3rem 1rem;
   animation: fadeIn 0.8s ease;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 @keyframes fadeIn {
@@ -457,8 +465,21 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   border-radius: 20px;
   margin: 2rem auto;
   max-width: 500px;
+  width: 100%;
+  box-sizing: border-box;
   text-align: left;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow-wrap: break-word;
+}
+
+@media (max-width: 600px) {
+  .success-screen {
+    padding: 2rem 0.5rem;
+  }
+  .summary-box {
+    padding: 1.2rem;
+    margin: 1.5rem auto;
+  }
 }
 
 .linepay-box {
