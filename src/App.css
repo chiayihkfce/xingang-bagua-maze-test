@@ -1240,7 +1240,7 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
 }
 
-/* ??撠??憌?*/
+/* 萌系小白兔裝飾 - 基於圖片設計 */
 .bunny-container {
   position: fixed;
   bottom: 20px;
@@ -1252,39 +1252,46 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 }
 
 .bunny-sprite {
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   position: relative;
   animation: bunnyHopping 0.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
 }
 
-/* ?喲?函?? - 蝣箔?銝???*/
-.bunny-f-foot { 
-  animation: frontLeg 0.8s infinite; 
-  transform-origin: 70px 85px; /* 閮剖??刻?頨恍?????*/
-}
-.bunny-b-leg { 
-  animation: backLeg 0.8s infinite; 
-  transform-origin: 35px 85px; /* 閮剖??刻?頨恍?????*/
-}
-
-/* 擛?憿怠?? */
-.bunny-whiskers {
-  animation: whiskerTremble 0.8s infinite;
-  transform-origin: 85px 50px;
+.bunny-shadow {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 8px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 50%;
+  filter: blur(2px);
+  animation: shadowScale 0.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95);
 }
 
-@keyframes whiskerTremble {
-  0%, 100% { transform: rotate(0); }
-  40% { transform: rotate(3deg); }
+@keyframes bunnyHopping {
+  0%, 100% { transform: translateY(0) scaleY(0.9) scaleX(1.05); }
+  40% { transform: translateY(-40px) scaleY(1.05) scaleX(0.95); }
 }
-`n/* 萌系小白兔裝飾 - 基於圖片設計 */`n.bunny-container { position: fixed; bottom: 20px; left: -100px; z-index: 9999; pointer-events: none; user-select: none; animation: bunnyWander 30s infinite linear; }`n.bunny-sprite { width: 80px; height: 80px; position: relative; animation: bunnyHopping 0.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95); }`n.bunny-shadow { position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: 40px; height: 8px; background: rgba(0,0,0,0.15); border-radius: 50%; filter: blur(2px); animation: shadowScale 0.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95); }`n@keyframes bunnyHopping { 0%, 100% { transform: translateY(0) scaleY(0.9) scaleX(1.05); } 40% { transform: translateY(-40px) scaleY(1.05) scaleX(0.95); } }`n@keyframes shadowScale { 0%, 100% { transform: translateX(-50%) scale(1.2); opacity: 1; } 40% { transform: translateX(-50%) scale(0.6); opacity: 0.3; } }`n@keyframes bunnyWander { 0% { left: -100px; transform: scaleX(1); } 48% { transform: scaleX(1); } 50% { left: calc(100vw - 100px); transform: scaleX(-1); } 98% { transform: scaleX(-1); } 100% { left: -100px; transform: scaleX(1); } }`n@media (max-width: 600px) { .bunny-container { transform: scale(0.6); bottom: 15px; } }
 
-/* 萌系小白兔裝飾 - 基於圖片設計 */
-.bunny-container { position: fixed; bottom: 20px; left: -100px; z-index: 9999; pointer-events: none; user-select: none; animation: bunnyWander 30s infinite linear; }
-.bunny-sprite { width: 80px; height: 80px; position: relative; animation: bunnyHopping 0.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95); }
-.bunny-shadow { position: absolute; bottom: -5px; left: 50%; transform: translateX(-50%); width: 40px; height: 8px; background: rgba(0,0,0,0.15); border-radius: 50%; filter: blur(2px); animation: shadowScale 0.8s infinite cubic-bezier(0.45, 0.05, 0.55, 0.95); }
-@keyframes bunnyHopping { 0%, 100% { transform: translateY(0) scaleY(0.9) scaleX(1.05); } 40% { transform: translateY(-40px) scaleY(1.05) scaleX(0.95); } }
-@keyframes shadowScale { 0%, 100% { transform: translateX(-50%) scale(1.2); opacity: 1; } 40% { transform: translateX(-50%) scale(0.6); opacity: 0.3; } }
-@keyframes bunnyWander { 0% { left: -100px; transform: scaleX(1); } 48% { transform: scaleX(1); } 50% { left: calc(100vw - 100px); transform: scaleX(-1); } 98% { transform: scaleX(-1); } 100% { left: -100px; transform: scaleX(1); } }
-@media (max-width: 600px) { .bunny-container { transform: scale(0.6); bottom: 15px; } }
+@keyframes shadowScale {
+  0%, 100% { transform: translateX(-50%) scale(1.2); opacity: 1; }
+  40% { transform: translateX(-50%) scale(0.6); opacity: 0.3; }
+}
+
+@keyframes bunnyWander {
+  0% { left: -100px; transform: scaleX(1); }
+  48% { transform: scaleX(1); }
+  50% { left: calc(100vw - 100px); transform: scaleX(-1); }
+  98% { transform: scaleX(-1); }
+  100% { left: -100px; transform: scaleX(1); }
+}
+
+@media (max-width: 600px) {
+  .bunny-container {
+    transform: scale(0.6);
+    bottom: 15px;
+  }
+}
