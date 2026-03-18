@@ -1240,11 +1240,11 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   box-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
 }
 
-/* 專業動畫級小白兔 - 6階段物理步態版 */
+/* 歐洲野兔生物力學 - 絲滑物理序列版 */
 .bunny-container {
   position: fixed;
   bottom: 25px;
-  left: -120px;
+  left: -150px;
   z-index: 9999;
   pointer-events: none;
   user-select: none;
@@ -1252,98 +1252,106 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 }
 
 .bunny-sprite {
-  width: 100px;
-  height: 70px;
+  width: 110px;
+  height: 60px;
   position: relative;
   transform-origin: center bottom;
 }
 
-/* 軌跡動畫 (軌跡決定整體物理重心) */
+/* 核心軌跡 */
 .bunny-jump-track {
-  animation: leapTrack 1.2s infinite cubic-bezier(0.35, 0, 0.3, 1);
+  animation: hareLeap 1.0s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* 脊椎與身體 (負責彈性形變) */
+/* 脊椎形變 (Squash & Stretch) */
 .bunny-body-rig {
-  animation: spineAnimation 1.2s infinite ease-in-out;
-  transform-origin: 30% 80%;
+  animation: hareSpine 1.0s infinite;
+  transform-origin: 20% 70%;
 }
 
-/* 前腿 (支撐與緩衝) */
-.bunny-leg-front {
-  animation: frontLegAnimation 1.2s infinite ease-in-out;
-  transform-origin: 75% 80%;
-}
-
-/* 後腿 (動力與跨越) */
+/* 後腿 (髖部樞軸轉動) */
 .bunny-leg-back {
-  animation: backLegAnimation 1.2s infinite ease-in-out;
-  transform-origin: 25% 80%;
+  animation: hareBackLeg 1.0s infinite;
+  transform-origin: 30px 65px; /* 髖關節位置 */
 }
 
-/* 耳朵 (慣性隨動) */
+/* 前腿 (衝擊與支撐) */
+.bunny-leg-front {
+  animation: hareFrontLeg 1.0s infinite;
+  transform-origin: 80px 65px;
+}
+
+/* 野兔長耳 (空氣動力學) */
 .bunny-ears-rig {
-  animation: earsAnimation 1.2s infinite ease-in-out;
-  transform-origin: 75% 40%;
+  animation: hareEars 1.0s infinite;
+  transform-origin: 85px 40px;
 }
 
-/* --- 6階段核心動畫定義 --- */
+/* --- 4大關鍵幀物理邏輯 --- */
 
-@keyframes leapTrack {
-  0%, 15%, 100% { transform: translateY(0); } /* 1, 2, 6 階段在地面 */
-  40% { transform: translateY(-75px); }       /* 3 階段最高點 */
-  65%, 85% { transform: translateY(0); }      /* 4, 5 階段落地 */
+@keyframes hareLeap {
+  0%, 15%, 100% { transform: translateY(0); } /* 1.預備 / 重置 */
+  45% { transform: translateY(-80px) rotate(5deg); } /* 3.最高點 (前傾) */
+  70% { transform: translateY(0); } /* 4.著地 */
 }
 
-@keyframes spineAnimation {
-  /* 1. Full Crouch */
-  0%, 100% { transform: scaleX(0.9) scaleY(0.8) rotate(0); }
-  /* 2. Extension Push-off */
-  15% { transform: scaleX(1.3) scaleY(1.1) rotate(15deg); }
-  /* 3. Apex Stretch */
-  40% { transform: scaleX(1.4) scaleY(0.9) rotate(5deg); }
-  /* 4. Front Landing (吸收衝擊) */
-  65% { transform: scaleX(0.8) scaleY(1.2) rotate(-15deg); }
-  /* 5. Over-reach (脊椎彎曲) */
-  85% { transform: scaleX(1.1) scaleY(0.8) rotate(0); }
+@keyframes hareSpine {
+  0%, 100% { transform: scaleX(1) scaleY(0.9) rotate(0); }
+  15% { transform: scaleX(0.75) scaleY(0.7) rotate(-10deg); } /* 1.預備：蜷縮彈簧 */
+  30% { transform: scaleX(1.6) scaleY(1.1) rotate(15deg); }  /* 2.起跳：最大拉伸直線 */
+  45% { transform: scaleX(1.3) scaleY(0.9) rotate(5deg); }   /* 3.最高點：優美弧線 */
+  70% { transform: scaleX(0.85) scaleY(1.3) rotate(-15deg); } /* 4.著地：脊椎強力彎曲 */
 }
 
-@keyframes backLegAnimation {
-  0%, 100% { transform: translateX(0) rotate(0); }
-  15% { transform: translateX(-10px) scaleY(1.6) rotate(-20deg); } /* 2. 蹬地伸直 */
-  40% { transform: translateX(-5px) rotate(10deg); }               /* 3. 空中收起 */
-  85% { transform: translateX(55px) scale(1.1) rotate(15deg); }    /* 5. 跨越前肢 (核心) */
+@keyframes hareBackLeg {
+  0%, 100% { transform: rotate(0) translateX(0); }
+  15% { transform: rotate(40deg) translateX(5px); } /* 1.預備：後腿摺疊 */
+  30% { transform: rotate(-60deg) scaleX(1.8); }    /* 2.起跳：強力向後蹬直 */
+  45% { transform: rotate(20deg) scale(0.9); }      /* 3.最高點：收回腹部 */
+  75% { transform: rotate(85deg) translateX(50px); } /* 4.核心：從髖部樞軸向前甩出 (Over-reach) */
 }
 
-@keyframes frontLegAnimation {
-  0%, 100% { transform: translateY(0) rotate(0); }
-  15% { transform: translateY(-15px) rotate(45deg); } /* 2. 抬起 */
-  65% { transform: translateY(5px) scaleX(1.3); }     /* 4. 著地受力 */
-  85% { transform: translateX(-5px) rotate(-10deg); } /* 5. 後移支撐 */
-}
-
-@keyframes earsAnimation {
+@keyframes hareFrontLeg {
   0%, 100% { transform: rotate(0); }
-  15% { transform: rotate(-25deg); } /* 2. 起跳向下貼 */
-  40% { transform: rotate(-35deg); } /* 3. 風阻貼頸 */
-  85% { transform: rotate(20deg); }  /* 5. 慣性前甩 */
+  30% { transform: rotate(60deg) translateY(-10px); } /* 2.起跳：抬起 */
+  60% { transform: rotate(-20deg) translateY(5px); }  /* 4.著地前伸 */
+  75% { transform: rotate(10deg) scaleX(1.4); }       /* 4.衝擊吸收 */
+}
+
+@keyframes hareEars {
+  0%, 100% { transform: rotate(0); }
+  15% { transform: rotate(-30deg); } /* 1.預備：向後壓 */
+  45% { transform: rotate(-50deg); } /* 3.最高點：風阻貼頸 */
+  75% { transform: rotate(35deg); }  /* 4.著地：向前甩 */
 }
 
 .bunny-shadow {
   position: absolute;
   bottom: -10px;
-  left: 45px;
-  width: 55px;
+  left: 40px;
+  width: 60px;
   height: 8px;
   background: rgba(0,0,0,0.15);
   border-radius: 50%;
   filter: blur(3px);
-  animation: shadowPhysics 1.2s infinite;
+  animation: shadowHare 1.0s infinite;
 }
 
-@keyframes shadowPhysics {
-  0%, 15%, 85%, 100% { transform: scale(1.2); opacity: 1; }
-  40% { transform: scale(0.5); opacity: 0.2; }
+@keyframes shadowHare {
+  0%, 15%, 75%, 100% { transform: scale(1.3); opacity: 1; }
+  45% { transform: scale(0.4); opacity: 0.2; }
+}
+
+@keyframes bunnyWander {
+  0% { left: -150px; transform: scaleX(1); }
+  48% { transform: scaleX(1); }
+  50% { left: calc(100vw - 150px); transform: scaleX(-1); }
+  98% { transform: scaleX(-1); }
+  100% { left: -150px; transform: scaleX(1); }
+}
+
+@media (max-width: 600px) {
+  .bunny-container { transform: scale(0.55); bottom: 15px; }
 }
 
 @keyframes bunnyWander {
