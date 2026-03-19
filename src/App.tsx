@@ -1532,7 +1532,7 @@ function App() {
                     <div className="form-group bank-info">
                       <p>匯款銀行：新港鄉農會 (代碼 617)</p>
                       <p>帳號：00817220606250</p>
-                      <label>轉帳帳戶後五碼</label>
+                      <label>轉帳帳戶後五碼 *</label>
                       <input type="text" name="bankLast5" value={formData.bankLast5} onChange={handleInputChange} placeholder="請輸入後五碼" />
                     </div>
                   )}
