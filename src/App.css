@@ -657,13 +657,13 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   transition: all 0.3s ease;
 }
 
-/* 陰線 (Broken Line) 的漸層樣式 */
-.trigram-broken {
+/* 陰線 (Broken Line) 的共用樣式 */
+.broken-line {
   background: linear-gradient(90deg, 
-    var(--primary-gold) 42%, 
-    transparent 42%, 
-    transparent 58%, 
-    var(--primary-gold) 58%) !important;
+    var(--primary-gold) 40%, 
+    transparent 40%, 
+    transparent 60%, 
+    var(--primary-gold) 60%) !important;
 }
 
 .trigram::before, .trigram::after {
@@ -672,7 +672,7 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   width: 100%;
   height: 100%;
   left: 0;
-  background: inherit;
+  background: var(--primary-gold); /* 預設為金線，不使用 inherit */
   border-radius: inherit;
   box-shadow: inherit;
 }
@@ -682,44 +682,46 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 .trigram::after { transform: translateY(10px); }
 
 /* 8 個卦象的精確定義 (由外向內：::before, element, ::after) */
-/* 0: 乾 (Qian) - ☰ (111) */
-.trigram-0, .trigram-0::before, .trigram-0::after { background: var(--primary-gold); }
 
-/* 1: 巽 (Xun) - ☴ (110) */
-.trigram-1::after { background: transparent; box-shadow: none; }
+/* 0: 乾 (Qian) - ☰ (111) - 全部實線 */
+.trigram-0 { background: var(--primary-gold); }
+
+/* 1: 巽 (Xun) - ☴ (110) - 內斷 (::after) */
 .trigram-1::after { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
-  box-shadow: 0 0 8px rgba(241, 196, 15, 0.4);
+  background: linear-gradient(90deg, var(--primary-gold) 40%, transparent 40%, transparent 60%, var(--primary-gold) 60%);
 }
 
-/* 2: 坎 (Kan) - ☵ (010) */
+/* 2: 坎 (Kan) - ☵ (010) - 外斷、內斷 */
 .trigram-2::before, .trigram-2::after { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+  background: linear-gradient(90deg, var(--primary-gold) 40%, transparent 40%, transparent 60%, var(--primary-gold) 60%);
 }
 
-/* 3: 艮 (Gen) - ☶ (100) */
-.trigram-3, .trigram-3::after { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+/* 3: 艮 (Gen) - ☶ (100) - 中斷、內斷 */
+.trigram-3 { 
+  background: linear-gradient(90deg, var(--primary-gold) 40%, transparent 40%, transparent 60%, var(--primary-gold) 60%);
+}
+.trigram-3::after {
+  background: linear-gradient(90deg, var(--primary-gold) 40%, transparent 40%, transparent 60%, var(--primary-gold) 60%);
 }
 
-/* 4: 坤 (Kun) - ☷ (000) */
+/* 4: 坤 (Kun) - ☷ (000) - 全部斷線 */
 .trigram-4, .trigram-4::before, .trigram-4::after { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+  background: linear-gradient(90deg, var(--primary-gold) 40%, transparent 40%, transparent 60%, var(--primary-gold) 60%);
 }
 
-/* 5: 震 (Zhen) - ☳ (001) */
+/* 5: 震 (Zhen) - ☳ (001) - 外斷、中斷 */
 .trigram-5, .trigram-5::before { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+  background: linear-gradient(90deg, var(--primary-gold) 40%, transparent 40%, transparent 60%, var(--primary-gold) 60%);
 }
 
-/* 6: 離 (Li) - ☲ (101) */
+/* 6: 離 (Li) - ☲ (101) - 中斷 (element) */
 .trigram-6 { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+  background: linear-gradient(90deg, var(--primary-gold) 40%, transparent 40%, transparent 60%, var(--primary-gold) 60%);
 }
 
-/* 7: 兌 (Dui) - ☱ (011) */
+/* 7: 兌 (Dui) - ☱ (011) - 外斷 (::before) */
 .trigram-7::before { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+  background: linear-gradient(90deg, var(--primary-gold) 40%, transparent 40%, transparent 60%, var(--primary-gold) 60%);
 }
 
 .bagua-center {
