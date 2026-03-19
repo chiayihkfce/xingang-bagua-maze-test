@@ -554,6 +554,13 @@ function App() {
       return;
     }
 
+    // 銀行轉帳末五碼：僅允許 5 碼數字
+    if (name === 'bankLast5') {
+      const filteredValue = value.replace(/\D/g, '').slice(0, 5);
+      setFormData(prev => ({ ...prev, [name]: filteredValue }));
+      return;
+    }
+
     // 當份數改變時，如果是一般預約，自動切換場次
     if (name === 'quantity') {
       const qty = parseInt(value) || 0;
@@ -668,8 +675,8 @@ function App() {
 
     // 4. 新增：檢查銀行轉帳末五碼 (如果選中了銀行轉帳)
     if (formData.paymentMethod === '銀行轉帳/ATM') {
-      if (!formData.bankLast5 || formData.bankLast5.trim() === '') {
-        alert('【送出失敗】選擇「銀行轉帳/ATM」時，必須填寫「帳戶末五碼」。');
+      if (!formData.bankLast5 || formData.bankLast5.trim() === '' || formData.bankLast5.length !== 5) {
+        alert('【送出失敗】選擇「銀行轉帳/ATM」時，必須填寫完整的「帳戶末五碼」(5位數字)。');
         return;
       }
     }
@@ -891,7 +898,19 @@ function App() {
                       <option value="Line Pay">Line Pay</option>
                     </select>
                   </div>
-                  <div className="form-group"><label>轉帳帳戶(末五碼) *</label><input type="text" value={editData.bankLast5} onChange={e => setEditData({...editData, bankLast5: e.target.value})} /></div>
+                  <div className="form-group"><label>轉帳帳戶(末五碼) *</label>
+                    <input 
+                      type="text" 
+                      maxLength={5}
+                      inputMode="numeric"
+                      pattern="\d*"
+                      value={editData.bankLast5} 
+                      onChange={e => {
+                        const val = e.target.value.replace(/\D/g, '').slice(0, 5);
+                        setEditData({...editData, bankLast5: val});
+                      }} 
+                    />
+                  </div>
                   <div className="form-group"><label>遊玩日期時間</label><input type="text" value={editData.pickupTime} onChange={e => setEditData({...editData, pickupTime: e.target.value})} /></div>
                   <div className="form-group"><label>領取地點</label>
                     <select value={editData.pickupLocation} onChange={e => setEditData({...editData, pickupLocation: e.target.value})}>
@@ -1533,7 +1552,16 @@ function App() {
                       <p>匯款銀行：新港鄉農會 (代碼 617)</p>
                       <p>帳號：00817220606250</p>
                       <label>轉帳帳戶後五碼 *</label>
-                      <input type="text" name="bankLast5" value={formData.bankLast5} onChange={handleInputChange} placeholder="請輸入後五碼" />
+                      <input 
+                        type="text" 
+                        name="bankLast5" 
+                        maxLength={5}
+                        inputMode="numeric"
+                        pattern="\d*"
+                        value={formData.bankLast5} 
+                        onChange={handleInputChange} 
+                        placeholder="請輸入後五碼數字" 
+                      />
                     </div>
                   )}
 
