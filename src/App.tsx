@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
-import gsap from 'gsap'
+import { useState, useEffect } from 'react'
 import DatePicker from 'react-datepicker'
 import "react-datepicker/dist/react-datepicker.css"
 import './App.css'
