@@ -666,6 +666,14 @@ function App() {
       return;
     }
 
+    // 4. 新增：檢查銀行轉帳末五碼 (如果選中了銀行轉帳)
+    if (formData.paymentMethod === '銀行轉帳/ATM') {
+      if (!formData.bankLast5 || formData.bankLast5.trim() === '') {
+        alert('【送出失敗】選擇「銀行轉帳/ATM」時，必須填寫「帳戶末五碼」。');
+        return;
+      }
+    }
+
     setShowConfirmation(true);
   };
 
