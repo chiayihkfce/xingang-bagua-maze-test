@@ -1,0 +1,72 @@
+.custom-cursor-dot {
+  position: fixed;
+  width: 6px;
+  height: 6px;
+  background-color: var(--primary-gold);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  /* 移除原本的 left/top transition，改用 JS 控制 transform */
+  transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1), 
+              height 0.3s cubic-bezier(0.23, 1, 0.32, 1), 
+              background-color 0.3s ease;
+  box-shadow: 0 0 10px var(--primary-gold);
+  will-change: transform; /* 核心優化：提示瀏覽器預先加速 */
+}
+
+.custom-cursor-dot.hover {
+  width: 12px;
+  height: 12px;
+  background-color: #fff;
+  box-shadow: 0 0 20px #fff;
+}
+
+.custom-cursor-ring {
+  position: fixed;
+  width: 36px;
+  height: 36px;
+  pointer-events: none;
+  z-index: 99998;
+  transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1), 
+              height 0.3s cubic-bezier(0.23, 1, 0.32, 1), 
+              opacity 0.3s ease;
+  opacity: 0.6;
+  will-change: transform; /* 核心優化 */
+}
+
+.custom-cursor-ring svg {
+  width: 100%;
+  height: 100%;
+  animation: rotate-bagua-inner 10s linear infinite;
+}
+
+.custom-cursor-ring.hover {
+  width: 50px;
+  height: 50px;
+  opacity: 1;
+}
+
+.custom-cursor-ring.hover svg {
+  animation: rotate-bagua-inner 3s linear infinite;
+}
+
+@keyframes rotate-bagua-inner {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 行動裝置隱藏邏輯保持不變 */
+
+/* 在行動裝置上隱藏客製鼠標 */
+@media (hover: none) and (pointer: coarse) {
+  .custom-cursor-dot, .custom-cursor-ring {
+    display: none;
+  }
+}
+
+/* 隱藏原生鼠標 (僅在電腦版生效) */
+@media (hover: hover) and (pointer: fine) {
+  *, *::before, *::after {
+    cursor: none !important;
+  }
+}

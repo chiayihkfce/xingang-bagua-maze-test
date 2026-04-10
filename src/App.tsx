@@ -1,0 +1,1657 @@
+import { useState, useEffect } from 'react'
+import * as XLSX from 'xlsx'
+import "react-datepicker/dist/react-datepicker.css"
+import './App.css'
+import { registerLocale } from "react-datepicker";
+
+// 手動定義繁體中文語系資料 (避免依賴外部未安裝的庫)
+const zhTW = {
+  localize: {
+    month: (n: number) => ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'][n],
+    day: (n: number) => ['日','一','二','三','四','五','六'][n],
+    ordinalNumber: (n: any) => n,
+    era: (n: any) => ['西元前', '西元'][n],
+    quarter: (n: any) => ['第一季', '第二季', '第三季', '第四季'][n],
+    dayPeriod: (n: any) => n < 12 ? '上午' : '下午'
+  },
+  formatLong: {
+    date: () => 'yyyy/MM/dd',
+    time: () => 'HH:mm',
+    dateTime: () => 'yyyy/MM/dd HH:mm'
+  }
+};
+
+// 註冊語系
+registerLocale('zh', zhTW as any);
+
+import { translations } from './locales/translations'
+import { Session, FormData, FormErrors, TimeslotConfig, Lang, Theme, DashboardStats, PaymentMethod, AdminAccount } from './types'
+
+import Header from './components/UI/Header'
+import Footer from './components/UI/Footer'
+import SocialButtons from './components/UI/SocialButtons'
+import EntryAnimation from './components/Registration/EntryAnimation'
+import SuccessScreen from './components/Registration/SuccessScreen'
+import StorySection from './components/Registration/StorySection'
+import EventInfo from './components/Registration/EventInfo'
+import RegistrationForm from './components/Registration/RegistrationForm'
+import ConfirmationModal from './components/Registration/ConfirmationModal'
+import AdminLogin from './components/Admin/AdminLogin'
+import AdminDashboard from './components/Admin/AdminDashboard'
+import CustomCursor from './components/UI/CustomCursor'
+import SystemModal from './components/UI/SystemModal'
+
+import { 
+  collection, 
+  addDoc, 
+  onSnapshot, 
+  query, 
+  orderBy, 
+  updateDoc, 
+  doc, 
+  deleteDoc, 
+  where, 
+  limit, 
+  setDoc,
+  getDocs,
+  serverTimestamp,
+  writeBatch
+} from "firebase/firestore";
+import { db } from "./firebase";
+
+function App() {
+  // --- 0. 版本控管與快取清理 ---
+  const APP_VERSION = '1.2.1'; // 每次重大更新或修改設定後，請調升此版本號
+
+  useEffect(() => {
+
+    const savedVersion = localStorage.getItem('app_version');
+    if (savedVersion !== APP_VERSION) {
+      console.log(`[系統] 偵測到版本更新 (${savedVersion} -> ${APP_VERSION})，正在清理過時快取...`);
+      // 清理可能導致 UI 不一致的關鍵快取
+      const keysToClear = [
+        'bagua_maze_sessions', 
+        'bagua_maze_slots', 
+        'adminSortConfig'
+      ];
+      keysToClear.forEach(key => localStorage.removeItem(key));
+      
+      localStorage.setItem('app_version', APP_VERSION);
+      
+      // 如果是從舊版本升級，可視情況強制重新載入頁面確保狀態乾淨
+      if (savedVersion) {
+        window.location.reload();
+      }
+    }
+  }, []);
+
+  // --- 1. 狀態與變數定義 ---
+
+  const [lang, setLang] = useState<Lang>(() => {
+    return (localStorage.getItem('lang') as Lang) || 'zh';
+  });
+  const [theme, setTheme] = useState<Theme>(() => {
+    return (localStorage.getItem('theme') as Theme) || 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('lang', lang);
+  }, [lang]);
+
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  const t = translations[lang];
+
+  const [submitted, setSubmitted] = useState(false);
+  const [lastSubmissionId, setLastSubmissionId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  
+  // 進場動畫相關狀態
+  const [isEntryAnimating, setIsEntryAnimating] = useState(true); 
+  const [shouldRenderEntry, setShouldRenderEntry] = useState(true);
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [adminUser, setAdminUser] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
+  const [currentAdmin, setCurrentAdmin] = useState<AdminAccount | null>(null);
+  const [submissions, setSubmissions] = useState<any[][]>([]);
+  const [deletedSubmissions, setDeletedSubmissions] = useState<any[][]>([]);
+  const [showRecycleBin, setShowRecycleBin] = useState(false);
+  const [logs, setLogs] = useState<any[][]>([]);
+  const [adminTab, setAdminTab] = useState<'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments'>('sessions');
+  const [newSession, setNewSession] = useState({ name: '', price: '', fixedDate: '', fixedTime: '', isSpecial: false });
+  const [isEditing, setIsEditing] = useState(false);
+  const [editData, setEditData] = useState<any>(null);
+  const [showAuditModal, setShowAuditModal] = useState(false);
+  const [auditTarget, setAuditTarget] = useState<{index: number, row: any[]} | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+
+  const [calculatedTotal, setCalculatedTotal] = useState(0);
+
+  // --- 系統自訂彈窗狀態 ---
+  const [sysModal, setSysModal] = useState<{
+    show: boolean;
+    type: 'alert' | 'confirm';
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    onCancel?: () => void;
+    confirmText?: string;
+    cancelText?: string;
+  }>({
+    show: false,
+    type: 'alert',
+    title: '提示',
+    message: '',
+    onConfirm: () => {}
+  });
+
+  const showAlert = (message: string, title = '提示', onConfirm?: () => void) => {
+    setSysModal({
+      show: true,
+      type: 'alert',
+      title,
+      message,
+      onConfirm: () => {
+        setSysModal(prev => ({ ...prev, show: false }));
+        if (onConfirm) onConfirm();
+      }
+    });
+  };
+
+  const showConfirm = (message: string, onConfirm: () => void, onCancel?: () => void, title = '確認動作') => {
+    setSysModal({
+      show: true,
+      type: 'confirm',
+      title,
+      message,
+      onConfirm: () => {
+        setSysModal(prev => ({ ...prev, show: false }));
+        onConfirm();
+      },
+      onCancel: () => {
+        setSysModal(prev => ({ ...prev, show: false }));
+        if (onCancel) onCancel();
+      }
+    });
+  };
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalRows, setTotalRows] = useState(0);
+  const [loadTime] = useState(Date.now());
+  const [adminFilterDate, setAdminFilterDate] = useState<Date | null>(null);
+  const [adminSearchKeyword, setAdminSearchKeyword] = useState('');
+  const [sortConfig, setSortConfig] = useState<{ key: number, direction: 'asc' | 'desc' } | null>(null);
+  const [visibleColumns, setVisibleColumns] = useState<number[]>(() => {
+    const saved = localStorage.getItem('visibleColumns');
+    return saved ? JSON.parse(saved) : [];
+  });
+  const [showColumnFilter, setShowShowColumnFilter] = useState(false);
+  const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
+
+  // --- 時間段管理相關狀態 ---
+  const [generalTimeSlots, setGeneralTimeSlots] = useState<string[]>(['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00']);
+  const [specialTimeSlots, setSpecialTimeSlots] = useState<string[]>(['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00']);
+  const [timeslotConfig, setTimeslotConfig] = useState<TimeslotConfig>({
+    generalStart: '09:00', generalEnd: '15:00', generalInterval: 30,
+    specialStart: '09:00', specialEnd: '15:00', specialInterval: 30
+  });
+  const [newManualTime, setNewManualTime] = useState('');
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
+
+  const [sessionType, setSessionType] = useState<'一般預約' | '特別預約' | ''>('');
+
+  const [formData, setFormData] = useState<FormData>({
+    email: '',
+    name: '',
+    countryCode: '+886',
+    phone: '',
+    contactEmail: '',
+    session: '',
+    quantity: '1',
+    players: '1',
+    totalAmount: '',
+    paymentMethod: '現金支付',
+    bankLast5: '',
+    pickupTime: '',
+    pickupLocation: '新港文教基金會(閱讀館)',
+    referral: ['基金會FB'] as string[],
+    notes: '',
+    hp_field: '' 
+  });
+
+  const [formErrors, setFormErrors] = useState<FormErrors>({
+    email: '',
+    phone: '',
+    name: ''
+  });
+
+  // [補回] 欄位驗證邏輯
+  const validateField = (name: string, value: string, code?: string) => {
+    let error = '';
+    const currentCode = code || formData.countryCode;
+
+    if (name === 'email') {
+      if (value && !value.includes('@')) {
+        error = t.errorEmail;
+      }
+    } else if (name === 'phone') {
+      if (value) {
+        const rules: { [key: string]: number[] } = {
+          '+886': [9, 10],
+          '+852': [8],
+          '+853': [8],
+          '+60': [9, 10, 11],
+          '+65': [8],
+          'landline': [9, 10]
+        };
+        const allowedLengths = rules[currentCode] || [6, 15];
+        if (!allowedLengths.includes(value.length) || (currentCode === 'landline' && !value.startsWith('0'))) {
+          error = t.errorPhone;
+        }
+      }
+    } else if (name === 'name') {
+      if (value && value.length < 2) {
+        error = t.errorName;
+      }
+    }
+    setFormErrors(prev => ({ ...prev, [name]: error }));
+  };
+
+  // [補回] 計算動態統計
+  const getDisplayStats = (): DashboardStats => {
+    const baseStats = dashboardStats || { pendingCount: 0, totalRevenue: 0, todayKits: 0, todayPlayers: 0 };
+    
+    // 如果沒有選日期，直接顯示全域統計 (包含今日數據)
+    if (!adminFilterDate) {
+      return baseStats;
+    }
+
+    // 當有選特定日期時，必須「精確計算」該日清單
+    let kits = 0;
+    let players = 0;
+    
+    // 檢查目前清單是否真的屬於篩選日期（避免載入中的舊資料干擾）
+    const formattedFilterDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
+    
+    for (let i = 1; i < submissions.length; i++) {
+      const rowPickupTime = String(submissions[i][11] || '');
+      // 只有當該列的預約日期與篩選日期相符時才計入
+      if (rowPickupTime.startsWith(formattedFilterDate)) {
+        kits += parseInt(submissions[i][6]) || 0;
+        players += parseInt(submissions[i][7]) || 0;
+      }
+    }
+
+    return {
+      ...baseStats,
+      todayKits: kits,
+      todayPlayers: players
+    };
+  };
+
+  // [補回] 下載 Excel 邏輯
+  const handleDownloadExcel = () => {
+    if (submissions.length === 0) return;
+    
+    // 過濾掉每一列最後一個欄位 (Firebase ID)
+    const exportData = submissions.map(row => row.slice(0, 15));
+    
+    const ws = XLSX.utils.aoa_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "報名清單");
+    const fileName = `新港八卦謎蹤_報名清單_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+  };
+
+  // [新增] 匯入 Excel 舊資料邏輯 (用於從 Google Sheets 遷移)
+  const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    showConfirm('確定要從此 Excel 匯入舊報名資料嗎？', async () => {
+      setIsDataLoading(true);
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const bstr = evt.target?.result;
+          const wb = XLSX.read(bstr, { type: 'binary' });
+          const wsname = wb.SheetNames[0];
+          const ws = wb.Sheets[wsname];
+          const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+
+          if (data.length <= 1) {
+            showAlert('Excel 檔案似乎沒有資料（只有標題列或空表）。');
+            setIsDataLoading(false);
+            return;
+          }
+
+          console.log('--- Excel 匯入偵測 ---');
+          console.log('標題列:', data[0]);
+          console.log('第一筆資料範例:', data[1]);
+
+          const rows = data.slice(1);
+          let count = 0;
+
+          for (const row of rows) {
+            // 如果這一列幾乎是空的就跳過
+            if (!row[2] && !row[3]) continue; 
+
+            const submissionData = {
+              timestamp: row[0] ? String(row[0]) : formatFullDateTime(new Date()),
+              status: row[1] || '待審核',
+              name: String(row[2] || '無姓名'),
+              phone: String(row[3] || '無電話'),
+              email: String(row[4] || ''),
+              session: String(row[5] || '未知場次'),
+              quantity: String(row[6] || '1'),
+              players: String(row[7] || '1'),
+              totalAmount: Number(row[8]) || 0,
+              paymentMethod: String(row[9] || '現金支付'),
+              bankLast5: String(row[10] || '無'),
+              pickupTime: row[11] ? String(row[11]) : '',
+              pickupLocation: String(row[12] || '新港文教基金會(閱讀館)'),
+              referral: String(row[13] || ''),
+              notes: String(row[14] || '無'),
+              createdAt: serverTimestamp(),
+              deleted: false
+            };
+
+            try {
+              await addDoc(collection(db, "registrations"), submissionData);
+              count++;
+            } catch (writeErr) {
+              console.error('寫入 Firebase 失敗:', writeErr);
+            }
+          }
+          showAlert(`匯入程序結束！成功寫入 ${count} 筆資料。`);
+        } catch (err) {
+          console.error('Excel 解析錯誤:', err);
+          showAlert('匯入失敗：無法讀取 Excel 檔案。請確保檔案格式正確 (.xlsx)。');
+        } finally {
+          setIsDataLoading(false);
+          // 清除 input，讓同一個檔案可以重複選取測試
+          e.target.value = '';
+        }
+      };
+      reader.onerror = (err) => {
+        console.error('檔案讀取錯誤:', err);
+        showAlert('檔案讀取失敗');
+        setIsDataLoading(false);
+      };
+      reader.readAsBinaryString(file);
+    });
+  };
+
+  // [補回] 欄位切換邏輯 (加入持久化)
+  const toggleColumn = (index: number) => {
+    setVisibleColumns(prev => {
+      const newList = prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index].sort((a, b) => a - b);
+      localStorage.setItem('visibleColumns', JSON.stringify(newList));
+      return newList;
+    });
+  };
+
+  // [補回] 複製帳號邏輯
+  const handleCopyAccount = (accountNumber?: string) => {
+    if (!accountNumber) {
+      console.error('未提供帳號，無法複製');
+      return;
+    }
+    navigator.clipboard.writeText(accountNumber).then(() => {
+      showAlert(t.accountCopied);
+    }).catch(err => {
+      console.error('無法複製帳號: ', err);
+    });
+  };
+
+  useEffect(() => {
+    const qty = parseInt(formData.quantity) || 1;
+    const players = parseInt(formData.players) || 0;
+    const maxPlayers = qty * 4;
+    
+    if (players > maxPlayers || players === 0) {
+      setFormData(prev => ({ ...prev, players: '1' }));
+    }
+  }, [formData.quantity]);
+
+  useEffect(() => {
+    // 只有在 submissions 有資料，且 visibleColumns 既沒有目前狀態、也沒有 localStorage 存檔時，才自動全選
+    const saved = localStorage.getItem('visibleColumns');
+    if (submissions.length > 0 && visibleColumns.length === 0 && !saved) {
+      const allIndexes = submissions[0].map((_, i) => i);
+      setVisibleColumns(allIndexes);
+      localStorage.setItem('visibleColumns', JSON.stringify(allIndexes));
+    }
+  }, [submissions]);
+
+  const pad = (n: number) => String(n).padStart(2, '0');
+
+  const generateTimeSlots = (start: string, end: string, interval: number) => {
+    const slots = [];
+    let current = new Date(`2026-01-01T${start}:00`);
+    const last = new Date(`2026-01-01T${end}:00`);
+    while (current <= last) {
+      slots.push(`${pad(current.getHours())}:${pad(current.getMinutes())}`);
+      current.setMinutes(current.getMinutes() + interval);
+    }
+    return slots;
+  };
+
+  const handleManualTimeAdd = (type: 'general' | 'special') => {
+    if (!newManualTime || !/^([01]\d|2[0-3]):([0-5]\d)$/.test(newManualTime)) {
+      showAlert('請輸入正確的時間格式 (HH:mm)');
+      return;
+    }
+    if (type === 'general') {
+      if (generalTimeSlots.includes(newManualTime)) return;
+      setGeneralTimeSlots([...generalTimeSlots, newManualTime].sort());
+    } else {
+      if (specialTimeSlots.includes(newManualTime)) return;
+      setSpecialTimeSlots([...specialTimeSlots, newManualTime].sort());
+    }
+    setNewManualTime('');
+  };
+
+  const removeTimeSlot = (type: 'general' | 'special', slot: string) => {
+    if (type === 'general') {
+      setGeneralTimeSlots(generalTimeSlots.filter(s => s !== slot));
+    } else {
+      setSpecialTimeSlots(specialTimeSlots.filter(s => s !== slot));
+    }
+  };
+
+  const saveTimeSlotsConfig = async () => {
+    setIsSubmitting(true);
+    try {
+      const docRef = doc(db, "config", "timeslots");
+      await setDoc(docRef, {
+        config: timeslotConfig,
+        general: generalTimeSlots,
+        special: specialTimeSlots,
+        updatedAt: serverTimestamp()
+      });
+      addLog('修改時段', '管理員更新了開放時間段與間隔設定');
+      showAlert('時間段設定已儲存');
+    } catch (err) {
+      showAlert('儲存失敗');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+// 終極安全解析日期 (處理 Google Sheets 的各種奇怪在地化格式)
+const parseDateSafely = (dateStr: any) => {
+  if (!dateStr) return new Date();
+  if (dateStr instanceof Date) return dateStr;
+
+  // 如果是數字 (Excel 序號格式)
+  if (typeof dateStr === 'number') return new Date(dateStr);
+
+  let str = String(dateStr).trim();
+  if (!str || str === 'NaN' || str === 'undefined') return new Date();
+
+  // 1. 嘗試原生產解析
+  let d = new Date(str);
+  if (!isNaN(d.getTime())) return d;
+
+  // 2. 針對「下午/上午」進行預處理
+  let isPM = str.includes('下午');
+  let isAM = str.includes('上午');
+
+  // 移除中文字並統一分隔符
+  let cleanStr = str.replace(/[上下]午/g, ' ')
+                    .replace(/\//g, '-')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+  // 3. 手動拆解 YYYY-MM-DD HH:mm:ss
+  try {
+    const parts = cleanStr.split(/[- :]/);
+    if (parts.length >= 3) {
+      let year = parseInt(parts[0]);
+      let month = parseInt(parts[1]) - 1;
+      let day = parseInt(parts[2]);
+      let hour = parts[3] ? parseInt(parts[3]) : 0;
+      let min = parts[4] ? parseInt(parts[4]) : 0;
+      let sec = parts[5] ? parseInt(parts[5]) : 0;
+
+      if (isPM && hour < 12) hour += 12;
+      if (isAM && hour === 12) hour = 0;
+
+      d = new Date(year, month, day, hour, min, sec);
+      if (!isNaN(d.getTime())) return d;
+    }
+  } catch (e) {
+    console.error('日期手動拆解失敗:', str);
+  }
+
+  return new Date(); // 真的不行就回傳當前時間，避免 NaN
+};
+
+const formatFullDateTime = (date: any) => {
+  const d = parseDateSafely(date);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
+
+const formatDateTimeMinute = (date: any) => {
+  const d = parseDateSafely(date);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+  const findEarliestSlot = (currentSessions: Session[], targetSessionName?: string) => {
+    let checkDate = new Date();
+    const selectedSession = currentSessions.find(s => s.name === (targetSessionName || formData.session));
+    
+    // 修正：優先從時段陣列抓取第一個值，而非全域設定的開始時間
+    const fallbackSlots = (selectedSession?.isSpecial || sessionType === '特別預約') ? specialTimeSlots : generalTimeSlots;
+    const defaultStart = fallbackSlots.length > 0 ? fallbackSlots[0] : timeslotConfig.generalStart;
+
+    let startH = parseInt(defaultStart.split(':')[0]);
+    let startM = parseInt(defaultStart.split(':')[1]);
+    let endH = parseInt(timeslotConfig.generalEnd.split(':')[0]);
+    let endM = parseInt(timeslotConfig.generalEnd.split(':')[1]);
+
+    if (selectedSession?.fixedTime) {
+      const times = selectedSession.fixedTime.split(',').sort();
+      const firstParts = times[0].split(':');
+      const lastParts = times[times.length - 1].split(':');
+      startH = parseInt(firstParts[0]);
+      startM = parseInt(firstParts[1]);
+      endH = parseInt(lastParts[0]);
+      endM = parseInt(lastParts[1]);
+    }
+
+    if (checkDate.getHours() > endH || (checkDate.getHours() === endH && checkDate.getMinutes() > endM)) {
+      checkDate.setDate(checkDate.getDate() + 1);
+      // 跳過週一(1)與週二(2)
+      while (checkDate.getDay() === 1 || checkDate.getDay() === 2) {
+        checkDate.setDate(checkDate.getDate() + 1);
+      }
+      checkDate.setHours(startH, startM, 0, 0);
+    } else if (checkDate.getHours() < startH || (checkDate.getHours() === startH && checkDate.getMinutes() < startM)) {
+
+      checkDate.setHours(startH, startM, 0, 0);
+    } else {
+      const mins = checkDate.getMinutes();
+      if (mins > 0 && mins <= 30) {
+        checkDate.setMinutes(30, 0, 0);
+      } else if (mins > 30) {
+        checkDate.setHours(checkDate.getHours() + 1, 0, 0, 0);
+      }
+    }
+
+    for (let i = 0; i < 1440; i++) { 
+      const day = checkDate.getDay();
+      if (day === 1 || day === 2) {
+        checkDate.setDate(checkDate.getDate() + (day === 1 ? 2 : 1));
+        checkDate.setHours(startH, startM, 0, 0);
+        continue;
+      }
+
+      const hours = checkDate.getHours();
+      const mins = checkDate.getMinutes();
+      if (hours > endH || (hours === endH && mins > 0)) {
+        checkDate.setDate(checkDate.getDate() + 1);
+        checkDate.setHours(startH, startM, 0, 0);
+        continue;
+      }
+
+      const dateStr = `${checkDate.getFullYear()}-${pad(checkDate.getMonth() + 1)}-${pad(checkDate.getDate())}`;
+      const timeStr = `${pad(checkDate.getHours())}:${pad(checkDate.getMinutes())}`;
+      
+      const isTakenBySpecial = currentSessions.some(s => {
+        let sDate = s.fixedDate || '';
+        if (sDate.includes('T')) sDate = sDate.split('T')[0];
+        return sDate === dateStr;
+      });
+
+      const allowedSlots = selectedSession?.fixedTime 
+        ? selectedSession.fixedTime.split(',') 
+        : (isTakenBySpecial ? specialTimeSlots : generalTimeSlots);
+      
+      if (!allowedSlots.includes(timeStr)) {
+        checkDate.setMinutes(checkDate.getMinutes() + 30);
+        continue;
+      }
+
+      const hasConflict = currentSessions.some(s => {
+        let sDate = s.fixedDate || '';
+        if (sDate.includes('T')) sDate = sDate.split('T')[0];
+        return sDate === dateStr && s.fixedTime?.split(',').includes(timeStr);
+      });
+
+      if (!hasConflict) {
+        return formatDateTimeMinute(checkDate);
+      }
+
+      checkDate.setMinutes(checkDate.getMinutes() + 30);
+    }
+    return '';
+  };
+
+  const getSessionDisplayName = (chineseName: string) => {
+    if (lang === 'zh') return chineseName;
+    const session = sessions.find(s => s.name === chineseName);
+    return session?.enName || chineseName;
+  };
+
+  useEffect(() => {
+    const minEntryTime = 2500; 
+    const startTime = Date.now();
+    let isTransitionStarted = false; 
+
+    const triggerExitAnimation = () => {
+      if (isTransitionStarted) return;
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime >= minEntryTime) {
+        isTransitionStarted = true;
+        setIsEntryAnimating(false);
+        setTimeout(() => setShouldRenderEntry(false), 800);
+      } else {
+        const remainingTime = minEntryTime - elapsedTime;
+        setTimeout(() => {
+          if (!isTransitionStarted) {
+            isTransitionStarted = true;
+            setIsEntryAnimating(false);
+            setTimeout(() => setShouldRenderEntry(false), 800);
+          }
+        }, remainingTime);
+      }
+    };
+    
+    const fetchSessions = () => {
+      console.log('🚀 啟動 Firebase 監聽器...');
+      
+      const qGeneral = query(collection(db, "sessions"), orderBy("name"));
+      const qSpecial = query(collection(db, "special_sessions"), orderBy("name"));
+      
+      let generalSessions: Session[] = [];
+      let specialSessions: Session[] = [];
+
+      const updateAllSessions = () => {
+        const merged = [...generalSessions, ...specialSessions].sort((a, b) => a.name.localeCompare(b.name));
+        setSessions(merged);
+        localStorage.setItem('bagua_maze_sessions', JSON.stringify(merged));
+      };
+
+      const unsubGeneral = onSnapshot(qGeneral, (snapshot) => {
+        generalSessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isSpecial: false })) as Session[];
+        updateAllSessions();
+        setDbStatus('connected');
+      }, (err) => {
+        console.error('❌ 一般場次連線錯誤:', err);
+        setDbStatus('error');
+      });
+
+      const unsubSpecial = onSnapshot(qSpecial, (snapshot) => {
+        specialSessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isSpecial: true })) as Session[];
+        updateAllSessions();
+      }, (err) => {
+        console.error('❌ 特別場次連線錯誤:', err);
+      });
+
+      return () => {
+        unsubGeneral();
+        unsubSpecial();
+      };
+    };
+
+    const fetchTimeSlots = () => {
+      const unsubscribe = onSnapshot(doc(db, "config", "timeslots"), (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          if (data.general) setGeneralTimeSlots(data.general);
+          if (data.special) setSpecialTimeSlots(data.special);
+          if (data.config) setTimeslotConfig(data.config);
+          localStorage.setItem('bagua_maze_slots', JSON.stringify(data));
+        }
+      });
+      return unsubscribe;
+    };
+
+    const fetchPaymentMethods = () => {
+      const unsubscribe = onSnapshot(doc(db, "config", "payments"), (docSnap) => {
+        if (docSnap.exists()) {
+          const methods = docSnap.data().methods || [];
+          setPaymentMethods(methods);
+          
+          // 如果目前的付款方式不在清單中，自動切換到第一個
+          setFormData(prev => {
+            if (methods.length > 0 && !methods.find((m: any) => m.name === prev.paymentMethod)) {
+              return { ...prev, paymentMethod: methods[0].name };
+            }
+            return prev;
+          });
+        }
+      });
+      return unsubscribe;
+    };
+
+    const unsubSessions = fetchSessions();
+    const unsubSlots = fetchTimeSlots();
+    const unsubPayments = fetchPaymentMethods();
+    triggerExitAnimation();
+
+    return () => {
+      unsubSessions();
+      unsubSlots();
+      unsubPayments();
+    };
+  }, []);
+
+  const addPaymentMethod = async (methodData: any) => {
+    if (!methodData.name) return;
+    
+    // 檢查是新增還是修改
+    const existingIndex = paymentMethods.findIndex(m => m.id === methodData.id);
+    let newMethods;
+    if (existingIndex > -1) {
+      // 修改現有項目
+      newMethods = [...paymentMethods];
+      newMethods[existingIndex] = methodData;
+    } else {
+      // 新增項目
+      newMethods = [...paymentMethods, methodData];
+    }
+
+    try {
+      await setDoc(doc(db, "config", "payments"), { methods: newMethods });
+      addLog('付款方式', `${existingIndex > -1 ? '修改' : '新增'}了付款方式: ${methodData.name}`);
+      showAlert('已儲存變更');
+    } catch (e) { showAlert('儲存失敗'); }
+  };
+
+  const deletePaymentMethod = async (method: PaymentMethod) => {
+    showConfirm(`確定要刪除「${method.name}」嗎？`, async () => {
+      const newMethods = paymentMethods.filter(m => m.id !== method.id);
+      try {
+        await setDoc(doc(db, "config", "payments"), { methods: newMethods });
+        addLog('付款方式', `刪除了付款方式: ${method.name}`);
+      } catch (e) { showAlert('刪除失敗'); }
+    });
+  };
+
+  useEffect(() => {
+    const qty = parseInt(formData.quantity) || 0;
+    const sessionObj = sessions.find(s => s.name === formData.session);
+    const price = sessionType === '' ? 0 : (sessionObj ? sessionObj.price : 650);
+    setCalculatedTotal(qty * price);
+  }, [formData.quantity, formData.session, sessions, sessionType]);
+
+  const [isDataLoading, setIsDataLoading] = useState(false);
+
+  const handleSort = (index: number) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === index && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key: index, direction });
+    const header = submissions[0];
+    const data = submissions.slice(1);
+    const sortedData = [...data].sort((a, b) => {
+      let valA = a[index];
+      let valB = b[index];
+      if (index === 0) {
+        const dateA = new Date(valA).getTime();
+        const dateB = new Date(valB).getTime();
+        return direction === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+      if (!isNaN(Number(valA)) && !isNaN(Number(valB))) {
+        return direction === 'asc' ? Number(valA) - Number(valB) : Number(valB) - Number(valA);
+      }
+      valA = String(valA).toLowerCase();
+      valB = String(valB).toLowerCase();
+      if (valA < valB) return direction === 'asc' ? -1 : 1;
+      if (valA > valB) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    setSubmissions([header, ...sortedData]);
+  };
+
+  // --- 管理員資料即時監聽系統 (核心重構) ---
+  useEffect(() => {
+    if (!isAdmin) return;
+
+    setIsDataLoading(true);
+    const header = ["報名時間", "狀態", "姓名", "電話", "Email", "場次名稱", "購買份數", "遊玩人數", "總金額", "付款方式", "末五碼", "預約日期時間", "取件地點", "得知管道", "備註"];
+    
+    // 當篩選條件改變時，立即清空目前的資料清單 (避免看到舊資料)
+    setSubmissions([header]);
+    setTotalRows(0);
+
+    // 1. 構建動態查詢
+    let qSub;
+    if (adminFilterDate) {
+      const formattedDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
+      qSub = query(
+        collection(db, "registrations"), 
+        where("deleted", "==", false),
+        where("pickupTime", ">=", formattedDate),
+        where("pickupTime", "<=", formattedDate + "\uf8ff"),
+        orderBy("pickupTime", "desc")
+      );
+    } else {
+      qSub = query(
+        collection(db, "registrations"), 
+        where("deleted", "==", false),
+        orderBy("createdAt", "desc"),
+        limit(200)
+      );
+    }
+
+    const unsubSubmissions = onSnapshot(qSub, (snapshot) => {
+      let data = snapshot.docs.map(doc => {
+        const d = doc.data();
+        return [
+          d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, 
+          d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, 
+          d.pickupLocation, d.referral, d.notes, doc.id
+        ];
+      });
+
+      // [核心修復] 如果有選日期，強制在前端再過濾一次，確保清單中絕對沒有非該日的舊資料
+      if (adminFilterDate) {
+        const formattedDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
+        data = data.filter(row => String(row[11] || '').startsWith(formattedDate));
+      }
+
+      // 即時模糊搜尋過濾
+      if (adminSearchKeyword.trim()) {
+        const kw = adminSearchKeyword.toLowerCase();
+        data = data.filter(row => 
+          String(row[2]).toLowerCase().includes(kw) || 
+          String(row[3]).includes(kw) || 
+          String(row[4]).toLowerCase().includes(kw)
+        );
+      }
+
+      setSubmissions([header, ...data]);
+      setTotalRows(data.length);
+      setIsDataLoading(false);
+    });
+
+    // 2. 監聽回收桶
+    const qBin = query(collection(db, "registrations"), where("deleted", "==", true), orderBy("createdAt", "desc"), limit(100));
+    const unsubBin = onSnapshot(qBin, (snapshot) => {
+      const data = snapshot.docs.map(doc => {
+        const d = doc.data();
+        return [d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, d.pickupLocation, d.referral, d.notes, doc.id];
+      });
+      setDeletedSubmissions(data);
+    });
+
+    // 3. 監聽操作日誌
+    const qLogs = query(collection(db, "logs"), orderBy("createdAt", "desc"), limit(50));
+    const unsubLogs = onSnapshot(qLogs, (snapshot) => {
+      const logHeader = ["時間", "操作類型", "操作者", "詳細內容"];
+      const data = snapshot.docs.map(doc => {
+        const d = doc.data();
+        return [d.timestamp, d.type, d.operator || '未知', d.details];
+      });
+      setLogs([logHeader, ...data]);
+    });
+
+    // 4. 監聽統計數據
+    const qStats = query(collection(db, "registrations"), where("deleted", "==", false));
+    const unsubStats = onSnapshot(qStats, (snapshot) => {
+      let kits = 0, players = 0, revenue = 0, pending = 0;
+      const todayStr = new Date().toISOString().split('T')[0];
+      snapshot.docs.forEach(doc => {
+        const d = doc.data();
+        if (d.status === '待審核') pending++;
+        if (d.status === '通過') revenue += Number(d.totalAmount) || 0;
+        if (d.pickupTime && d.pickupTime.startsWith(todayStr)) {
+          kits += Number(d.quantity) || 0;
+          players += Number(d.players) || 0;
+        }
+      });
+      setDashboardStats({ pendingCount: pending, totalRevenue: revenue, todayKits: kits, todayPlayers: players });
+    });
+
+    return () => {
+      unsubSubmissions(); unsubBin(); unsubLogs(); unsubStats();
+    };
+  }, [isAdmin, adminFilterDate, adminSearchKeyword]);
+
+  const handleAdminLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsDataLoading(true);
+
+    try {
+      // 1. 檢查是否輸入帳號
+      if (!adminUser) {
+        showAlert('請輸入帳號');
+        setIsDataLoading(false);
+        return;
+      }
+
+      // 2. 檢查 Firestore 中的多管理者帳號
+      const q = query(
+        collection(db, "admins"), 
+        where("username", "==", adminUser),
+        where("password", "==", adminPassword),
+        limit(1)
+      );
+
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const adminDoc = querySnapshot.docs[0];
+        const adminData = { id: adminDoc.id, ...adminDoc.data() } as AdminAccount;
+
+        setCurrentAdmin(adminData);
+        setIsAdmin(true);
+        setShowAdminLogin(false);
+
+        // 更新最後登入時間
+        await updateDoc(doc(db, "admins", adminDoc.id), {
+          lastLogin: formatFullDateTime(new Date())
+        });
+
+        addLog('系統', `管理者 [${adminData.nickname || adminData.username}] 登入成功`);
+      } else {
+
+        showAlert('帳號或密碼錯誤');
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      showAlert('登入過程中發生錯誤');
+    } finally {
+      setIsDataLoading(false);
+    }
+  };
+  const handleDateFilter = (date: Date | null) => setAdminFilterDate(date);
+
+  const addLog = async (type: string, details: string, operatorOverride?: string) => {
+    try {
+      const operator = operatorOverride || (currentAdmin ? (currentAdmin.nickname || currentAdmin.username) : '超級管理員');
+      await addDoc(collection(db, "logs"), {
+        timestamp: formatFullDateTime(new Date()),
+        type,
+        operator,
+        details,
+        createdAt: serverTimestamp()
+      });
+    } catch (e) {
+      console.error("Log error:", e);
+    }
+  };
+
+  const handleClearLogs = async () => {
+    showConfirm('確定要清除所有操作日誌嗎？此動作無法復原。', async () => {
+      setIsDataLoading(true);
+      try {
+        const q = query(collection(db, "logs"));
+        const snapshot = await getDocs(q);
+        const batch = writeBatch(db);
+        snapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+        addLog('清除日誌', '超級管理員清空了所有操作日誌');
+        showAlert('日誌已全數清除');
+      } catch (err) {
+        console.error(err);
+        showAlert('清除失敗');
+      } finally {
+        setIsDataLoading(false);
+      }
+    });
+  };
+
+  const loadPage = async (page: number) => {
+    // Firebase 分頁邏輯較複雜，此處先維持基礎 100 筆即時更新，
+    // 若資料量大於 1000 筆時建議再實作 startAfter 分頁。
+    setCurrentPage(page);
+  };
+
+  const startEditSubmission = (row: any[], _index: number) => {
+    let rawTime = row[11] || ''; 
+    if (typeof rawTime === 'string' && rawTime.includes('T')) {
+      rawTime = formatDateTimeMinute(new Date(rawTime));
+    }
+    setEditData({
+      timestamp: row[0], status: row[1], name: row[2], phone: row[3], email: row[4], 
+      session: row[5], quantity: row[6], players: row[7], totalAmount: row[8], 
+      paymentMethod: row[9], bankLast5: row[10], pickupTime: rawTime, 
+      pickupLocation: row[12], referral: row[13], notes: row[14],
+      id: row[15] // 使用 doc ID
+    });
+    setIsEditing(true);
+  };
+
+  const handleUpdateSubmission = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editData.id) return;
+    setIsSubmitting(true);
+    try {
+      const docRef = doc(db, "registrations", editData.id);
+      const updateData = { ...editData };
+      delete updateData.id;
+      await updateDoc(docRef, updateData);
+      
+      addLog('修改報名', `修改了「${editData.name}」的報名資訊`);
+      setIsEditing(false);
+      showAlert('修改成功');
+    } catch (err) {
+      showAlert('更新失敗');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const [isEditingSession, setIsEditingSession] = useState(false);
+  const [editingSession, setEditingSession] = useState({ id: '', oldName: '', newName: '', newPrice: '', fixedDate: '', fixedTime: '', isSpecial: false });
+
+  const toggleFixedTime = (time: string, isEdit: boolean) => {
+    if (isEdit) {
+      const currentTimes = editingSession.fixedTime ? editingSession.fixedTime.split(',').filter(Boolean) : [];
+      const newTimes = currentTimes.includes(time) ? currentTimes.filter(t => t !== time) : [...currentTimes, time].sort();
+      setEditingSession({ ...editingSession, fixedTime: newTimes.join(',') });
+    } else {
+      const currentTimes = newSession.fixedTime ? newSession.fixedTime.split(',').filter(Boolean) : [];
+      const newTimes = currentTimes.includes(time) ? currentTimes.filter(t => t !== time) : [...currentTimes, time].sort();
+      setNewSession({ ...newSession, fixedTime: newTimes.join(',') });
+    }
+  };
+
+  const handleAddSession = async () => {
+    if (!newSession.name || !newSession.price) return;
+    setIsSubmitting(true);
+    
+    // 修正：一般場次不再自動存入目前的全域時段，使其能保持動態抓取資料庫設定
+    let finalFixedTime = newSession.fixedTime;
+    // 如果是特別場次且沒有設定時段，才考慮是否要預設（或者維持空白）
+    // 這裡我們讓它保持原本的 newSession.fixedTime，不再強制填充一般場次的 generalTimeSlots
+    
+    const collectionName = newSession.isSpecial ? "special_sessions" : "sessions";
+
+    try {
+      await addDoc(collection(db, collectionName), {
+        ...newSession,
+        fixedTime: finalFixedTime,
+        price: Number(newSession.price),
+        createdAt: serverTimestamp()
+      });
+      setNewSession({ name: '', price: '', fixedDate: '', fixedTime: '', isSpecial: false });
+      addLog('新增場次', `新增${newSession.isSpecial ? '特別' : '一般'}場次: ${newSession.name}`);
+      showAlert('新增成功！');
+    } catch (err: any) {
+      showAlert(`新增失敗！`);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const startEditSession = (session: Session) => {
+    const cleanedTime = (session.fixedTime || '').split(',').map((t: string) => {
+      const p = t.trim();
+      if (p.includes('T')) return p.split('T')[1].substring(0, 5);
+      if (p.length > 10) {
+        const m = p.match(/(\d{2}:\d{2})/);
+        return m ? m[1] : "";
+      }
+      return p;
+    }).filter((t: string) => /^([01]\d|2[0-3]):([0-5]\d)$/.test(t) && t !== "23:30").join(',');
+    setEditingSession({ 
+      id: (session as any).id, 
+      oldName: session.name, 
+      newName: session.name, 
+      newPrice: String(session.price), 
+      fixedDate: session.fixedDate || '', 
+      fixedTime: cleanedTime, 
+      isSpecial: session.isSpecial !== undefined ? session.isSpecial : !!session.fixedDate 
+    });
+    setIsEditingSession(true);
+  };
+
+  const handleUpdateSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSession.id) return;
+    setIsSubmitting(true);
+    const collectionName = editingSession.isSpecial ? "special_sessions" : "sessions";
+    try {
+      const docRef = doc(db, collectionName, editingSession.id);
+      await updateDoc(docRef, {
+        name: editingSession.newName,
+        price: Number(editingSession.newPrice),
+        fixedDate: editingSession.fixedDate,
+        fixedTime: editingSession.fixedTime,
+        isSpecial: editingSession.isSpecial
+      });
+      setIsEditingSession(false);
+      addLog('修改場次', `將 ${editingSession.oldName} 修改為 ${editingSession.newName}`);
+      showAlert('修改成功');
+    } catch (err) {
+      showAlert('修改失敗');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteSession = async (name: string, id?: string) => {
+    showConfirm(`確定要刪除場次「${name}」嗎？`, async () => {
+      if (!id) return;
+      try {
+        // 先嘗試從一般場次刪除，如果失敗（例如不在該集合）再嘗試特別場次
+        // 或者根據目前的 UI 邏輯，我們可以從 sessions state 中找到該 session 的類型
+        const session = sessions.find(s => (s as any).id === id);
+        const collectionName = session?.isSpecial ? "special_sessions" : "sessions";
+        
+        await deleteDoc(doc(db, collectionName, id));
+        addLog('刪除場次', `刪除了場次：${name}`);
+        showAlert('刪除成功');
+      } catch (err) {
+        showAlert('刪除失敗');
+      }
+    });
+  };
+
+  const handleDeleteSubmission = async (rowIndex: number) => {
+    const target = submissions[rowIndex];
+    const docId = target[15];
+    if (!docId) return;
+    
+    showConfirm('確定要將這筆報名資料移至回收桶嗎？', async () => {
+      setIsDataLoading(true);
+      try {
+        const docRef = doc(db, "registrations", docId);
+        await updateDoc(docRef, { deleted: true });
+        addLog('刪除報名', `將「${target[2]}」移至回收桶`);
+        showAlert('已移至回收桶');
+      } catch (err) {
+        showAlert('操作失敗');
+      } finally {
+        setIsDataLoading(false);
+      }
+    });
+  };
+
+  const handleVerifyPayment = async (rowIndex: number, status: string) => {
+    const target = submissions[rowIndex];
+    const docId = target[15];
+    if (!docId) return;
+
+    showConfirm(`確定要將此筆報名標記為「${status}」嗎？`, async () => {
+      setIsDataLoading(true);
+      try {
+        const docRef = doc(db, "registrations", docId);
+        await updateDoc(docRef, { status });
+        addLog('審核付款', `將「${target[2]}」的狀態變更為 [${status}]`);
+        showAlert('審核狀態已更新');
+      } catch (err) {
+        showAlert('審核失敗');
+      } finally {
+        setIsDataLoading(false);
+      }
+    });
+  };
+
+  const [showConfirmation, setShowConfirmation] = useState(false);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    if (name === 'name') {
+      const filteredValue = value.replace(/[0-9]/g, '');
+      if (filteredValue.length > 20) return;
+      setFormData(prev => ({ ...prev, [name]: filteredValue }));
+      validateField(name, filteredValue);
+      return;
+    }
+    if (name === 'bankLast5') {
+      const filteredValue = value.replace(/\D/g, '').slice(0, 5);
+      setFormData(prev => ({ ...prev, [name]: filteredValue }));
+      return;
+    }
+    if (name === 'quantity') {
+      const qty = parseInt(value) || 0;
+      setFormData(prev => {
+        let updatedSession = prev.session;
+        if (sessionType === '一般預約') {
+          const filtered = sessions.filter(s => !s.isSpecial);
+          if (qty >= 5) updatedSession = filtered.find(s => s.name.includes('團體優惠'))?.name || filtered[0]?.name || '';
+          else updatedSession = filtered.find(s => s.name.includes('單人') || s.name.includes('個人') || s.name.includes('一般'))?.name || filtered[0]?.name || '';
+        }
+        return { ...prev, quantity: value, session: updatedSession };
+      });
+      return;
+    }
+    if (name === 'session') {
+      const selectedSession = sessions.find(s => s.name === value);
+      let newPickupTime = ''; 
+      
+      // 如果是「特別場次」且有「固定日期」，則尊重固定日期
+      if (selectedSession?.fixedDate) {
+        const times = selectedSession.fixedTime ? selectedSession.fixedTime.split(',').sort() : [];
+        let timeToUse = times.length > 0 ? times[0] : timeslotConfig.generalStart;
+        if (timeToUse.length === 4 && timeToUse.includes(':')) timeToUse = '0' + timeToUse;
+        newPickupTime = `${selectedSession.fixedDate} ${timeToUse}`;
+      } else {
+        // 其餘情況（包含有勾選時段的一般場次）一律交由 findEarliestSlot 計算最早可用時間
+        // 這會自動處理「超過今日最晚班次跳隔天」的邏輯
+        newPickupTime = findEarliestSlot(sessions, value);
+      }
+      
+      setFormData(prev => ({ ...prev, session: value, pickupTime: newPickupTime }));
+      return;
+    }
+    if (name === 'countryCode') {
+      setFormData(prev => ({ ...prev, [name]: value }));
+      validateField('phone', formData.phone, value);
+      return;
+    }
+    if (name === 'phone') {
+      const filteredValue = value.replace(/\D/g, '');
+      const rules: { [key: string]: number } = { '+886': 10, '+852': 8, '+853': 8, '+60': 11, '+65': 8, 'landline': 10 };
+      const maxLen = rules[formData.countryCode] || 15;
+      if (filteredValue.length > maxLen) return;
+      setFormData(prev => ({ ...prev, [name]: filteredValue }));
+      validateField(name, filteredValue);
+      return;
+    }
+    if (name === 'email') {
+      setFormData(prev => ({ ...prev, [name]: value }));
+      validateField(name, value);
+      return;
+    }
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleDateChange = (date: Date | null) => {
+    if (date) {
+      const day = date.getDay();
+      if (day === 1 || day === 2) return;
+      
+      const now = new Date();
+      const isToday = date.getFullYear() === now.getFullYear() &&
+                      date.getMonth() === now.getMonth() &&
+                      date.getDate() === now.getDate();
+      
+      const selectedSession = sessions.find(s => s.name === formData.session);
+      
+      // 修正：動態決定開放時間的起點，優先從時段清單抓取
+      const fallbackSlots = (selectedSession?.isSpecial || sessionType === '特別預約') ? specialTimeSlots : generalTimeSlots;
+      const defaultStart = fallbackSlots.length > 0 ? fallbackSlots[0] : timeslotConfig.generalStart;
+      const defaultEnd = fallbackSlots.length > 0 ? fallbackSlots[fallbackSlots.length - 1] : timeslotConfig.generalEnd;
+
+      let startH = parseInt(defaultStart.split(':')[0]);
+      let startM = parseInt(defaultStart.split(':')[1]);
+      let endH = parseInt(defaultEnd.split(':')[0]);
+      let endM = parseInt(defaultEnd.split(':')[1]);
+
+      if (selectedSession?.fixedTime) {
+        const times = selectedSession.fixedTime.split(',').sort();
+        const firstParts = times[0].split(':');
+        const lastParts = times[times.length - 1].split(':');
+        startH = parseInt(firstParts[0]);
+        startM = parseInt(firstParts[1]);
+        endH = parseInt(lastParts[0]);
+        endM = parseInt(lastParts[1]);
+      }
+      
+      if (isToday) {
+        // 如果是今天，檢查目前時間是否已超過最早開放時間
+        const currentHour = now.getHours();
+        const currentMin = now.getMinutes();
+        const selectedHour = date.getHours();
+        const selectedMin = date.getMinutes();
+        
+        // 如果目前選的時間在過去，或者早於該場次開放時間，則需要重新調整
+        let needsAdjustment = false;
+        if (selectedHour < currentHour || (selectedHour === currentHour && selectedMin < currentMin)) {
+          needsAdjustment = true;
+        }
+        if (selectedHour < startH || (selectedHour === startH && selectedMin < startM)) {
+          needsAdjustment = true;
+        }
+
+        if (needsAdjustment) {
+          // 重新計算今天最早可選的時間
+          if (currentHour < startH || (currentHour === startH && currentMin < startM)) {
+            date.setHours(startH, startM, 0, 0);
+          } else if (currentHour > endH || (currentHour === endH && currentMin >= endM)) {
+            // 修正：超過今天最後一班，跳到明天並跳過週一二
+            date.setDate(date.getDate() + 1);
+            while (date.getDay() === 1 || date.getDay() === 2) {
+              date.setDate(date.getDate() + 1);
+            }
+            date.setHours(startH, startM, 0, 0);
+          } else {
+            // 對齊到下一個 30 分鐘
+            if (currentMin < 30) {
+              date.setHours(currentHour, 30, 0, 0);
+            } else {
+              date.setHours(currentHour + 1, 0, 0, 0);
+            }
+          }
+        }
+      } else {
+        // 如果是未來日期，且時間早於場次開放時間或晚於場次結束時間，校正回場次起始時間
+        const hours = date.getHours();
+        const mins = date.getMinutes();
+        if (hours < startH || (hours === startH && mins < startM) || hours > endH) {
+           date.setHours(startH, startM, 0, 0);
+        }
+      }
+      
+      setFormData(prev => ({ ...prev, pickupTime: formatDateTimeMinute(date) }));
+    }
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value, checked } = e.target;
+    setFormData(prev => {
+      const newReferral = checked ? [...prev.referral, value] : prev.referral.filter(item => item !== value);
+      return { ...prev, referral: newReferral };
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (formErrors.email || formErrors.phone || formErrors.name) {
+      showAlert('請修正表單中的錯誤紅字後再試。');
+      return;
+    }
+    const requiredFields = [{ key: 'name', label: '姓名' }, { key: 'phone', label: '電話' }, { key: 'email', label: 'Email' }];
+    for (const field of requiredFields) {
+      const value = formData[field.key as keyof typeof formData];
+      if (!value || (typeof value === 'string' && value.trim() === '')) {
+        showAlert(`請填寫${field.label}`);
+        return;
+      }
+    }
+    if (sessionType === '') { showAlert('請選擇場次類型'); return; }
+    if (!formData.session) { showAlert('尚未選定場次'); return; }
+    if (!formData.pickupTime) { showAlert('請選擇日期時間'); return; }
+    setShowConfirmation(true);
+  };
+
+  const getPickupLocationDisplay = (location: string) => {
+    if (lang === 'zh') return location;
+    if (location.includes('新港文教基金會')) return t.locFoundation;
+    if (location.includes('培桂堂')) return t.locPeiGui;
+    return location;
+  };
+
+  // 執行最終資料寫入的函數
+  const executeFinalSubmission = async (last5?: string) => {
+    setIsSubmitting(true);
+    try {
+      const combinedPhone = `${formData.countryCode === 'landline' ? '市內電話' : formData.countryCode} ${formData.phone}`;
+      
+      const submissionData = {
+        ...formData,
+        phone: combinedPhone,
+        players: formData.players.trim() || '1',
+        notes: formData.notes.trim() || '無',
+        paymentMethod: formData.paymentMethod.split(' (')[0],
+        bankLast5: last5 || '無',
+        totalAmount: calculatedTotal,
+        referral: formData.referral.join(', '),
+        timestamp: formatFullDateTime(new Date()),
+        status: '待審核',
+        createdAt: serverTimestamp(),
+        deleted: false
+      };
+
+      const docRef = await addDoc(collection(db, "registrations"), submissionData);
+      setLastSubmissionId(docRef.id);
+      addLog('報名提交', `${formData.name} 提交了報名 (${formData.session})`);
+      return docRef.id;
+    } catch (err) {
+      console.error("提交失敗:", err);
+      showAlert('提交失敗，請檢查網路連線。');
+      throw err;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleConfirmSubmit = async () => {
+    if (formData.hp_field !== '') return; 
+    const timeDiff = (Date.now() - loadTime) / 1000;
+    if (timeDiff < 3) { showAlert('填表速度過快，請稍候再試'); return; }
+    
+    const qty = parseInt(formData.quantity) || 0;
+    const players = parseInt(formData.players) || 0;
+    const maxPlayers = qty * 4;
+    
+    if (qty <= 0) { showAlert('份數必須至少為 1 份'); setShowConfirmation(false); return; }
+    if (players <= 0 || players > maxPlayers) { showAlert(`遊玩人數上限應為 ${maxPlayers} 人`); setShowConfirmation(false); return; }
+    
+    setShowConfirmation(false);
+
+    // 取得選取的付款方式詳細資訊
+    const selectedPayment = (paymentMethods || []).find(m => m.name === formData.paymentMethod);
+
+    // 如果是「銀行轉帳」或「Line Pay」，不立即存檔，而是先顯示成功頁面（引導付款）
+    if (selectedPayment?.type === 'bank' || selectedPayment?.type === 'linepay') {
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    // 其他付款方式（如現金）則立即存檔
+    try {
+      await executeFinalSubmission();
+      setSubmitted(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (e) {
+      // 錯誤已處理
+    }
+  };
+
+  const handleUpdateBankLast5 = async (id: string, last5: string) => {
+    try {
+      // 如果 ID 存在，代表已經存過檔（例如現金轉銀行之類的例外狀況）
+      if (id) {
+        const docRef = doc(db, "registrations", id);
+        await updateDoc(docRef, { bankLast5: last5 });
+        return true;
+      } else {
+        // 如果沒有 ID，代表尚未存過檔，現在進行最終存檔並帶入末五碼
+        const newId = await executeFinalSubmission(last5);
+        return !!newId;
+      }
+    } catch (err) {
+      console.error("更新末五碼失敗:", err);
+      return false;
+    }
+  };
+
+  const getPaymentMethodDisplay = (method: string) => {
+    if (lang === 'zh') return method.split(' (')[0];
+    if (method.includes('現金支付')) return t.payInPerson;
+    if (method.includes('銀行轉帳')) return t.bankTransfer;
+    if (method.includes('電子支付')) return 'Digital Payment';
+    return method;
+  };
+
+  const resetForm = () => {
+    // 透過重新整理頁面來達到最徹底的狀態重置，解決組件內部狀態殘留問題
+    window.location.reload();
+  };
+
+  const handleRestoreSubmission = async (rowIndex: number) => {
+    const target = deletedSubmissions[rowIndex];
+    const docId = target[15];
+    if (!docId) return;
+    
+    setIsSubmitting(true);
+    try {
+      const docRef = doc(db, "registrations", docId);
+      await updateDoc(docRef, { deleted: false });
+      addLog('還原報名', `從回收桶還原了「${target[2]}」的紀錄`);
+      showAlert('資料已還原');
+      setShowRecycleBin(false);
+    } catch (err) {
+      showAlert('還原失敗');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleClearRecycleBin = async () => {
+    showConfirm('確定要徹底刪除回收桶中的所有資料嗎？此動作無法復原。', async () => {
+      setIsDataLoading(true);
+      try {
+        const q = query(collection(db, "registrations"), where("deleted", "==", true));
+        const snapshot = await getDocs(q);
+        const batch = writeBatch(db);
+        snapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+        addLog('清空回收桶', '超級管理員徹底刪除了回收桶中的所有報名資料');
+        showAlert('回收桶已清空');
+        setShowRecycleBin(false);
+      } catch (err) {
+        console.error(err);
+        showAlert('清空失敗');
+      } finally {
+        setIsDataLoading(false);
+      }
+    });
+  };
+
+  // [新增] 匯入場次舊資料邏輯
+  const handleImportSessionsExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    showConfirm('確定要從此 Excel 匯入場次設定嗎？', async () => {
+      setIsDataLoading(true);
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          const bstr = evt.target?.result;
+          const wb = XLSX.read(bstr, { type: 'binary' });
+          const ws = wb.Sheets[wb.SheetNames[0]];
+          const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+
+          if (data.length <= 1) {
+            showAlert('Excel 檔案似乎沒有資料。');
+            setIsDataLoading(false);
+            return;
+          }
+
+          const rows = data.slice(1);
+          let count = 0;
+
+          for (const row of rows) {
+            if (!row[0]) continue; // 沒名稱就跳過
+
+            const isSpecial = row[2] === '是' || row[2] === 'special' || row[2] === true || !!row[3];
+            const collectionName = isSpecial ? "special_sessions" : "sessions";
+
+            const sessionData = {
+              name: String(row[0]),
+              price: Number(row[1]) || 0,
+              isSpecial: isSpecial,
+              fixedDate: row[3] ? String(row[3]) : '',
+              fixedTime: row[4] ? String(row[4]) : '',
+              enName: row[5] ? String(row[5]) : '',
+              createdAt: serverTimestamp()
+            };
+
+            await addDoc(collection(db, collectionName), sessionData);
+            count++;
+          }
+          addLog('匯入場次', `批次匯入了 ${count} 個場次`);
+          showAlert(`成功匯入 ${count} 個場次！`);
+        } catch (err) {
+          console.error(err);
+          showAlert('匯入失敗，請檢查檔案格式。');
+        } finally {
+          setIsDataLoading(false);
+          e.target.value = '';
+        }
+      };
+      reader.readAsBinaryString(file);
+    });
+  };
+
+  if (isAdmin) {
+    return (
+      <>
+        <CustomCursor />
+        <AdminDashboard 
+          {...{ t, theme, toggleTheme, setIsAdmin, adminTab, setAdminTab, currentAdmin, setCurrentAdmin, dashboardStats: getDisplayStats(), logs, sessions, startEditSession, handleDeleteSession, newSession, setNewSession, handleAddSession, isSubmitting, toggleFixedTime, specialTimeSlots, totalRows, handleDownloadExcel, handleImportExcel, handleImportSessionsExcel, adminFilterDate, handleDateFilter, adminSearchKeyword, setAdminSearchKeyword, showColumnFilter, setShowShowColumnFilter, submissions, visibleColumns, toggleColumn, currentPage, isDataLoading, loadPage, handleSort, sortConfig, setAuditTarget, setShowAuditModal, showAuditModal, auditTarget, handleVerifyPayment, startEditSubmission, isEditing, setIsEditing, editData, setEditData, handleUpdateSubmission, handleDeleteSubmission, isEditingSession, setIsEditingSession, editingSession, setEditingSession, handleUpdateSession, timeslotConfig, setTimeslotConfig, generalTimeSlots, setGeneralTimeSlots, setSpecialTimeSlots, generateTimeSlots, newManualTime, setNewManualTime, handleManualTimeAdd, removeTimeSlot, saveTimeSlotsConfig, formatFullDateTime, deletedSubmissions, showRecycleBin, setShowRecycleBin, handleRestoreSubmission, dbStatus, paymentMethods, addPaymentMethod, deletePaymentMethod, handleClearLogs, handleClearRecycleBin, showAlert, showConfirm }}
+        />
+        <SystemModal 
+          show={sysModal.show}
+          type={sysModal.type}
+          title={sysModal.title}
+          message={sysModal.message}
+          onConfirm={sysModal.onConfirm}
+          onCancel={sysModal.onCancel}
+          confirmText={sysModal.confirmText}
+          cancelText={sysModal.cancelText}
+        />
+      </>
+    );
+  }
+
+  if (submitted) {
+    return (
+      <>
+        <CustomCursor />
+        <SuccessScreen 
+          {...{ t, formData, calculatedTotal, handleCopyAccount, getSessionDisplayName, getPaymentMethodDisplay, resetForm, paymentMethods, lang, lastSubmissionId, handleUpdateBankLast5, showAlert }}
+        />
+        <SystemModal 
+          show={sysModal.show}
+          type={sysModal.type}
+          title={sysModal.title}
+          message={sysModal.message}
+          onConfirm={sysModal.onConfirm}
+          onCancel={sysModal.onCancel}
+          confirmText={sysModal.confirmText}
+          cancelText={sysModal.cancelText}
+        />
+      </>
+    );
+  }
+
+  return (
+    <div className="container">
+      <CustomCursor />
+      <EntryAnimation {...{ t, isEntryAnimating, shouldRenderEntry }} />
+      <AdminLogin {...{ t, showAdminLogin, setShowAdminLogin, adminUser, setAdminUser, adminPassword, setAdminPassword, handleAdminLogin, isDataLoading }} />
+      <ConfirmationModal {...{ t, lang, showConfirmation, setShowConfirmation, formData, calculatedTotal, handleConfirmSubmit, isSubmitting, getSessionDisplayName, getPickupLocationDisplay, getPaymentMethodDisplay }} />
+      <Header {...{ lang, setLang, theme, toggleTheme, t }} />
+      <main className="main-content">
+        <div className="poster-container"><img src="poster.jpg" alt="Poster" className="poster-image" /></div>
+        <StorySection t={t} />
+        <EventInfo t={t} />
+        <RegistrationForm {...{ t, lang, formData, formErrors, sessionType, setSessionType, sessions, timeslotConfig, generalTimeSlots, specialTimeSlots, handleInputChange, handleCheckboxChange, handleDateChange, handleCopyAccount, handleSubmit, isSubmitting, calculatedTotal, getSessionDisplayName, paymentMethods }} />
+      </main>
+      <SocialButtons t={t} />
+      <Footer t={t} setShowAdminLogin={setShowAdminLogin} />
+      <SystemModal 
+        show={sysModal.show}
+        type={sysModal.type}
+        title={sysModal.title}
+        message={sysModal.message}
+        onConfirm={sysModal.onConfirm}
+        onCancel={sysModal.onCancel}
+        confirmText={sysModal.confirmText}
+        cancelText={sysModal.cancelText}
+      />
+    </div>
+  )
+}
+export default App

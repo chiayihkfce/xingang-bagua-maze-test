@@ -1,0 +1,21 @@
+:root {
+  font-family: 'Noto Serif TC', Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* 水平置中 */
+  justify-content: flex-start; /* 從頂部開始，避免長內容被切掉 */
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+#root {
+  width: 100%;
+}

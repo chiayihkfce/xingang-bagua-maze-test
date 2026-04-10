@@ -1,0 +1,59 @@
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- 1. 精確八角形背景 (符合八卦外型) -->
+  <path d="M30 0 L70 0 L100 30 L100 70 L70 100 L30 100 L0 70 L0 30 Z" fill="black"/>
+  
+  <!-- 2. 太極中心 (S型曲線與陰陽眼) -->
+  <g transform="translate(50, 50) scale(0.35)">
+    <circle r="48" fill="white" stroke="white" stroke-width="1"/>
+    <!-- 陰陽魚 -->
+    <path d="M 0 -48 A 48 48 0 0 1 0 48 A 24 24 0 0 1 0 0 A 24 24 0 0 0 0 -48" fill="black"/>
+    <circle cy="-24" r="8" fill="white"/>
+    <circle cy="24" r="8" fill="black"/>
+  </g>
+
+  <!-- 3. 八卦卦象 (由內而外：初爻、二爻、三爻) -->
+  <g fill="white" transform="translate(50, 50)">
+    <defs>
+      <!-- 陽爻 (連續線) -->
+      <rect id="yang" x="-10" y="0" width="20" height="2.5"/>
+      <!-- 陰爻 (斷開線) -->
+      <g id="yin">
+        <rect x="-10" y="0" width="8.5" height="2.5"/>
+        <rect x="1.5" y="0" width="8.5" height="2.5"/>
+      </g>
+    </defs>
+
+    <!-- 0° 正上: 乾 (☰) - 天 -->
+    <g transform="rotate(0) translate(0, -38)">
+      <use href="#yang" y="0"/> <use href="#yang" y="4"/> <use href="#yang" y="8"/>
+    </g>
+    <!-- 180° 正下: 坤 (☷) - 地 -->
+    <g transform="rotate(180) translate(0, -38)">
+      <use href="#yin" y="0"/> <use href="#yin" y="4"/> <use href="#yin" y="8"/>
+    </g>
+    <!-- 270° 正左: 離 (☲) - 火 -->
+    <g transform="rotate(270) translate(0, -38)">
+      <use href="#yang" y="0"/> <use href="#yin" y="4"/> <use href="#yang" y="8"/>
+    </g>
+    <!-- 90° 正右: 坎 (☵) - 水 -->
+    <g transform="rotate(90) translate(0, -38)">
+      <use href="#yin" y="0"/> <use href="#yang" y="4"/> <use href="#yin" y="8"/>
+    </g>
+    <!-- 315° 左上: 兌 (☱) - 澤 -->
+    <g transform="rotate(315) translate(0, -38)">
+      <use href="#yang" y="0"/> <use href="#yang" y="4"/> <use href="#yin" y="8"/>
+    </g>
+    <!-- 45° 右上: 巽 (☴) - 風 -->
+    <g transform="rotate(45) translate(0, -38)">
+      <use href="#yin" y="0"/> <use href="#yang" y="4"/> <use href="#yang" y="8"/>
+    </g>
+    <!-- 225° 左下: 震 (☳) - 雷 -->
+    <g transform="rotate(225) translate(0, -38)">
+      <use href="#yang" y="0"/> <use href="#yin" y="4"/> <use href="#yin" y="8"/>
+    </g>
+    <!-- 135° 右下: 艮 (☶) - 山 -->
+    <g transform="rotate(135) translate(0, -38)">
+      <use href="#yin" y="0"/> <use href="#yin" y="4"/> <use href="#yang" y="8"/>
+    </g>
+  </g>
+</svg>
