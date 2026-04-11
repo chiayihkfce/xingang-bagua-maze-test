@@ -1069,14 +1069,12 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.85);
+  /* 效能優化：移除消耗極大的背景模糊，改用略深的半透明背景以維持專注度 */
+  background: rgba(0, 0, 0, 0.9); 
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  /* 效能優化：調降模糊程度以減少顯示卡負擔，解決鼠標卡頓 */
-  backdrop-filter: blur(2px); 
-  -webkit-backdrop-filter: blur(2px);
   padding: 15px;
   box-sizing: border-box;
 }
