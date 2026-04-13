@@ -88,6 +88,16 @@ function App() {
 
   // --- 1. 狀態與變數定義 ---
 
+  // 監聽混淆網址
+  useEffect(() => {
+    const secretPath = '/xk_admin_panel_6688';
+    if (window.location.pathname === secretPath) {
+      setShowAdminLogin(true);
+      // 可選擇是否要隱藏路徑以增加安全性
+      window.history.replaceState({}, '', '/');
+    }
+  }, []);
+
   const [lang, setLang] = useState<Lang>(() => {
     return (localStorage.getItem('lang') as Lang) || 'zh';
   });
@@ -1770,7 +1780,7 @@ const formatDateTimeMinute = (date: any) => {
         <RegistrationForm {...{ t, lang, formData, formErrors, sessionType, setSessionType, sessions, timeslotConfig, generalTimeSlots, specialTimeSlots, handleInputChange, handleCheckboxChange, handleDateChange, handleCopyAccount, handleSubmit, isSubmitting, calculatedTotal, getSessionDisplayName, paymentMethods }} />
       </main>
       <SocialButtons t={t} />
-      <Footer t={t} setShowAdminLogin={setShowAdminLogin} />
+      <Footer t={t} />
       <SystemModal 
         show={sysModal.show}
         type={sysModal.type}

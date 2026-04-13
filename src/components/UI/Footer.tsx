@@ -2,10 +2,9 @@ import React from 'react';
 
 interface FooterProps {
   t: any;
-  setShowAdminLogin: (show: boolean) => void;
 }
 
-const Footer: React.FC<FooterProps> = ({ t, setShowAdminLogin }) => {
+const Footer: React.FC<FooterProps> = ({ t }) => {
   return (
     <footer className="footer">
       <div className="footer-content">
@@ -37,7 +36,7 @@ const Footer: React.FC<FooterProps> = ({ t, setShowAdminLogin }) => {
       </div>
       
       <div className="footer-bottom">
-        <div className="admin-trigger" onClick={() => setShowAdminLogin(true)}>
+        <div className="admin-logo-wrapper">
           <img src="footer-logo.svg" alt="Hsinkang Foundation Logo" className="footer-admin-logo" />
         </div>
         <p className="copy">{t.footerCopy}</p>
