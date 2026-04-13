@@ -67,20 +67,21 @@ function App() {
   // --- 1. 狀態與變數定義 ---
 
   // 路由狀態
-  const [currentPath, setCurrentPath] = useState(window.location.pathname);
+  const [currentPath, setCurrentPath] = useState(window.location.hash.replace(/^#\/?/, '') || '/');
   const SECRET_ADMIN_PATH = (import.meta.env.VITE_ADMIN_SECRET_PATH || 'admin').replace(/^\//, '');
 
   // 監聽網址變化
   useEffect(() => {
-    const handlePopState = () => setCurrentPath(window.location.pathname);
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    const handleHashChange = () => {
+      const path = window.location.hash.replace(/^#\/?/, '') || '/';
+      setCurrentPath(path);
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
 
   const navigate = (to: string) => {
-    const path = to.startsWith('/') ? to : '/' + to;
-    window.history.pushState({}, '', path);
-    setCurrentPath(path);
+    window.location.hash = to.startsWith('/') ? to : '/' + to;
   };
 
   useEffect(() => {
