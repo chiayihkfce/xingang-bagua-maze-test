@@ -74,9 +74,11 @@
   }
 }
 
-/* 隱藏原生鼠標 (僅在電腦版生效) */
+/* 隱藏原生鼠標 (僅在電腦版且自定義鼠標啟動時生效) */
 @media (hover: hover) and (pointer: fine) {
-  *, *::before, *::after {
+  body.custom-cursor-active *, 
+  body.custom-cursor-active *::before, 
+  body.custom-cursor-active *::after {
     cursor: none !important;
   }
 }

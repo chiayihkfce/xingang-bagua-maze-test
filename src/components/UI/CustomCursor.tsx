@@ -8,13 +8,8 @@ const CustomCursor: React.FC = () => {
   const isTouch = useRef(false);
 
   useEffect(() => {
-    // 1. 偵測是否為觸控裝置 (僅執行一次)
-    isTouch.current = (
-      'ontouchstart' in window || 
-      navigator.maxTouchPoints > 0 || 
-      window.matchMedia('(hover: none)').matches
-    );
-
+    // 優化偵測邏輯：僅依賴媒體查詢來排除純觸控裝置
+    isTouch.current = window.matchMedia('(hover: none)').matches;
     if (isTouch.current) return;
 
     // 2. 核心移動邏輯 (使用 requestAnimationFrame 並直接操作樣式)
@@ -23,6 +18,8 @@ const CustomCursor: React.FC = () => {
         cursorVisible.current = true;
         dotRef.current?.classList.add('visible');
         ringRef.current?.classList.add('visible');
+        // 只有在自定義鼠標開始運作時才隱藏原生鼠標
+        document.body.classList.add('custom-cursor-active');
       }
       
       const { clientX: x, clientY: y } = e;
@@ -55,6 +52,7 @@ const CustomCursor: React.FC = () => {
       cursorVisible.current = false;
       dotRef.current?.classList.remove('visible');
       ringRef.current?.classList.remove('visible');
+      document.body.classList.remove('custom-cursor-active');
     };
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
@@ -64,12 +62,14 @@ const CustomCursor: React.FC = () => {
       cursorVisible.current = true;
       dotRef.current?.classList.add('visible');
       ringRef.current?.classList.add('visible');
+      document.body.classList.add('custom-cursor-active');
     });
 
     return () => {
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('mouseover', onMouseOver);
       document.removeEventListener('mouseleave', onMouseLeave);
+      document.body.classList.remove('custom-cursor-active');
     };
   }, []);
 
