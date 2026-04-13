@@ -62,7 +62,7 @@ import emailjs from '@emailjs/browser';
 
 function App() {
   // --- 0. 版本控管與快取清理 ---
-  const APP_VERSION = '1.3.0'; // 每次重大更新或修改設定後，請調升此版本號
+  const APP_VERSION = '1.3.1'; // 每次重大更新或修改設定後，請調升此版本號
 
   // --- 1. 狀態與變數定義 ---
 
