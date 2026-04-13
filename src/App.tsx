@@ -68,7 +68,7 @@ function App() {
 
   // 路由狀態
   const [currentPath, setCurrentPath] = useState(window.location.pathname);
-  const SECRET_ADMIN_PATH = '/xk_admin_panel_6688';
+  const SECRET_ADMIN_PATH = import.meta.env.VITE_ADMIN_SECRET_PATH || '/xk_admin_panel_6688';
 
   // 監聽網址變化
   useEffect(() => {
