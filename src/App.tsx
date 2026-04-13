@@ -68,14 +68,20 @@ function App() {
 
   // 路由狀態
   const [currentPath, setCurrentPath] = useState(window.location.hash.replace(/^#\/?/, '') || '/');
-  const SECRET_ADMIN_PATH = (import.meta.env.VITE_ADMIN_SECRET_PATH || '').replace(/^\//, '');
+  const SECRET_ADMIN_PATH = (import.meta.env.VITE_ADMIN_SECRET_PATH || 'admin').replace(/^\//, '');
 
   // 監聽網址變化
   useEffect(() => {
-    const handleHashChange = () => setCurrentPath(window.location.hash.replace(/^#\/?/, '') || '/');
+    const handleHashChange = () => {
+      const path = window.location.hash.replace(/^#\/?/, '') || '/';
+      setCurrentPath(path);
+    };
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  // [DEBUG] 如果您在測試環境，可以打開下面的註解來確認路徑
+  // useEffect(() => { console.log('Current Path:', currentPath, 'Secret Path:', SECRET_ADMIN_PATH); }, [currentPath]);
 
   const navigate = (to: string) => {
     window.location.hash = to.startsWith('/') ? to : '/' + to;

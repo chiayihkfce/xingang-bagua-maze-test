@@ -49,6 +49,7 @@ jobs:
           VITE_EMAILJS_SERVICE_ID: ${{ vars.VITE_EMAILJS_SERVICE_ID }}
           VITE_EMAILJS_TEMPLATE_ID: ${{ vars.VITE_EMAILJS_TEMPLATE_ID }}
           VITE_EMAILJS_PUBLIC_KEY: ${{ vars.VITE_EMAILJS_PUBLIC_KEY }}
+          VITE_ADMIN_SECRET_PATH: ${{ vars.VITE_ADMIN_SECRET_PATH }}
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
