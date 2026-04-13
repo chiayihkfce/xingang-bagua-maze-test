@@ -68,8 +68,9 @@ function App() {
 
   // 路由狀態
   const [currentPath, setCurrentPath] = useState(window.location.hash.replace(/^#\/?/, '') || '/');
-  // 如果環境變數不存在，使用一個極難猜測的隨機字串作為預設值，確保安全性且防止空值導致的邏輯錯誤
-  const SECRET_ADMIN_PATH = (import.meta.env.VITE_ADMIN_SECRET_PATH || 'hidden_admin_path_' + Math.random().toString(36).substring(7)).replace(/^\//, '');
+  // 取得秘密路徑環境變數，若不存在則設為 null
+  const envSecret = import.meta.env.VITE_ADMIN_SECRET_PATH;
+  const SECRET_ADMIN_PATH = envSecret ? envSecret.replace(/^\//, '') : null;
 
   // 監聽網址變化
   useEffect(() => {
