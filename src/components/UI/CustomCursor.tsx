@@ -5,12 +5,17 @@ const CustomCursor: React.FC = () => {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const cursorVisible = useRef(false);
-  const isTouch = useRef(false);
+  const [shouldRender, setShouldRender] = React.useState(false);
 
   useEffect(() => {
-    // 優化偵測邏輯：僅依賴媒體查詢來排除純觸控裝置
-    isTouch.current = window.matchMedia('(hover: none)').matches;
-    if (isTouch.current) return;
+    // 偵測是否為觸控裝置（不支援 hover）
+    const isTouchDevice = window.matchMedia('(hover: none)').matches;
+    if (isTouchDevice) {
+      setShouldRender(false);
+      return;
+    }
+
+    setShouldRender(true);
 
     // 2. 核心移動邏輯 (使用 requestAnimationFrame 並直接操作樣式)
     const onMouseMove = (e: MouseEvent) => {
@@ -72,6 +77,8 @@ const CustomCursor: React.FC = () => {
       document.body.classList.remove('custom-cursor-active');
     };
   }, []);
+
+  if (!shouldRender) return null;
 
   return (
     <>
