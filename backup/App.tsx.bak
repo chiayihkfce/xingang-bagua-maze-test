@@ -4,14 +4,28 @@ import "react-datepicker/dist/react-datepicker.css"
 import './App.css'
 import { registerLocale } from "react-datepicker";
 
-import { zhTW, formatFullDateTime, formatDateTimeMinute, findEarliestSlot, pad } from './utils/dateUtils'
-import { useSystemTheme } from './hooks/useSystemTheme'
-import { useFirebaseListeners } from './hooks/useFirebaseListeners'
+// 手動定義繁體中文語系資料 (避免依賴外部未安裝的庫)
+const zhTW = {
+  localize: {
+    month: (n: number) => ['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'][n],
+    day: (n: number) => ['日','一','二','三','四','五','六'][n],
+    ordinalNumber: (n: any) => n,
+    era: (n: any) => ['西元前', '西元'][n],
+    quarter: (n: any) => ['第一季', '第二季', '第三季', '第四季'][n],
+    dayPeriod: (n: any) => n < 12 ? '上午' : '下午'
+  },
+  formatLong: {
+    date: () => 'yyyy/MM/dd',
+    time: () => 'HH:mm',
+    dateTime: () => 'yyyy/MM/dd HH:mm'
+  }
+};
 
 // 註冊語系
 registerLocale('zh', zhTW as any);
 
-import { Session, FormData, FormErrors, TimeslotConfig, DashboardStats, PaymentMethod, AdminAccount } from './types'
+import { translations } from './locales/translations'
+import { Session, FormData, FormErrors, TimeslotConfig, Lang, Theme, DashboardStats, PaymentMethod, AdminAccount } from './types'
 
 import Header from './components/UI/Header'
 import Footer from './components/UI/Footer'
@@ -93,46 +107,40 @@ function App() {
     }
   }, []);
 
-  // 使用抽離出的主題與語言 Hook
-  const { lang, setLang, theme, toggleTheme, t } = useSystemTheme();
+  const [lang, setLang] = useState<Lang>(() => {
+    return (localStorage.getItem('lang') as Lang) || 'zh';
+  });
+  const [theme, setTheme] = useState<Theme>(() => {
+    return (localStorage.getItem('theme') as Theme) || 'dark';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('lang', lang);
+  }, [lang]);
+
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-theme');
+    } else {
+      document.body.classList.remove('light-theme');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+  };
+
+  const t = translations[lang];
 
   const [submitted, setSubmitted] = useState(false);
   const [lastSubmissionId, setLastSubmissionId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // 狀態管理
-  const [formData, setFormData] = useState<FormData>({
-    email: '',
-    name: '',
-    countryCode: '+886',
-    phone: '',
-    contactEmail: '',
-    session: '',
-    quantity: '1',
-    players: '1',
-    totalAmount: '',
-    paymentMethod: '現金支付',
-    bankLast5: '',
-    pickupTime: '',
-    pickupLocation: '新港文教基金會(閱讀館)',
-    referral: ['基金會FB'] as string[],
-    notes: '',
-    hp_field: '' 
-  });
-
-  const {
-    sessions,
-    dbStatus,
-    generalTimeSlots,
-    setGeneralTimeSlots,
-    specialTimeSlots,
-    setSpecialTimeSlots,
-    timeslotConfig,
-    setTimeslotConfig,
-    paymentMethods,
-    isEntryAnimating,
-    shouldRenderEntry
-  } = useFirebaseListeners(setFormData);
+  const [sessions, setSessions] = useState<Session[]>([]);
+  
+  // 進場動畫相關狀態
+  const [isEntryAnimating, setIsEntryAnimating] = useState(true); 
+  const [shouldRenderEntry, setShouldRenderEntry] = useState(true);
 
   const [isAdmin, setIsAdmin] = useState(false);
   // 控制登入視窗：如果在秘密路徑且未登入，則顯示
@@ -244,11 +252,38 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [showColumnFilter, setShowShowColumnFilter] = useState(false);
+  const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
 
-  // 時間段手動調整狀態
+  // --- 時間段管理相關狀態 ---
+  const [generalTimeSlots, setGeneralTimeSlots] = useState<string[]>(['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00']);
+  const [specialTimeSlots, setSpecialTimeSlots] = useState<string[]>(['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00']);
+  const [timeslotConfig, setTimeslotConfig] = useState<TimeslotConfig>({
+    generalStart: '09:00', generalEnd: '15:00', generalInterval: 30,
+    specialStart: '09:00', specialEnd: '15:00', specialInterval: 30
+  });
   const [newManualTime, setNewManualTime] = useState('');
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
 
   const [sessionType, setSessionType] = useState<'一般預約' | '特別預約' | ''>('');
+
+  const [formData, setFormData] = useState<FormData>({
+    email: '',
+    name: '',
+    countryCode: '+886',
+    phone: '',
+    contactEmail: '',
+    session: '',
+    quantity: '1',
+    players: '1',
+    totalAmount: '',
+    paymentMethod: '現金支付',
+    bankLast5: '',
+    pickupTime: '',
+    pickupLocation: '新港文教基金會(閱讀館)',
+    referral: ['基金會FB'] as string[],
+    notes: '',
+    hp_field: '' 
+  });
 
   const [formErrors, setFormErrors] = useState<FormErrors>({
     email: '',
@@ -334,8 +369,6 @@ function App() {
     XLSX.writeFile(wb, fileName);
   };
 
-  const [isDataLoading, setIsDataLoading] = useState(false);
-
   // [新增] 匯入 Excel 舊資料邏輯 (用於從 Google Sheets 遷移)
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -357,6 +390,10 @@ function App() {
             setIsDataLoading(false);
             return;
           }
+
+          console.log('--- Excel 匯入偵測 ---');
+          console.log('標題列:', data[0]);
+          console.log('第一筆資料範例:', data[1]);
 
           const rows = data.slice(1);
           let count = 0;
@@ -452,6 +489,8 @@ function App() {
       localStorage.setItem('visibleColumns', JSON.stringify(allIndexes));
     }
   }, [submissions]);
+
+  const pad = (n: number) => String(n).padStart(2, '0');
 
   const generateTimeSlots = (start: string, end: string, interval: number) => {
     const slots = [];
@@ -569,12 +608,290 @@ function App() {
       setIsSubmitting(false);
     }
   };
+// 終極安全解析日期 (處理 Google Sheets 的各種奇怪在地化格式)
+const parseDateSafely = (dateStr: any) => {
+  if (!dateStr) return new Date();
+  if (dateStr instanceof Date) return dateStr;
+
+  // 如果是數字 (Excel 序號格式)
+  if (typeof dateStr === 'number') return new Date(dateStr);
+
+  let str = String(dateStr).trim();
+  if (!str || str === 'NaN' || str === 'undefined') return new Date();
+
+  // 1. 嘗試原生產解析
+  let d = new Date(str);
+  if (!isNaN(d.getTime())) return d;
+
+  // 2. 針對「下午/上午」進行預處理
+  let isPM = str.includes('下午');
+  let isAM = str.includes('上午');
+
+  // 移除中文字並統一分隔符
+  let cleanStr = str.replace(/[上下]午/g, ' ')
+                    .replace(/\//g, '-')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+
+  // 3. 手動拆解 YYYY-MM-DD HH:mm:ss
+  try {
+    const parts = cleanStr.split(/[- :]/);
+    if (parts.length >= 3) {
+      let year = parseInt(parts[0]);
+      let month = parseInt(parts[1]) - 1;
+      let day = parseInt(parts[2]);
+      let hour = parts[3] ? parseInt(parts[3]) : 0;
+      let min = parts[4] ? parseInt(parts[4]) : 0;
+      let sec = parts[5] ? parseInt(parts[5]) : 0;
+
+      if (isPM && hour < 12) hour += 12;
+      if (isAM && hour === 12) hour = 0;
+
+      d = new Date(year, month, day, hour, min, sec);
+      if (!isNaN(d.getTime())) return d;
+    }
+  } catch (e) {
+    console.error('日期手動拆解失敗:', str);
+  }
+
+  return new Date(); // 真的不行就回傳當前時間，避免 NaN
+};
+
+const formatFullDateTime = (date: any) => {
+  const d = parseDateSafely(date);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+};
+
+const formatDateTimeMinute = (date: any) => {
+  const d = parseDateSafely(date);
+  const p = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
+};
+  const findEarliestSlot = (currentSessions: Session[], targetSessionName?: string) => {
+    let checkDate = new Date();
+    const selectedSession = currentSessions.find(s => s.name === (targetSessionName || formData.session));
+    
+    // 修正：優先從時段陣列抓取第一個值，而非全域設定的開始時間
+    const fallbackSlots = (selectedSession?.isSpecial || sessionType === '特別預約') ? specialTimeSlots : generalTimeSlots;
+    const defaultStart = fallbackSlots.length > 0 ? fallbackSlots[0] : timeslotConfig.generalStart;
+
+    let startH = parseInt(defaultStart.split(':')[0]);
+    let startM = parseInt(defaultStart.split(':')[1]);
+    let endH = parseInt(timeslotConfig.generalEnd.split(':')[0]);
+    let endM = parseInt(timeslotConfig.generalEnd.split(':')[1]);
+
+    if (selectedSession?.fixedTime) {
+      const times = selectedSession.fixedTime.split(',').sort();
+      const firstParts = times[0].split(':');
+      const lastParts = times[times.length - 1].split(':');
+      startH = parseInt(firstParts[0]);
+      startM = parseInt(firstParts[1]);
+      endH = parseInt(lastParts[0]);
+      endM = parseInt(lastParts[1]);
+    }
+
+    if (checkDate.getHours() > endH || (checkDate.getHours() === endH && checkDate.getMinutes() > endM)) {
+      checkDate.setDate(checkDate.getDate() + 1);
+      // 跳過週一(1)與週二(2)
+      while (checkDate.getDay() === 1 || checkDate.getDay() === 2) {
+        checkDate.setDate(checkDate.getDate() + 1);
+      }
+      checkDate.setHours(startH, startM, 0, 0);
+    } else if (checkDate.getHours() < startH || (checkDate.getHours() === startH && checkDate.getMinutes() < startM)) {
+
+      checkDate.setHours(startH, startM, 0, 0);
+    } else {
+      const mins = checkDate.getMinutes();
+      if (mins > 0 && mins <= 30) {
+        checkDate.setMinutes(30, 0, 0);
+      } else if (mins > 30) {
+        checkDate.setHours(checkDate.getHours() + 1, 0, 0, 0);
+      }
+    }
+
+    for (let i = 0; i < 1440; i++) { 
+      const day = checkDate.getDay();
+      if (day === 1 || day === 2) {
+        checkDate.setDate(checkDate.getDate() + (day === 1 ? 2 : 1));
+        checkDate.setHours(startH, startM, 0, 0);
+        continue;
+      }
+
+      const hours = checkDate.getHours();
+      const mins = checkDate.getMinutes();
+      if (hours > endH || (hours === endH && mins > 0)) {
+        checkDate.setDate(checkDate.getDate() + 1);
+        checkDate.setHours(startH, startM, 0, 0);
+        continue;
+      }
+
+      const dateStr = `${checkDate.getFullYear()}-${pad(checkDate.getMonth() + 1)}-${pad(checkDate.getDate())}`;
+      const timeStr = `${pad(checkDate.getHours())}:${pad(checkDate.getMinutes())}`;
+      
+      const isTakenBySpecial = currentSessions.some(s => {
+        let sDate = s.fixedDate || '';
+        if (sDate.includes('T')) sDate = sDate.split('T')[0];
+        return sDate === dateStr;
+      });
+
+      const allowedSlots = selectedSession?.fixedTime 
+        ? selectedSession.fixedTime.split(',') 
+        : (isTakenBySpecial ? specialTimeSlots : generalTimeSlots);
+      
+      if (!allowedSlots.includes(timeStr)) {
+        checkDate.setMinutes(checkDate.getMinutes() + 30);
+        continue;
+      }
+
+      const hasConflict = currentSessions.some(s => {
+        let sDate = s.fixedDate || '';
+        if (sDate.includes('T')) sDate = sDate.split('T')[0];
+        return sDate === dateStr && s.fixedTime?.split(',').includes(timeStr);
+      });
+
+      if (!hasConflict) {
+        return formatDateTimeMinute(checkDate);
+      }
+
+      checkDate.setMinutes(checkDate.getMinutes() + 30);
+    }
+    return '';
+  };
 
   const getSessionDisplayName = (chineseName: string) => {
     if (lang === 'zh') return chineseName;
     const session = sessions.find(s => s.name === chineseName);
     return session?.enName || chineseName;
   };
+
+  useEffect(() => {
+    const minEntryTime = 2500; 
+    const startTime = Date.now();
+    let isTransitionStarted = false; 
+
+    const triggerExitAnimation = () => {
+      if (isTransitionStarted) return;
+      const elapsedTime = Date.now() - startTime;
+      if (elapsedTime >= minEntryTime) {
+        isTransitionStarted = true;
+        setIsEntryAnimating(false);
+        setTimeout(() => setShouldRenderEntry(false), 800);
+      } else {
+        const remainingTime = minEntryTime - elapsedTime;
+        setTimeout(() => {
+          if (!isTransitionStarted) {
+            isTransitionStarted = true;
+            setIsEntryAnimating(false);
+            setTimeout(() => setShouldRenderEntry(false), 800);
+          }
+        }, remainingTime);
+      }
+    };
+    
+    const fetchSessions = () => {
+      console.log('🚀 啟動 Firebase 監聽器...');
+      
+      const qGeneral = query(collection(db, "sessions"), orderBy("name"));
+      const qSpecial = query(collection(db, "special_sessions"), orderBy("name"));
+      
+      let generalSessions: Session[] = [];
+      let specialSessions: Session[] = [];
+
+      const updateAllSessions = () => {
+        const merged = [...generalSessions, ...specialSessions].sort((a, b) => a.name.localeCompare(b.name));
+        setSessions(merged);
+        localStorage.setItem('bagua_maze_sessions', JSON.stringify(merged));
+      };
+
+      const unsubGeneral = onSnapshot(qGeneral, (snapshot) => {
+        generalSessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isSpecial: false })) as Session[];
+        updateAllSessions();
+        setDbStatus('connected');
+      }, (err) => {
+        console.error('❌ 一般場次連線錯誤:', err);
+        setDbStatus('error');
+      });
+
+      const unsubSpecial = onSnapshot(qSpecial, (snapshot) => {
+        specialSessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isSpecial: true })) as Session[];
+        updateAllSessions();
+      }, (err) => {
+        console.error('❌ 特別場次連線錯誤:', err);
+      });
+
+      return () => {
+        unsubGeneral();
+        unsubSpecial();
+      };
+    };
+
+    const fetchTimeSlots = () => {
+      const unsubGeneral = onSnapshot(doc(db, "config", "general_timeslots"), (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          if (data.slots) setGeneralTimeSlots(data.slots);
+          if (data.config) {
+            setTimeslotConfig(prev => ({
+              ...prev,
+              generalStart: data.config.start,
+              generalEnd: data.config.end,
+              generalInterval: data.config.interval
+            }));
+          }
+        }
+      });
+
+      const unsubSpecial = onSnapshot(doc(db, "config", "special_timeslots"), (doc) => {
+        if (doc.exists()) {
+          const data = doc.data();
+          if (data.slots) setSpecialTimeSlots(data.slots);
+          if (data.config) {
+            setTimeslotConfig(prev => ({
+              ...prev,
+              specialStart: data.config.start,
+              specialEnd: data.config.end,
+              specialInterval: data.config.interval
+            }));
+          }
+        }
+      });
+
+      return () => {
+        unsubGeneral();
+        unsubSpecial();
+      };
+    };
+
+    const fetchPaymentMethods = () => {
+      const unsubscribe = onSnapshot(doc(db, "config", "payments"), (docSnap) => {
+        if (docSnap.exists()) {
+          const methods = docSnap.data().methods || [];
+          setPaymentMethods(methods);
+          
+          // 如果目前的付款方式不在清單中，自動切換到第一個
+          setFormData(prev => {
+            if (methods.length > 0 && !methods.find((m: any) => m.name === prev.paymentMethod)) {
+              return { ...prev, paymentMethod: methods[0].name };
+            }
+            return prev;
+          });
+        }
+      });
+      return unsubscribe;
+    };
+
+    const unsubSessions = fetchSessions();
+    const unsubSlots = fetchTimeSlots();
+    const unsubPayments = fetchPaymentMethods();
+    triggerExitAnimation();
+
+    return () => {
+      unsubSessions();
+      unsubSlots();
+      unsubPayments();
+    };
+  }, []);
 
   const addPaymentMethod = async (methodData: any) => {
     if (!methodData.name) return;
@@ -614,6 +931,8 @@ function App() {
     const price = sessionType === '' ? 0 : (sessionObj ? sessionObj.price : 650);
     setCalculatedTotal(qty * price);
   }, [formData.quantity, formData.session, sessions, sessionType]);
+
+  const [isDataLoading, setIsDataLoading] = useState(false);
 
   const handleSort = (index: number) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -1071,7 +1390,7 @@ function App() {
       } else {
         // 其餘情況（包含有勾選時段的一般場次）一律交由 findEarliestSlot 計算最早可用時間
         // 這會自動處理「超過今日最晚班次跳隔天」的邏輯
-        newPickupTime = findEarliestSlot(sessions, timeslotConfig, generalTimeSlots, specialTimeSlots, value);
+        newPickupTime = findEarliestSlot(sessions, value);
       }
       
       setFormData(prev => ({ ...prev, session: value, pickupTime: newPickupTime }));
