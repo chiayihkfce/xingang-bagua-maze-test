@@ -3,7 +3,7 @@ import "react-datepicker/dist/react-datepicker.css"
 import './App.css'
 import { registerLocale } from "react-datepicker";
 
-import { zhTW, formatFullDateTime, formatDateTimeMinute, findEarliestSlot, generateTimeSlots } from './utils/dateUtils'
+import { zhTW, formatFullDateTime, formatDateTimeMinute, findEarliestSlot, generateTimeSlots, adjustSelectedDate } from './utils/dateUtils'
 import { getSessionDisplayName as getSessionDisplayNameUtil, getPickupLocationDisplay as getPickupLocationDisplayUtil, getPaymentMethodDisplay as getPaymentMethodDisplayUtil, copyToClipboard } from './utils/displayUtils'
 import { sendPaymentSuccessEmail } from './utils/emailUtils'
 import { exportToExcel, readExcelFile } from './utils/excelUtils'
@@ -965,79 +965,17 @@ function App() {
       const day = date.getDay();
       if (day === 1 || day === 2) return;
       
-      const now = new Date();
-      const isToday = date.getFullYear() === now.getFullYear() &&
-                      date.getMonth() === now.getMonth() &&
-                      date.getDate() === now.getDate();
-      
       const selectedSession = sessions.find(s => s.name === formData.session);
+      const adjustedDate = adjustSelectedDate(
+        date, 
+        selectedSession, 
+        sessionType, 
+        timeslotConfig, 
+        generalTimeSlots, 
+        specialTimeSlots
+      );
       
-      // 修正：動態決定開放時間的起點，優先從時段清單抓取
-      const fallbackSlots = (selectedSession?.isSpecial || sessionType === '特別預約') ? specialTimeSlots : generalTimeSlots;
-      const defaultStart = fallbackSlots.length > 0 ? fallbackSlots[0] : timeslotConfig.generalStart;
-      const defaultEnd = fallbackSlots.length > 0 ? fallbackSlots[fallbackSlots.length - 1] : timeslotConfig.generalEnd;
-
-      let startH = parseInt(defaultStart.split(':')[0]);
-      let startM = parseInt(defaultStart.split(':')[1]);
-      let endH = parseInt(defaultEnd.split(':')[0]);
-      let endM = parseInt(defaultEnd.split(':')[1]);
-
-      if (selectedSession?.fixedTime) {
-        const times = selectedSession.fixedTime.split(',').sort();
-        const firstParts = times[0].split(':');
-        const lastParts = times[times.length - 1].split(':');
-        startH = parseInt(firstParts[0]);
-        startM = parseInt(firstParts[1]);
-        endH = parseInt(lastParts[0]);
-        endM = parseInt(lastParts[1]);
-      }
-      
-      if (isToday) {
-        // 如果是今天，檢查目前時間是否已超過最早開放時間
-        const currentHour = now.getHours();
-        const currentMin = now.getMinutes();
-        const selectedHour = date.getHours();
-        const selectedMin = date.getMinutes();
-        
-        // 如果目前選的時間在過去，或者早於該場次開放時間，則需要重新調整
-        let needsAdjustment = false;
-        if (selectedHour < currentHour || (selectedHour === currentHour && selectedMin < currentMin)) {
-          needsAdjustment = true;
-        }
-        if (selectedHour < startH || (selectedHour === startH && selectedMin < startM)) {
-          needsAdjustment = true;
-        }
-
-        if (needsAdjustment) {
-          // 重新計算今天最早可選的時間
-          if (currentHour < startH || (currentHour === startH && currentMin < startM)) {
-            date.setHours(startH, startM, 0, 0);
-          } else if (currentHour > endH || (currentHour === endH && currentMin >= endM)) {
-            // 修正：超過今天最後一班，跳到明天並跳過週一二
-            date.setDate(date.getDate() + 1);
-            while (date.getDay() === 1 || date.getDay() === 2) {
-              date.setDate(date.getDate() + 1);
-            }
-            date.setHours(startH, startM, 0, 0);
-          } else {
-            // 對齊到下一個 30 分鐘
-            if (currentMin < 30) {
-              date.setHours(currentHour, 30, 0, 0);
-            } else {
-              date.setHours(currentHour + 1, 0, 0, 0);
-            }
-          }
-        }
-      } else {
-        // 如果是未來日期，且時間早於場次開放時間或晚於場次結束時間，校正回場次起始時間
-        const hours = date.getHours();
-        const mins = date.getMinutes();
-        if (hours < startH || (hours === startH && mins < startM) || hours > endH) {
-           date.setHours(startH, startM, 0, 0);
-        }
-      }
-      
-      setFormData(prev => ({ ...prev, pickupTime: formatDateTimeMinute(date) }));
+      setFormData(prev => ({ ...prev, pickupTime: formatDateTimeMinute(adjustedDate) }));
     }
   };
 

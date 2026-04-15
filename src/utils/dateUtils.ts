@@ -194,3 +194,84 @@ export const generateTimeSlots = (start: string, end: string, interval: number) 
   }
   return slots;
 };
+
+/**
+ * 校正使用者選擇的預約日期與時間 (處理今日過期、週一二公休等邏輯)
+ */
+export const adjustSelectedDate = (
+  date: Date,
+  selectedSession: Session | undefined,
+  sessionType: string,
+  timeslotConfig: TimeslotConfig,
+  generalTimeSlots: string[],
+  specialTimeSlots: string[]
+): Date => {
+  const adjusted = new Date(date);
+  const now = new Date();
+  const isToday = adjusted.getFullYear() === now.getFullYear() &&
+                  adjusted.getMonth() === now.getMonth() &&
+                  adjusted.getDate() === now.getDate();
+
+  // 1. 決定開放時間的起點
+  const fallbackSlots = (selectedSession?.isSpecial || sessionType === '特別預約') ? specialTimeSlots : generalTimeSlots;
+  const defaultStart = fallbackSlots.length > 0 ? fallbackSlots[0] : timeslotConfig.generalStart;
+  const defaultEnd = fallbackSlots.length > 0 ? fallbackSlots[fallbackSlots.length - 1] : timeslotConfig.generalEnd;
+
+  let startH = parseInt(defaultStart.split(':')[0]);
+  let startM = parseInt(defaultStart.split(':')[1]);
+  let endH = parseInt(defaultEnd.split(':')[0]);
+  let endM = parseInt(defaultEnd.split(':')[1]);
+
+  if (selectedSession?.fixedTime) {
+    const times = selectedSession.fixedTime.split(',').sort();
+    const firstParts = times[0].split(':');
+    const lastParts = times[times.length - 1].split(':');
+    startH = parseInt(firstParts[0]);
+    startM = parseInt(firstParts[1]);
+    endH = parseInt(lastParts[0]);
+    endM = parseInt(lastParts[1]);
+  }
+
+  // 2. 執行校正邏輯
+  if (isToday) {
+    const currentHour = now.getHours();
+    const currentMin = now.getMinutes();
+    const selectedHour = adjusted.getHours();
+    const selectedMin = adjusted.getMinutes();
+    
+    let needsAdjustment = false;
+    if (selectedHour < currentHour || (selectedHour === currentHour && selectedMin < currentMin)) {
+      needsAdjustment = true;
+    }
+    if (selectedHour < startH || (selectedHour === startH && selectedMin < startM)) {
+      needsAdjustment = true;
+    }
+
+    if (needsAdjustment) {
+      if (currentHour < startH || (currentHour === startH && currentMin < startM)) {
+        adjusted.setHours(startH, startM, 0, 0);
+      } else if (currentHour > endH || (currentHour === endH && currentMin >= endM)) {
+        adjusted.setDate(adjusted.getDate() + 1);
+        while (adjusted.getDay() === 1 || adjusted.getDay() === 2) {
+          adjusted.setDate(adjusted.getDate() + 1);
+        }
+        adjusted.setHours(startH, startM, 0, 0);
+      } else {
+        if (currentMin < 30) {
+          adjusted.setHours(currentHour, 30, 0, 0);
+        } else {
+          adjusted.setHours(currentHour + 1, 0, 0, 0);
+        }
+      }
+    }
+  } else {
+    const hours = adjusted.getHours();
+    const mins = adjusted.getMinutes();
+    if (hours < startH || (hours === startH && mins < startM) || hours > endH) {
+       adjusted.setHours(startH, startM, 0, 0);
+    }
+  }
+
+  return adjusted;
+};
+
