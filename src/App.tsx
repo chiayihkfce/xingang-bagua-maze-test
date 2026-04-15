@@ -8,7 +8,7 @@ import { getSessionDisplayName as getSessionDisplayNameUtil, getPickupLocationDi
 import { sendPaymentSuccessEmail } from './utils/emailUtils'
 import { exportToExcel, readExcelFile } from './utils/excelUtils'
 import { validateFieldLogic } from './utils/validationUtils'
-import { formatName, formatBankLast5, formatPhone } from './utils/formatUtils'
+import { formatName, formatBankLast5, formatPhone, formatPhoneForDB } from './utils/formatUtils'
 import { sortSubmissions, calculateDashboardStats, filterSubmissions } from './utils/dataUtils'
 import { useSystemTheme } from './hooks/useSystemTheme'
 import { useFirebaseListeners } from './hooks/useFirebaseListeners'
@@ -995,7 +995,7 @@ function App() {
   const executeFinalSubmission = async (last5?: string) => {
     setIsSubmitting(true);
     try {
-      const combinedPhone = `${formData.countryCode === 'landline' ? '市內電話' : formData.countryCode} ${formData.phone}`;
+      const combinedPhone = formatPhoneForDB(formData.countryCode, formData.phone);
       
       const submissionData = {
         ...formData,

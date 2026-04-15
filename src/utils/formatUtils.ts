@@ -33,3 +33,12 @@ export const formatPhone = (value: string, countryCode: string): string => {
   const maxLen = rules[countryCode] || 15;
   return filtered.slice(0, maxLen);
 };
+
+/**
+ * 將國碼與電話號碼組合為存入資料庫的格式 (處理市話顯示)
+ */
+export const formatPhoneForDB = (countryCode: string, phone: string): string => {
+  const displayCode = countryCode === 'landline' ? '市內電話' : countryCode;
+  return `${displayCode} ${phone}`;
+};
+
