@@ -7,6 +7,7 @@ import { registerLocale } from "react-datepicker";
 import { zhTW, formatFullDateTime, formatDateTimeMinute, findEarliestSlot, generateTimeSlots } from './utils/dateUtils'
 import { getSessionDisplayName as getSessionDisplayNameUtil, getPickupLocationDisplay as getPickupLocationDisplayUtil, getPaymentMethodDisplay as getPaymentMethodDisplayUtil } from './utils/displayUtils'
 import { sendPaymentSuccessEmail } from './utils/emailUtils'
+import { exportToExcel } from './utils/excelUtils'
 import { useSystemTheme } from './hooks/useSystemTheme'
 import { useFirebaseListeners } from './hooks/useFirebaseListeners'
 
@@ -289,18 +290,7 @@ function App() {
   };
 
   // [補回] 下載 Excel 邏輯
-  const handleDownloadExcel = () => {
-    if (submissions.length === 0) return;
-    
-    // 過濾掉每一列最後一個欄位 (Firebase ID)
-    const exportData = submissions.map(row => row.slice(0, 15));
-    
-    const ws = XLSX.utils.aoa_to_sheet(exportData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "報名清單");
-    const fileName = `新港八卦謎蹤_報名清單_${new Date().toISOString().split('T')[0]}.xlsx`;
-    XLSX.writeFile(wb, fileName);
-  };
+  const handleDownloadExcel = () => exportToExcel(submissions);
 
   const [isDataLoading, setIsDataLoading] = useState(false);
 
