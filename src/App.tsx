@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import * as XLSX from 'xlsx'
 import "react-datepicker/dist/react-datepicker.css"
 import './App.css'
 import { registerLocale } from "react-datepicker";
@@ -7,7 +6,7 @@ import { registerLocale } from "react-datepicker";
 import { zhTW, formatFullDateTime, formatDateTimeMinute, findEarliestSlot, generateTimeSlots } from './utils/dateUtils'
 import { getSessionDisplayName as getSessionDisplayNameUtil, getPickupLocationDisplay as getPickupLocationDisplayUtil, getPaymentMethodDisplay as getPaymentMethodDisplayUtil } from './utils/displayUtils'
 import { sendPaymentSuccessEmail } from './utils/emailUtils'
-import { exportToExcel } from './utils/excelUtils'
+import { exportToExcel, readExcelFile } from './utils/excelUtils'
 import { useSystemTheme } from './hooks/useSystemTheme'
 import { useFirebaseListeners } from './hooks/useFirebaseListeners'
 
@@ -301,71 +300,56 @@ function App() {
 
     showConfirm('確定要從此 Excel 匯入舊報名資料嗎？', async () => {
       setIsDataLoading(true);
-      const reader = new FileReader();
-      reader.onload = async (evt) => {
-        try {
-          const bstr = evt.target?.result;
-          const wb = XLSX.read(bstr, { type: 'binary' });
-          const wsname = wb.SheetNames[0];
-          const ws = wb.Sheets[wsname];
-          const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+      try {
+        const data = await readExcelFile(file);
 
-          if (data.length <= 1) {
-            showAlert('Excel 檔案似乎沒有資料（只有標題列或空表）。');
-            setIsDataLoading(false);
-            return;
-          }
-
-          const rows = data.slice(1);
-          let count = 0;
-
-          for (const row of rows) {
-            // 如果這一列幾乎是空的就跳過
-            if (!row[2] && !row[3]) continue; 
-
-            const submissionData = {
-              timestamp: row[0] ? String(row[0]) : formatFullDateTime(new Date()),
-              status: row[1] || '待審核',
-              name: String(row[2] || '無姓名'),
-              phone: String(row[3] || '無電話'),
-              email: String(row[4] || ''),
-              session: String(row[5] || '未知場次'),
-              quantity: String(row[6] || '1'),
-              players: String(row[7] || '1'),
-              totalAmount: Number(row[8]) || 0,
-              paymentMethod: String(row[9] || '現金支付'),
-              bankLast5: String(row[10] || '無'),
-              pickupTime: row[11] ? String(row[11]) : '',
-              pickupLocation: String(row[12] || '新港文教基金會(閱讀館)'),
-              referral: String(row[13] || ''),
-              notes: String(row[14] || '無'),
-              createdAt: serverTimestamp(),
-              deleted: false
-            };
-
-            try {
-              await addDoc(collection(db, "registrations"), submissionData);
-              count++;
-            } catch (writeErr) {
-              console.error('寫入 Firebase 失敗:', writeErr);
-            }
-          }
-          showAlert(`匯入程序結束！成功寫入 ${count} 筆資料。`);
-        } catch (err) {
-          console.error('Excel 解析錯誤:', err);
-          showAlert('匯入失敗：無法讀取 Excel 檔案。請確保檔案格式正確 (.xlsx)。');
-        } finally {
-          setIsDataLoading(false);
-          // 清除 input，讓同一個檔案可以重複選取測試
-          e.target.value = '';
+        if (data.length <= 1) {
+          showAlert('Excel 檔案似乎沒有資料（只有標題列或空表）。');
+          return;
         }
-      };
-      reader.onerror = (err) => {
-        console.error('檔案讀取錯誤:', err);
-        showAlert('檔案讀取失敗');
+
+        const rows = data.slice(1);
+        let count = 0;
+
+        for (const row of rows) {
+          // 如果這一列幾乎是空的就跳過
+          if (!row[2] && !row[3]) continue; 
+
+          const submissionData = {
+            timestamp: row[0] ? String(row[0]) : formatFullDateTime(new Date()),
+            status: row[1] || '待審核',
+            name: String(row[2] || '無姓名'),
+            phone: String(row[3] || '無電話'),
+            email: String(row[4] || ''),
+            session: String(row[5] || '未知場次'),
+            quantity: String(row[6] || '1'),
+            players: String(row[7] || '1'),
+            totalAmount: Number(row[8]) || 0,
+            paymentMethod: String(row[9] || '現金支付'),
+            bankLast5: String(row[10] || '無'),
+            pickupTime: row[11] ? String(row[11]) : '',
+            pickupLocation: String(row[12] || '新港文教基金會(閱讀館)'),
+            referral: String(row[13] || ''),
+            notes: String(row[14] || '無'),
+            createdAt: serverTimestamp(),
+            deleted: false
+          };
+
+          try {
+            await addDoc(collection(db, "registrations"), submissionData);
+            count++;
+          } catch (writeErr) {
+            console.error('寫入 Firebase 失敗:', writeErr);
+          }
+        }
+        showAlert(`匯入程序結束！成功寫入 ${count} 筆資料。`);
+      } catch (err) {
+        console.error('Excel 解析錯誤:', err);
+        showAlert('匯入失敗：無法讀取 Excel 檔案。請確保檔案格式正確 (.xlsx)。');
+      } finally {
         setIsDataLoading(false);
-      };
-      reader.readAsBinaryString(file);
+        e.target.value = '';
+      }
     });
   };
 
@@ -1295,53 +1279,45 @@ function App() {
 
     showConfirm('確定要從此 Excel 匯入場次設定嗎？', async () => {
       setIsDataLoading(true);
-      const reader = new FileReader();
-      reader.onload = async (evt) => {
-        try {
-          const bstr = evt.target?.result;
-          const wb = XLSX.read(bstr, { type: 'binary' });
-          const ws = wb.Sheets[wb.SheetNames[0]];
-          const data = XLSX.utils.sheet_to_json(ws, { header: 1 }) as any[][];
+      try {
+        const data = await readExcelFile(file);
 
-          if (data.length <= 1) {
-            showAlert('Excel 檔案似乎沒有資料。');
-            setIsDataLoading(false);
-            return;
-          }
-
-          const rows = data.slice(1);
-          let count = 0;
-
-          for (const row of rows) {
-            if (!row[0]) continue; // 沒名稱就跳過
-
-            const isSpecial = row[2] === '是' || row[2] === 'special' || row[2] === true || !!row[3];
-            const collectionName = isSpecial ? "special_sessions" : "sessions";
-
-            const sessionData = {
-              name: String(row[0]),
-              price: Number(row[1]) || 0,
-              isSpecial: isSpecial,
-              fixedDate: row[3] ? String(row[3]) : '',
-              fixedTime: row[4] ? String(row[4]) : '',
-              enName: row[5] ? String(row[5]) : '',
-              createdAt: serverTimestamp()
-            };
-
-            await addDoc(collection(db, collectionName), sessionData);
-            count++;
-          }
-          addLog('匯入場次', `批次匯入了 ${count} 個場次`);
-          showAlert(`成功匯入 ${count} 個場次！`);
-        } catch (err) {
-          console.error(err);
-          showAlert('匯入失敗，請檢查檔案格式。');
-        } finally {
-          setIsDataLoading(false);
-          e.target.value = '';
+        if (data.length <= 1) {
+          showAlert('Excel 檔案似乎沒有資料。');
+          return;
         }
-      };
-      reader.readAsBinaryString(file);
+
+        const rows = data.slice(1);
+        let count = 0;
+
+        for (const row of rows) {
+          if (!row[0]) continue; // 沒名稱就跳過
+
+          const isSpecial = row[2] === '是' || row[2] === 'special' || row[2] === true || !!row[3];
+          const collectionName = isSpecial ? "special_sessions" : "sessions";
+
+          const sessionData = {
+            name: String(row[0]),
+            price: Number(row[1]) || 0,
+            isSpecial: isSpecial,
+            fixedDate: row[3] ? String(row[3]) : '',
+            fixedTime: row[4] ? String(row[4]) : '',
+            enName: row[5] ? String(row[5]) : '',
+            createdAt: serverTimestamp()
+          };
+
+          await addDoc(collection(db, collectionName), sessionData);
+          count++;
+        }
+        addLog('匯入場次', `批次匯入了 ${count} 個場次`);
+        showAlert(`成功匯入 ${count} 個場次！`);
+      } catch (err) {
+        console.error(err);
+        showAlert('匯入失敗，請檢查檔案格式。');
+      } finally {
+        setIsDataLoading(false);
+        e.target.value = '';
+      }
     });
   };
 
