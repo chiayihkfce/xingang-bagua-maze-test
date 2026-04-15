@@ -180,3 +180,17 @@ export const findEarliestSlot = (
   }
   return '';
 };
+
+/**
+ * 根據起始、結束時間與間隔生成時間數組 (HH:mm)
+ */
+export const generateTimeSlots = (start: string, end: string, interval: number) => {
+  const slots = [];
+  let current = new Date(`2026-01-01T${start}:00`);
+  const last = new Date(`2026-01-01T${end}:00`);
+  while (current <= last) {
+    slots.push(`${pad(current.getHours())}:${pad(current.getMinutes())}`);
+    current.setMinutes(current.getMinutes() + interval);
+  }
+  return slots;
+};

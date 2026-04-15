@@ -4,7 +4,7 @@ import "react-datepicker/dist/react-datepicker.css"
 import './App.css'
 import { registerLocale } from "react-datepicker";
 
-import { zhTW, formatFullDateTime, formatDateTimeMinute, findEarliestSlot, pad } from './utils/dateUtils'
+import { zhTW, formatFullDateTime, formatDateTimeMinute, findEarliestSlot, generateTimeSlots } from './utils/dateUtils'
 import { getSessionDisplayName as getSessionDisplayNameUtil, getPickupLocationDisplay as getPickupLocationDisplayUtil, getPaymentMethodDisplay as getPaymentMethodDisplayUtil } from './utils/displayUtils'
 import { useSystemTheme } from './hooks/useSystemTheme'
 import { useFirebaseListeners } from './hooks/useFirebaseListeners'
@@ -453,17 +453,6 @@ function App() {
       localStorage.setItem('visibleColumns', JSON.stringify(allIndexes));
     }
   }, [submissions]);
-
-  const generateTimeSlots = (start: string, end: string, interval: number) => {
-    const slots = [];
-    let current = new Date(`2026-01-01T${start}:00`);
-    const last = new Date(`2026-01-01T${end}:00`);
-    while (current <= last) {
-      slots.push(`${pad(current.getHours())}:${pad(current.getMinutes())}`);
-      current.setMinutes(current.getMinutes() + interval);
-    }
-    return slots;
-  };
 
   const handleManualTimeAdd = (type: 'general' | 'special') => {
     if (!newManualTime || !/^([01]\d|2[0-3]):([0-5]\d)$/.test(newManualTime)) {
