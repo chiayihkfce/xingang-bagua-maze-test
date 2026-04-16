@@ -8,8 +8,8 @@ const CustomCursor: React.FC = () => {
   const [shouldRender, setShouldRender] = React.useState(false);
 
   useEffect(() => {
-    // 偵測是否為觸控裝置（不支援 hover）
-    const isTouchDevice = window.matchMedia('(hover: none)').matches;
+    // 偵測是否為純觸控裝置（不支援任何 hover，避免觸控筆電被誤判）
+    const isTouchDevice = window.matchMedia('(any-hover: none)').matches;
     if (isTouchDevice) {
       setShouldRender(false);
       return;

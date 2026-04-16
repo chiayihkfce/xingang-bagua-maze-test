@@ -67,8 +67,8 @@
 
 /* 行動裝置隱藏邏輯保持不變 */
 
-/* 在行動裝置、小螢幕或觸控裝置上徹底隱藏客製鼠標 */
-@media (max-width: 1024px), (hover: none), (pointer: coarse) {
+/* 在純觸控裝置上徹底隱藏客製鼠標 (移除 max-width 避免螢幕縮放時誤判為手機) */
+@media (any-hover: none) {
   .custom-cursor-dot, 
   .custom-cursor-ring {
     display: none !important;
@@ -77,8 +77,8 @@
   }
 }
 
-/* 隱藏原生鼠標 (僅在電腦版且自定義鼠標啟動時生效) */
-@media (hover: hover) and (pointer: fine) {
+/* 隱藏原生鼠標 (只要裝置支援任何形式的滑鼠 hover 即生效) */
+@media (any-hover: hover) {
   body.custom-cursor-active *, 
   body.custom-cursor-active *::before, 
   body.custom-cursor-active *::after {
