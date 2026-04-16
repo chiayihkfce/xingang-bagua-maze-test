@@ -1,9 +1,10 @@
-import { collection, addDoc, updateDoc, doc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 import { Session } from "../types";
 import { cleanSessionTimeFormat } from "../utils/dateUtils";
 
 interface UseSettingsActionsProps {
+  sessions: Session[];
   newSession: { name: string, price: string, fixedDate: string, fixedTime: string, isSpecial: boolean };
   editingSession: { id: string, oldName: string, newName: string, newPrice: string, fixedDate: string, fixedTime: string, isSpecial: boolean };
   setNewSession: (data: any) => void;
@@ -12,12 +13,14 @@ interface UseSettingsActionsProps {
   setEditingSession: (data: any) => void;
   addLog: (type: string, details: string) => Promise<void>;
   showAlert: (message: string) => void;
+  showConfirm: (message: string, onConfirm: () => void) => void;
 }
 
 /**
  * 處理管理員後台的場次、時段與付款方式等設定變更邏輯
  */
 export const useSettingsActions = ({
+  sessions,
   newSession,
   editingSession,
   setNewSession,
@@ -25,7 +28,8 @@ export const useSettingsActions = ({
   setIsEditingSession,
   setEditingSession,
   addLog,
-  showAlert
+  showAlert,
+  showConfirm
 }: UseSettingsActionsProps) => {
 
   /**
@@ -99,11 +103,33 @@ export const useSettingsActions = ({
     }
   };
 
+  /**
+   * 刪除場次
+   */
+  const handleDeleteSession = async (name: string, id?: string) => {
+    showConfirm(`確定要刪除場次「${name}」嗎？`, async () => {
+      if (!id) return;
+      try {
+        const session = sessions.find(s => (s as any).id === id);
+        const collectionName = session?.isSpecial ? "special_sessions" : "sessions";
+        
+        await deleteDoc(doc(db, collectionName, id));
+        await addLog('刪除場次', `刪除了場次：${name}`);
+        showAlert('刪除成功');
+      } catch (err) {
+        console.error(err);
+        showAlert('刪除失敗');
+      }
+    });
+  };
+
   return {
     handleAddSession,
     startEditSession,
-    handleUpdateSession
+    handleUpdateSession,
+    handleDeleteSession
   };
 };
+
 
 

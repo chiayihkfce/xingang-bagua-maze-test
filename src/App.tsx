@@ -43,7 +43,6 @@ import {
   addDoc, 
   updateDoc, 
   doc, 
-  deleteDoc, 
   setDoc,
   serverTimestamp,
   writeBatch
@@ -203,8 +202,10 @@ function App() {
   const {
     handleAddSession,
     startEditSession,
-    handleUpdateSession
+    handleUpdateSession,
+    handleDeleteSession
   } = useSettingsActions({ 
+    sessions,
     newSession, 
     editingSession,
     setNewSession, 
@@ -212,7 +213,8 @@ function App() {
     setIsEditingSession,
     setEditingSession,
     addLog, 
-    showAlert 
+    showAlert,
+    showConfirm
   });
 
   const [showAuditModal, setShowAuditModal] = useState(false);
@@ -549,24 +551,6 @@ function App() {
       const newTimes = toggleTimeInString(newSession.fixedTime, time);
       setNewSession({ ...newSession, fixedTime: newTimes });
     }
-  };
-
-  const handleDeleteSession = async (name: string, id?: string) => {
-    showConfirm(`確定要刪除場次「${name}」嗎？`, async () => {
-      if (!id) return;
-      try {
-        // 先嘗試從一般場次刪除，如果失敗（例如不在該集合）再嘗試特別場次
-        // 或者根據目前的 UI 邏輯，我們可以從 sessions state 中找到該 session 的類型
-        const session = sessions.find(s => (s as any).id === id);
-        const collectionName = session?.isSpecial ? "special_sessions" : "sessions";
-        
-        await deleteDoc(doc(db, collectionName, id));
-        addLog('刪除場次', `刪除了場次：${name}`);
-        showAlert('刪除成功');
-      } catch (err) {
-        showAlert('刪除失敗');
-      }
-    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
