@@ -1,4 +1,4 @@
-import { doc, updateDoc } from "firebase/firestore";
+import { doc, updateDoc, writeBatch, query, collection, where, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
 import { sendPaymentSuccessEmail } from "../utils/emailUtils";
 
@@ -103,11 +103,39 @@ export const useAdminActions = ({
     }
   };
 
+  /**
+   * 清空回收桶 (徹底刪除)
+   */
+  const handleClearRecycleBin = async () => {
+    showConfirm('確定要徹底刪除回收桶中的所有資料嗎？此動作無法復原。', async () => {
+      setIsDataLoading(true);
+      try {
+        const q = query(collection(db, "registrations"), where("deleted", "==", true));
+        const snapshot = await getDocs(q);
+        const batch = writeBatch(db);
+        snapshot.docs.forEach((doc) => {
+          batch.delete(doc.ref);
+        });
+        await batch.commit();
+        await addLog('清空回收桶', '超級管理員徹底刪除了回收桶中的所有報名資料');
+        showAlert('回收桶已清空');
+        setShowRecycleBin(false);
+      } catch (err) {
+        console.error(err);
+        showAlert('清空失敗');
+      } finally {
+        setIsDataLoading(false);
+      }
+    });
+  };
+
   return {
     handleVerifyPayment,
     handleDeleteSubmission,
-    handleRestoreSubmission
+    handleRestoreSubmission,
+    handleClearRecycleBin
   };
 };
+
 
 

@@ -44,7 +44,6 @@ import {
   updateDoc, 
   doc, 
   deleteDoc, 
-  where, 
   setDoc,
   getDocs,
   serverTimestamp,
@@ -175,7 +174,8 @@ function App() {
   const {
     handleVerifyPayment,
     handleDeleteSubmission,
-    handleRestoreSubmission
+    handleRestoreSubmission,
+    handleClearRecycleBin
   } = useAdminActions({ 
     submissions, 
     deletedSubmissions, 
@@ -782,29 +782,6 @@ function App() {
   const resetForm = () => {
     // 透過重新整理頁面來達到最徹底的狀態重置，解決組件內部狀態殘留問題
     window.location.reload();
-  };
-
-  const handleClearRecycleBin = async () => {
-    showConfirm('確定要徹底刪除回收桶中的所有資料嗎？此動作無法復原。', async () => {
-      setIsDataLoading(true);
-      try {
-        const q = query(collection(db, "registrations"), where("deleted", "==", true));
-        const snapshot = await getDocs(q);
-        const batch = writeBatch(db);
-        snapshot.docs.forEach((doc) => {
-          batch.delete(doc.ref);
-        });
-        await batch.commit();
-        addLog('清空回收桶', '超級管理員徹底刪除了回收桶中的所有報名資料');
-        showAlert('回收桶已清空');
-        setShowRecycleBin(false);
-      } catch (err) {
-        console.error(err);
-        showAlert('清空失敗');
-      } finally {
-        setIsDataLoading(false);
-      }
-    });
   };
 
   // [新增] 匯入場次舊資料邏輯
