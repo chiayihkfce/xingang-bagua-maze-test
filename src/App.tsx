@@ -169,7 +169,9 @@ function App() {
     deletedSubmissions,
     logs,
     dashboardStats,
-    totalRows
+    totalRows,
+    visibleColumns,
+    toggleColumn
   } = useAdminData({ isAdmin, adminFilterDate, adminSearchKeyword, setIsDataLoading });
 
   // 使用抽離出的管理員操作 Hook
@@ -249,10 +251,6 @@ const [showAuditModal, setShowAuditModal] = useState(false);
 const [auditTarget, setAuditTarget] = useState<{index: number, row: any[]} | null>(null);
 
 const [sortConfig, setSortConfig] = useState<{ key: number, direction: 'asc' | 'desc' } | null>(null);
-const [visibleColumns, setVisibleColumns] = useState<number[]>(() => {
-  const saved = localStorage.getItem('visibleColumns');
-  return saved ? JSON.parse(saved) : [];
-});
 const [showColumnFilter, setShowShowColumnFilter] = useState(false);
 
 // 監聽所有彈窗與載入狀態，防止背景滑動
@@ -354,15 +352,6 @@ const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
   });
 };
 
-// [補回] 欄位切換邏輯 (加入持久化)
-const toggleColumn = (index: number) => {
-  setVisibleColumns(prev => {
-    const newList = prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index].sort((a, b) => a - b);
-    localStorage.setItem('visibleColumns', JSON.stringify(newList));
-    return newList;
-  });
-};
-
 // [補回] 複製帳號邏輯
 const handleCopyAccount = async (accountNumber?: string) => {
   if (!accountNumber) {
@@ -384,16 +373,6 @@ useEffect(() => {
     setFormData(prev => ({ ...prev, players: '1' }));
   }
 }, [formData.quantity]);
-
-useEffect(() => {
-  // 只有在 submissions 有資料，且 visibleColumns 既沒有目前狀態、也沒有 localStorage 存檔時，才自動全選
-  const saved = localStorage.getItem('visibleColumns');
-  if (submissions.length > 0 && visibleColumns.length === 0 && !saved) {
-    const allIndexes = submissions[0].map((_, i) => i);
-    setVisibleColumns(allIndexes);
-    localStorage.setItem('visibleColumns', JSON.stringify(allIndexes));
-  }
-}, [submissions]);
 
 useEffect(() => {    const qty = parseInt(formData.quantity) || 0;
     const sessionObj = sessions.find(s => s.name === formData.session);

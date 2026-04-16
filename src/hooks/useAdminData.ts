@@ -33,6 +33,22 @@ export const useAdminData = ({
   const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [totalRows, setTotalRows] = useState(0);
 
+  const [visibleColumns, setVisibleColumns] = useState<number[]>(() => {
+    const saved = localStorage.getItem('visibleColumns');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  /**
+   * 欄位切換邏輯 (加入持久化)
+   */
+  const toggleColumn = (index: number) => {
+    setVisibleColumns(prev => {
+      const newList = prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index].sort((a, b) => a - b);
+      localStorage.setItem('visibleColumns', JSON.stringify(newList));
+      return newList;
+    });
+  };
+
   useEffect(() => {
     if (!isAdmin) return;
 
@@ -135,6 +151,9 @@ export const useAdminData = ({
     deletedSubmissions,
     logs,
     dashboardStats,
-    totalRows
+    totalRows,
+    visibleColumns,
+    setVisibleColumns,
+    toggleColumn
   };
 };
