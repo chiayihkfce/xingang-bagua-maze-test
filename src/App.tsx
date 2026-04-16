@@ -17,6 +17,7 @@ import { useRegistrationForm } from './hooks/useRegistrationForm'
 import { useAdminAuth } from './hooks/useAdminAuth'
 import { useAdminData } from './hooks/useAdminData'
 import { useAdminActions } from './hooks/useAdminActions'
+import { useSettingsActions } from './hooks/useSettingsActions'
 
 // 註冊語系
 registerLocale('zh', zhTW as any);
@@ -72,6 +73,9 @@ function App() {
   const [isEditingSession, setIsEditingSession] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
+
+  const [adminTab, setAdminTab] = useState<'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments'>('sessions');
+  const [newSession, setNewSession] = useState({ name: '', price: '', fixedDate: '', fixedTime: '', isSpecial: false });
 
   const [adminFilterDate, setAdminFilterDate] = useState<Date | null>(null);
   const [adminSearchKeyword, setAdminSearchKeyword] = useState('');
@@ -193,8 +197,11 @@ function App() {
     addLog 
   });
 
-  const [adminTab, setAdminTab] = useState<'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments'>('sessions');
-  const [newSession, setNewSession] = useState({ name: '', price: '', fixedDate: '', fixedTime: '', isSpecial: false });
+  // 使用抽離出的管理員設定操作 Hook
+  const {
+    handleAddSession
+  } = useSettingsActions({ newSession, setNewSession, setIsSubmitting, addLog, showAlert });
+
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditTarget, setAuditTarget] = useState<{index: number, row: any[]} | null>(null);
 
@@ -530,34 +537,6 @@ function App() {
     } else {
       const newTimes = toggleTimeInString(newSession.fixedTime, time);
       setNewSession({ ...newSession, fixedTime: newTimes });
-    }
-  };
-
-  const handleAddSession = async () => {
-    if (!newSession.name || !newSession.price) return;
-    setIsSubmitting(true);
-    
-    // 修正：一般場次不再自動存入目前的全域時段，使其能保持動態抓取資料庫設定
-    let finalFixedTime = newSession.fixedTime;
-    // 如果是特別場次且沒有設定時段，才考慮是否要預設（或者維持空白）
-    // 這裡我們讓它保持原本的 newSession.fixedTime，不再強制填充一般場次的 generalTimeSlots
-    
-    const collectionName = newSession.isSpecial ? "special_sessions" : "sessions";
-
-    try {
-      await addDoc(collection(db, collectionName), {
-        ...newSession,
-        fixedTime: finalFixedTime,
-        price: Number(newSession.price),
-        createdAt: serverTimestamp()
-      });
-      setNewSession({ name: '', price: '', fixedDate: '', fixedTime: '', isSpecial: false });
-      addLog('新增場次', `新增${newSession.isSpecial ? '特別' : '一般'}場次: ${newSession.name}`);
-      showAlert('新增成功！');
-    } catch (err: any) {
-      showAlert(`新增失敗！`);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
