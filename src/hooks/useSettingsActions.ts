@@ -7,9 +7,13 @@ import { readExcelFile } from "../utils/excelUtils";
 interface UseSettingsActionsProps {
   sessions: Session[];
   paymentMethods: PaymentMethod[];
+  generalTimeSlots: string[];
+  specialTimeSlots: string[];
+  newManualTime: string;
   newSession: { name: string, price: string, fixedDate: string, fixedTime: string, isSpecial: boolean };
   editingSession: { id: string, oldName: string, newName: string, newPrice: string, fixedDate: string, fixedTime: string, isSpecial: boolean };
   setNewSession: (data: any) => void;
+  setNewManualTime: (time: string) => void;
   setIsSubmitting: (val: boolean) => void;
   setIsEditingSession: (val: boolean) => void;
   setEditingSession: (data: any) => void;
@@ -28,9 +32,13 @@ interface UseSettingsActionsProps {
 export const useSettingsActions = ({
   sessions,
   paymentMethods,
+  generalTimeSlots,
+  specialTimeSlots,
+  newManualTime,
   newSession,
   editingSession,
   setNewSession,
+  setNewManualTime,
   setIsSubmitting,
   setIsEditingSession,
   setEditingSession,
@@ -42,6 +50,24 @@ export const useSettingsActions = ({
   showAlert,
   showConfirm
 }: UseSettingsActionsProps) => {
+
+  /**
+   * 手動新增時段 (HH:mm)
+   */
+  const handleManualTimeAdd = (type: 'general' | 'special') => {
+    if (!newManualTime || !/^([01]\d|2[0-3]):([0-5]\d)$/.test(newManualTime)) {
+      showAlert('請輸入正確的時間格式 (HH:mm)');
+      return;
+    }
+    if (type === 'general') {
+      if (generalTimeSlots.includes(newManualTime)) return;
+      setGeneralTimeSlots([...generalTimeSlots, newManualTime].sort());
+    } else {
+      if (specialTimeSlots.includes(newManualTime)) return;
+      setSpecialTimeSlots([...specialTimeSlots, newManualTime].sort());
+    }
+    setNewManualTime('');
+  };
 
   /**
    * 新增場次 (一般或特別)
@@ -309,7 +335,8 @@ export const useSettingsActions = ({
     saveTimeSlotsConfig,
     addPaymentMethod,
     deletePaymentMethod,
-    handleImportSessionsExcel
+    handleImportSessionsExcel,
+    handleManualTimeAdd
   };
 };
 

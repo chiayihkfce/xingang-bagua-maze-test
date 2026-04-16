@@ -57,6 +57,7 @@ function App() {
   const [currentPage, setCurrentPage] = useState(1);
   const [loadTime] = useState(Date.now());
   const [isDataLoading, setIsDataLoading] = useState(false);
+  const [newManualTime, setNewManualTime] = useState('');
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
@@ -202,13 +203,18 @@ const {
   saveTimeSlotsConfig,
   addPaymentMethod,
   deletePaymentMethod,
-  handleImportSessionsExcel
+  handleImportSessionsExcel,
+  handleManualTimeAdd
   } = useSettingsActions({ 
   sessions,
   paymentMethods,
+  generalTimeSlots,
+  specialTimeSlots,
+  newManualTime,
   newSession, 
   editingSession,
   setNewSession, 
+  setNewManualTime,
   setIsSubmitting, 
   setIsEditingSession,
   setEditingSession,
@@ -219,8 +225,7 @@ const {
   addLog, 
   showAlert,
   showConfirm
-  });
-// 使用抽離出的報名操作 Hook
+  });// 使用抽離出的報名操作 Hook
 const {
   handleSubmit,
   handleConfirmSubmit,
@@ -249,9 +254,6 @@ const [visibleColumns, setVisibleColumns] = useState<number[]>(() => {
   return saved ? JSON.parse(saved) : [];
 });
 const [showColumnFilter, setShowShowColumnFilter] = useState(false);
-
-// 時間段手動調整狀態
-const [newManualTime, setNewManualTime] = useState('');
 
 // 監聽所有彈窗與載入狀態，防止背景滑動
 useEffect(() => {
@@ -392,21 +394,6 @@ useEffect(() => {
     localStorage.setItem('visibleColumns', JSON.stringify(allIndexes));
   }
 }, [submissions]);
-
-const handleManualTimeAdd = (type: 'general' | 'special') => {
-  if (!newManualTime || !/^([01]\d|2[0-3]):([0-5]\d)$/.test(newManualTime)) {
-    showAlert('請輸入正確的時間格式 (HH:mm)');
-    return;
-  }
-  if (type === 'general') {
-    if (generalTimeSlots.includes(newManualTime)) return;
-    setGeneralTimeSlots([...generalTimeSlots, newManualTime].sort());
-  } else {
-    if (specialTimeSlots.includes(newManualTime)) return;
-    setSpecialTimeSlots([...specialTimeSlots, newManualTime].sort());
-  }
-  setNewManualTime('');
-};
 
 const removeTimeSlot = (type: 'general' | 'special', slot: string) => {
   if (type === 'general') {
