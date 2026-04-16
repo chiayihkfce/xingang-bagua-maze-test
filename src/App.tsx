@@ -5,7 +5,6 @@ import { registerLocale } from "react-datepicker";
 
 import { zhTW, formatFullDateTime, formatDateTimeMinute, generateTimeSlots, cleanSessionTimeFormat, toggleTimeInString } from './utils/dateUtils'
 import { getSessionDisplayName as getSessionDisplayNameUtil, getPickupLocationDisplay as getPickupLocationDisplayUtil, getPaymentMethodDisplay as getPaymentMethodDisplayUtil, copyToClipboard } from './utils/displayUtils'
-import { sendPaymentSuccessEmail } from './utils/emailUtils'
 import { exportToExcel, readExcelFile } from './utils/excelUtils'
 import { formatPhoneForDB } from './utils/formatUtils'
 import { sortSubmissions, calculateDashboardStats } from './utils/dataUtils'
@@ -17,6 +16,7 @@ import { useFirebaseListeners } from './hooks/useFirebaseListeners'
 import { useRegistrationForm } from './hooks/useRegistrationForm'
 import { useAdminAuth } from './hooks/useAdminAuth'
 import { useAdminData } from './hooks/useAdminData'
+import { useAdminActions } from './hooks/useAdminActions'
 
 // 註冊語系
 registerLocale('zh', zhTW as any);
@@ -168,6 +168,11 @@ function App() {
     dashboardStats,
     totalRows
   } = useAdminData({ isAdmin, adminFilterDate, adminSearchKeyword, setIsDataLoading });
+
+  // 使用抽離出的管理員操作 Hook
+  const {
+    handleVerifyPayment
+  } = useAdminActions({ submissions, showConfirm, showAlert, setIsDataLoading, addLog });
 
   const [showRecycleBin, setShowRecycleBin] = useState(false);
   const [adminTab, setAdminTab] = useState<'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments'>('sessions');
@@ -666,34 +671,6 @@ function App() {
         showAlert('已移至回收桶');
       } catch (err) {
         showAlert('操作失敗');
-      } finally {
-        setIsDataLoading(false);
-      }
-    });
-  };
-
-  const handleVerifyPayment = async (rowIndex: number, status: string) => {
-    const target = submissions[rowIndex];
-    const docId = target[15];
-    const currentStatus = target[1]; // 取得目前資料庫中的狀態
-    
-    if (!docId) return;
-
-    showConfirm(`確定要將此筆報名標記為「${status}」嗎？`, async () => {
-      setIsDataLoading(true);
-      try {
-        const docRef = doc(db, "registrations", docId);
-        await updateDoc(docRef, { status });
-        addLog('審核付款', `將「${target[2]}」的狀態由 [${currentStatus}] 變更為 [${status}]`);
-        
-        // [核心修正]：只有在原本不是「通過」，且新狀態是「通過」時才發信
-        if (status === '通過' && currentStatus !== '通過') {
-          await sendPaymentSuccessEmail(target);
-        }
-        
-        showAlert('審核狀態已更新');
-      } catch (err) {
-        showAlert('審核失敗');
       } finally {
         setIsDataLoading(false);
       }
