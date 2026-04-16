@@ -8,7 +8,7 @@ import { getSessionDisplayName as getSessionDisplayNameUtil, getPickupLocationDi
 import { sendPaymentSuccessEmail } from './utils/emailUtils'
 import { exportToExcel, readExcelFile } from './utils/excelUtils'
 import { formatPhoneForDB } from './utils/formatUtils'
-import { sortSubmissions, calculateDashboardStats, filterSubmissions } from './utils/dataUtils'
+import { sortSubmissions, calculateDashboardStats } from './utils/dataUtils'
 import { useSystemTheme } from './hooks/useSystemTheme'
 import { useAppRouting } from './hooks/useAppRouting'
 import { useAppVersion } from './hooks/useAppVersion'
@@ -16,6 +16,7 @@ import { useSystemModal } from './hooks/useSystemModal'
 import { useFirebaseListeners } from './hooks/useFirebaseListeners'
 import { useRegistrationForm } from './hooks/useRegistrationForm'
 import { useAdminAuth } from './hooks/useAdminAuth'
+import { useAdminData } from './hooks/useAdminData'
 
 // 註冊語系
 registerLocale('zh', zhTW as any);
@@ -39,14 +40,11 @@ import SystemModal from './components/UI/SystemModal'
 import { 
   collection, 
   addDoc, 
-  onSnapshot, 
   query, 
-  orderBy, 
   updateDoc, 
   doc, 
   deleteDoc, 
   where, 
-  limit, 
   setDoc,
   getDocs,
   serverTimestamp,
@@ -75,6 +73,9 @@ function App() {
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isEditingSession, setIsEditingSession] = useState(false);
+
+  const [adminFilterDate, setAdminFilterDate] = useState<Date | null>(null);
+  const [adminSearchKeyword, setAdminSearchKeyword] = useState('');
 
   // 狀態管理
   const [formData, setFormData] = useState<FormData>({
@@ -158,25 +159,28 @@ function App() {
     handleAdminLogin
   } = useAdminAuth({ showAlert, addLog, setIsDataLoading });
 
-  const [submissions, setSubmissions] = useState<any[][]>([]);
-  const [deletedSubmissions, setDeletedSubmissions] = useState<any[][]>([]);
+  // 使用抽離出的管理員資料監聽 Hook
+  const {
+    submissions,
+    setSubmissions,
+    deletedSubmissions,
+    logs,
+    dashboardStats,
+    totalRows
+  } = useAdminData({ isAdmin, adminFilterDate, adminSearchKeyword, setIsDataLoading });
+
   const [showRecycleBin, setShowRecycleBin] = useState(false);
-  const [logs, setLogs] = useState<any[][]>([]);
   const [adminTab, setAdminTab] = useState<'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments'>('sessions');
   const [newSession, setNewSession] = useState({ name: '', price: '', fixedDate: '', fixedTime: '', isSpecial: false });
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [auditTarget, setAuditTarget] = useState<{index: number, row: any[]} | null>(null);
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
 
   const [calculatedTotal, setCalculatedTotal] = useState(0);
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalRows, setTotalRows] = useState(0);
   const [loadTime] = useState(Date.now());
-  const [adminFilterDate, setAdminFilterDate] = useState<Date | null>(null);
-  const [adminSearchKeyword, setAdminSearchKeyword] = useState('');
   const [sortConfig, setSortConfig] = useState<{ key: number, direction: 'asc' | 'desc' } | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<number[]>(() => {
     const saved = localStorage.getItem('visibleColumns');
@@ -486,110 +490,9 @@ function App() {
     const sortedData = sortSubmissions(data, index, direction);
     
     setSubmissions([header, ...sortedData]);
-  };
+    };
 
-  // --- 管理員資料即時監聽系統 (核心重構) ---
-  useEffect(() => {
-    if (!isAdmin) return;
-
-    setIsDataLoading(true);
-    const header = ["報名時間", "狀態", "姓名", "電話", "Email", "場次名稱", "購買份數", "遊玩人數", "總金額", "付款方式", "末五碼", "預約日期時間", "取件地點", "得知管道", "備註"];
-    
-    // 當篩選條件改變時，立即清空目前的資料清單 (避免看到舊資料)
-    setSubmissions([header]);
-    setTotalRows(0);
-
-    // 1. 構建動態查詢
-    let qSub;
-    if (adminFilterDate) {
-      const formattedDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
-      qSub = query(
-        collection(db, "registrations"), 
-        where("deleted", "==", false),
-        where("pickupTime", ">=", formattedDate),
-        where("pickupTime", "<=", formattedDate + "\uf8ff"),
-        orderBy("pickupTime", "desc")
-      );
-    } else {
-      qSub = query(
-        collection(db, "registrations"), 
-        where("deleted", "==", false),
-        orderBy("createdAt", "desc"),
-        limit(200)
-      );
-    }
-
-    const unsubSubmissions = onSnapshot(qSub, (snapshot) => {
-      let data = snapshot.docs.map(doc => {
-        const d = doc.data();
-        return [
-          d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, 
-          d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, 
-          d.pickupLocation, d.referral, d.notes, doc.id
-        ];
-      });
-
-      // [核心修復] 如果有選日期，強制在前端再過濾一次，確保清單中絕對沒有非該日的舊資料
-      if (adminFilterDate) {
-        const formattedDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
-        data = data.filter(row => String(row[11] || '').startsWith(formattedDate));
-      }
-
-      // 即時模糊搜尋過濾
-      if (adminSearchKeyword.trim()) {
-        data = filterSubmissions(data, adminSearchKeyword);
-      }
-
-      setSubmissions([header, ...data]);
-      setTotalRows(data.length);
-      setIsDataLoading(false);
-    });
-
-    // 2. 監聽回收桶
-    const qBin = query(collection(db, "registrations"), where("deleted", "==", true), orderBy("createdAt", "desc"), limit(100));
-    const unsubBin = onSnapshot(qBin, (snapshot) => {
-      const data = snapshot.docs.map(doc => {
-        const d = doc.data();
-        return [d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, d.pickupLocation, d.referral, d.notes, doc.id];
-      });
-      setDeletedSubmissions(data);
-    });
-
-    // 3. 監聽操作日誌
-    const qLogs = query(collection(db, "logs"), orderBy("createdAt", "desc"), limit(50));
-    const unsubLogs = onSnapshot(qLogs, (snapshot) => {
-      const logHeader = ["時間", "操作類型", "操作者", "詳細內容"];
-      const data = snapshot.docs.map(doc => {
-        const d = doc.data();
-        return [d.timestamp, d.type, d.operator || '未知', d.details];
-      });
-      setLogs([logHeader, ...data]);
-    });
-
-    // 4. 監聽統計數據
-    const qStats = query(collection(db, "registrations"), where("deleted", "==", false));
-    const unsubStats = onSnapshot(qStats, (snapshot) => {
-      let kits = 0, players = 0, revenue = 0, pending = 0;
-      const todayStr = new Date().toISOString().split('T')[0];
-      snapshot.docs.forEach(doc => {
-        const d = doc.data();
-        if (d.status === '待審核') pending++;
-        if (d.status === '通過') revenue += Number(d.totalAmount) || 0;
-        if (d.pickupTime && d.pickupTime.startsWith(todayStr)) {
-          kits += Number(d.quantity) || 0;
-          players += Number(d.players) || 0;
-        }
-      });
-      setDashboardStats({ pendingCount: pending, totalRevenue: revenue, todayKits: kits, todayPlayers: players });
-    });
-
-    return () => {
-      unsubSubmissions(); unsubBin(); unsubLogs(); unsubStats();
-      };
-      }, [isAdmin, adminFilterDate, adminSearchKeyword]);
-
-      const handleDateFilter = (date: Date | null) => setAdminFilterDate(date);
-
+    const handleDateFilter = (date: Date | null) => setAdminFilterDate(date);
   const handleClearLogs = async () => {
     showConfirm('確定要清除所有操作日誌嗎？此動作無法復原。', async () => {
       setIsDataLoading(true);
