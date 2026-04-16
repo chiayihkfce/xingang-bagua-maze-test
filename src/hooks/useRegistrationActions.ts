@@ -167,13 +167,22 @@ export const useRegistrationActions = ({
     }
   };
 
+  /**
+   * 重置整個表單與應用程式狀態
+   */
+  const resetForm = () => {
+    window.location.reload();
+  };
+
   return {
     handleSubmit,
     executeFinalSubmission,
     handleConfirmSubmit,
-    handleUpdateBankLast5
+    handleUpdateBankLast5,
+    resetForm
   };
 };
+
 
 
 

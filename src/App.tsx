@@ -231,7 +231,8 @@ const {
 const {
   handleSubmit,
   handleConfirmSubmit,
-  handleUpdateBankLast5
+  handleUpdateBankLast5,
+  resetForm
 } = useRegistrationActions({ 
   formData, 
   formErrors, 
@@ -410,11 +411,6 @@ useEffect(() => {    const qty = parseInt(formData.quantity) || 0;
       const newTimes = toggleTimeInString(newSession.fixedTime, time);
       setNewSession({ ...newSession, fixedTime: newTimes });
     }
-  };
-
-  const resetForm = () => {
-    // 透過重新整理頁面來達到最徹底的狀態重置，解決組件內部狀態殘留問題
-    window.location.reload();
   };
 
   // 判斷是否顯示管理員後台
