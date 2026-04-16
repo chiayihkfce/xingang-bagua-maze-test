@@ -231,15 +231,33 @@ export const useSettingsActions = ({
     }
   };
 
+  /**
+   * 刪除付款方式
+   */
+  const deletePaymentMethod = async (method: PaymentMethod) => {
+    showConfirm(`確定要刪除「${method.name}」嗎？`, async () => {
+      const newMethods = paymentMethods.filter(m => m.id !== method.id);
+      try {
+        await setDoc(doc(db, "config", "payments"), { methods: newMethods });
+        await addLog('付款方式', `刪除了付款方式: ${method.name}`);
+      } catch (e) { 
+        console.error(e);
+        showAlert('刪除失敗'); 
+      }
+    });
+  };
+
   return {
     handleAddSession,
     startEditSession,
     handleUpdateSession,
     handleDeleteSession,
     saveTimeSlotsConfig,
-    addPaymentMethod
+    addPaymentMethod,
+    deletePaymentMethod
   };
 };
+
 
 
 

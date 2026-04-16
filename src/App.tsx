@@ -22,7 +22,7 @@ import { useSettingsActions } from './hooks/useSettingsActions'
 // 註冊語系
 registerLocale('zh', zhTW as any);
 
-import { FormData, DashboardStats, PaymentMethod } from './types'
+import { FormData, DashboardStats } from './types'
 
 import Header from './components/UI/Header'
 import Footer from './components/UI/Footer'
@@ -43,7 +43,6 @@ import {
   addDoc, 
   updateDoc, 
   doc, 
-  setDoc,
   serverTimestamp
 } from "firebase/firestore";
 import { db } from "./firebase";
@@ -203,11 +202,11 @@ const {
   handleUpdateSession,
   handleDeleteSession,
   saveTimeSlotsConfig,
-  addPaymentMethod
-} = useSettingsActions({ 
+  addPaymentMethod,
+  deletePaymentMethod
+  } = useSettingsActions({ 
   sessions,
-  paymentMethods,
-  newSession, 
+  paymentMethods,  newSession, 
   editingSession,
   setNewSession, 
   setIsSubmitting, 
@@ -401,16 +400,7 @@ const removeTimeSlot = (type: 'general' | 'special', slot: string) => {
   }
 };
 
-const getSessionDisplayName = (chineseName: string) => getSessionDisplayNameUtil(chineseName, lang, sessions);
-
-const deletePaymentMethod = async (method: PaymentMethod) => {    showConfirm(`確定要刪除「${method.name}」嗎？`, async () => {
-      const newMethods = paymentMethods.filter(m => m.id !== method.id);
-      try {
-        await setDoc(doc(db, "config", "payments"), { methods: newMethods });
-        addLog('付款方式', `刪除了付款方式: ${method.name}`);
-      } catch (e) { showAlert('刪除失敗'); }
-    });
-  };
+  const getSessionDisplayName = (chineseName: string) => getSessionDisplayNameUtil(chineseName, lang, sessions);
 
   useEffect(() => {
     const qty = parseInt(formData.quantity) || 0;
