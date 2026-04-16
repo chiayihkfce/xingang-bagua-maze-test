@@ -15,6 +15,7 @@ import { useAppRouting } from './hooks/useAppRouting'
 import { useAppVersion } from './hooks/useAppVersion'
 import { useSystemModal } from './hooks/useSystemModal'
 import { useFirebaseListeners } from './hooks/useFirebaseListeners'
+import { useRegistrationForm } from './hooks/useRegistrationForm'
 
 // 註冊語系
 registerLocale('zh', zhTW as any);
@@ -105,6 +106,25 @@ function App() {
     isEntryAnimating,
     shouldRenderEntry
   } = useFirebaseListeners(setFormData);
+
+  const {
+    sessionType,
+    setSessionType,
+    formErrors,
+    setFormErrors,
+    handleInputChange,
+    handleDateChange,
+    handleCheckboxChange,
+    validateField
+  } = useRegistrationForm({
+    formData,
+    setFormData,
+    sessions,
+    timeslotConfig,
+    generalTimeSlots,
+    specialTimeSlots,
+    t
+  });
 
   const [isAdmin, setIsAdmin] = useState(false);
   // 控制登入視窗：如果在秘密路徑且未登入，則顯示
