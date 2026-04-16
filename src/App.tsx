@@ -6,7 +6,6 @@ import { registerLocale } from "react-datepicker";
 import { zhTW, formatFullDateTime, generateTimeSlots, toggleTimeInString } from './utils/dateUtils'
 import { getSessionDisplayName as getSessionDisplayNameUtil, getPickupLocationDisplay as getPickupLocationDisplayUtil, getPaymentMethodDisplay as getPaymentMethodDisplayUtil, copyToClipboard } from './utils/displayUtils'
 import { exportToExcel, readExcelFile } from './utils/excelUtils'
-import { formatPhoneForDB } from './utils/formatUtils'
 import { sortSubmissions, calculateDashboardStats } from './utils/dataUtils'
 import { useSystemTheme } from './hooks/useSystemTheme'
 import { useAppRouting } from './hooks/useAppRouting'
@@ -66,6 +65,7 @@ function App() {
   const [submitted, setSubmitted] = useState(false);
   const [lastSubmissionId, setLastSubmissionId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [calculatedTotal, setCalculatedTotal] = useState(0);
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -224,16 +224,24 @@ const {
 
 // 使用抽離出的報名操作 Hook
 const {
-  handleSubmit
-} = useRegistrationActions({ formData, formErrors, sessionType, showAlert, setShowConfirmation });
+  handleSubmit,
+  executeFinalSubmission
+} = useRegistrationActions({ 
+  formData, 
+  formErrors, 
+  sessionType, 
+  calculatedTotal,
+  setIsSubmitting,
+  setLastSubmissionId,
+  showAlert, 
+  setShowConfirmation,
+  addLog
+});
 
 const [showAuditModal, setShowAuditModal] = useState(false);
 const [auditTarget, setAuditTarget] = useState<{index: number, row: any[]} | null>(null);
 
-const [calculatedTotal, setCalculatedTotal] = useState(0);
-
-const [currentPage, setCurrentPage] = useState(1);
-const [loadTime] = useState(Date.now());
+const [currentPage, setCurrentPage] = useState(1);const [loadTime] = useState(Date.now());
 const [sortConfig, setSortConfig] = useState<{ key: number, direction: 'asc' | 'desc' } | null>(null);
 const [visibleColumns, setVisibleColumns] = useState<number[]>(() => {
   const saved = localStorage.getItem('visibleColumns');
@@ -451,39 +459,6 @@ const removeTimeSlot = (type: 'general' | 'special', slot: string) => {
   const getPickupLocationDisplay = (location: string) => getPickupLocationDisplayUtil(location, lang, t);
 
   // 執行最終資料寫入的函數
-  const executeFinalSubmission = async (last5?: string) => {
-    setIsSubmitting(true);
-    try {
-      const combinedPhone = formatPhoneForDB(formData.countryCode, formData.phone);
-      
-      const submissionData = {
-        ...formData,
-        phone: combinedPhone,
-        players: formData.players.trim() || '1',
-        notes: formData.notes.trim() || '無',
-        paymentMethod: formData.paymentMethod.split(' (')[0],
-        bankLast5: last5 || '無',
-        totalAmount: calculatedTotal,
-        referral: formData.referral.join(', '),
-        timestamp: formatFullDateTime(new Date()),
-        status: '待審核',
-        createdAt: serverTimestamp(),
-        deleted: false
-      };
-
-      const docRef = await addDoc(collection(db, "registrations"), submissionData);
-      setLastSubmissionId(docRef.id);
-      addLog('報名提交', `${formData.name} 提交了報名 (${formData.session})`);
-      return docRef.id;
-    } catch (err) {
-      console.error("提交失敗:", err);
-      showAlert('提交失敗，請檢查網路連線。');
-      throw err;
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleConfirmSubmit = async () => {
     if (formData.hp_field !== '') return; 
     const timeDiff = (Date.now() - loadTime) / 1000;
