@@ -29,7 +29,6 @@ import Header from './components/UI/Header'
 import Footer from './components/UI/Footer'
 import SocialButtons from './components/UI/SocialButtons'
 import EntryAnimation from './components/Registration/EntryAnimation'
-import SuccessScreen from './components/Registration/SuccessScreen'
 import StorySection from './components/Registration/StorySection'
 import EventInfo from './components/Registration/EventInfo'
 import RegistrationForm from './components/Registration/RegistrationForm'
@@ -38,6 +37,7 @@ import AdminLogin from './components/Admin/AdminLogin'
 import AdminDashboard from './components/Admin/AdminDashboard'
 import CustomCursor from './components/UI/CustomCursor'
 import SystemModal from './components/UI/SystemModal'
+import SuccessPage from './pages/SuccessPage'
 import { 
   collection, 
   addDoc, 
@@ -560,22 +560,13 @@ useEffect(() => {    const qty = parseInt(formData.quantity) || 0;
 
   if (submitted) {
     return (
-      <>
-        <CustomCursor />
-        <SuccessScreen 
-          {...{ t, formData, calculatedTotal, handleCopyAccount, getSessionDisplayName, getPaymentMethodDisplay, resetForm, paymentMethods, lang, lastSubmissionId, handleUpdateBankLast5, showAlert }}
-        />
-        <SystemModal 
-          show={sysModal.show}
-          type={sysModal.type}
-          title={sysModal.title}
-          message={sysModal.message}
-          onConfirm={sysModal.onConfirm}
-          onCancel={sysModal.onCancel}
-          confirmText={sysModal.confirmText}
-          cancelText={sysModal.cancelText}
-        />
-      </>
+      <SuccessPage 
+        {...{ 
+          t, lang, formData, calculatedTotal, paymentMethods, lastSubmissionId, 
+          sysModal, handleCopyAccount, getSessionDisplayName, 
+          getPaymentMethodDisplay, handleUpdateBankLast5, resetForm, showAlert 
+        }} 
+      />
     );
   }
 
