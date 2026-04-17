@@ -19,8 +19,8 @@ interface AdminDashboardProps {
   theme: Theme;
   toggleTheme: () => void;
   setIsAdmin: (isAdmin: boolean) => void;
-  adminTab: 'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments';
-  setAdminTab: (tab: 'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments') => void;
+  adminTab: 'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments' | 'analytics';
+  setAdminTab: (tab: 'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments' | 'analytics') => void;
   currentAdmin: AdminAccount | null;
   setCurrentAdmin: (admin: AdminAccount | null) => void;
   dashboardStats: IStats | null;
@@ -209,7 +209,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
       {adminTab === 'sessions' ? (
         <SessionManagement {...props} DatePicker={DatePicker} />
       ) : adminTab === 'submissions' ? (
-        <SubmissionsList {...props} />
+        <SubmissionsList />
       ) : adminTab === 'logs' ? (
         <LogsTable logs={logs} formatFullDateTime={props.formatFullDateTime} handleClearLogs={handleClearLogs} currentAdmin={currentAdmin} />
       ) : adminTab === 'payments' ? (

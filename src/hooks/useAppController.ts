@@ -193,6 +193,8 @@ export const useAppController = () => {
     ...registrationActions,
     dashboardStats: adminData.dashboardStats || { pendingCount: 0, totalRevenue: 0, todayKits: 0, todayPlayers: 0 },
     handleCopyAccount, getDisplayStats, handleDownloadExcel, handleImportExcel, handleDateFilter, handleSort, toggleFixedTime, formatFullDateTime, generateTimeSlots, loadPage, addLog,
-    handlePrintCheckInSheet
+    handlePrintCheckInSheet,
+    handleBatchVerifyPayment: adminActions.handleBatchVerifyPayment,
+    handleBatchDelete: adminActions.handleBatchDelete
   };
 };

@@ -346,7 +346,9 @@ export const useAdminActions = ({
     handleClearRecycleBin,
     handleClearLogs,
     startEditSubmission,
-    handleUpdateSubmission
+    handleUpdateSubmission,
+    handleBatchVerifyPayment,
+    handleBatchDelete
   };
 };
 
