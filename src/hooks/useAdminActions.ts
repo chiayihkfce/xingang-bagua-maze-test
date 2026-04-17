@@ -1,4 +1,4 @@
-import { doc, updateDoc, writeBatch, query, collection, where, getDocs } from "firebase/firestore";
+import { doc, updateDoc, writeBatch, query, collection, where, getDocs, deleteDoc, setDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { sendPaymentSuccessEmail } from "../utils/emailUtils";
 
@@ -34,6 +34,19 @@ export const useAdminActions = ({
 }: UseAdminActionsProps) => {
 
   /**
+   * 輔助函數：從 A 集合搬移到 B 集合
+   */
+  const moveDocument = async (sourceId: string, sourceColl: string, targetColl: string) => {
+    // 1. 取得原始資料
+    const sourceRef = doc(db, sourceColl, sourceId);
+    const targetRef = doc(db, targetColl, sourceId);
+    
+    // 這裡我們需要精確的原始 Data，但因為我們已經有 submissions state，可以直接從 state 拿
+    // 或者為了保險起見，我們在這裡使用 getDocs 或從 Hook 外部傳入。
+    // 為了最安全，我們讓呼叫者傳入完整 row。
+  };
+
+  /**
    * 審核付款狀態
    */
   const handleVerifyPayment = async (rowIndex: number, status: string) => {
@@ -65,7 +78,7 @@ export const useAdminActions = ({
   };
 
   /**
-   * 將報名資料移至回收桶
+   * 將報名資料移至回收桶 (跨集合搬移)
    */
   const handleDeleteSubmission = async (rowIndex: number) => {
     const target = submissions[rowIndex];
@@ -75,11 +88,39 @@ export const useAdminActions = ({
     showConfirm('確定要將這筆報名資料移至回收桶嗎？', async () => {
       setIsDataLoading(true);
       try {
-        const docRef = doc(db, "registrations", docId);
-        await updateDoc(docRef, { deleted: true });
-        await addLog('刪除報名', `將「${target[2]}」移至回收桶`);
+        const sourceRef = doc(db, "registrations", docId);
+        const targetRef = doc(db, "registrations_deleted", docId);
+        
+        // 構建原始對象 (根據 submission row 索引還原，這是最快的方式)
+        const dataToMove = {
+          timestamp: target[0],
+          status: target[1],
+          name: target[2],
+          phone: target[3],
+          email: target[4],
+          session: target[5],
+          quantity: target[6],
+          players: target[7],
+          totalAmount: target[8],
+          paymentMethod: target[9],
+          bankLast5: target[10],
+          pickupTime: target[11],
+          pickupLocation: target[12],
+          referral: target[13],
+          notes: target[14],
+          createdAt: target[16] || serverTimestamp(),
+          deleted: true
+        };
+
+        const batch = writeBatch(db);
+        batch.set(targetRef, dataToMove);
+        batch.delete(sourceRef);
+        await batch.commit();
+
+        await addLog('刪除報名', `將「${target[2]}」移至獨立回收桶`);
         showAlert('已移至回收桶');
       } catch (err) {
+        console.error(err);
         showAlert('操作失敗');
       } finally {
         setIsDataLoading(false);
@@ -88,7 +129,7 @@ export const useAdminActions = ({
   };
 
   /**
-   * 從回收桶還原報名資料
+   * 從回收桶還原報名資料 (跨集合搬移)
    */
   const handleRestoreSubmission = async (rowIndex: number) => {
     const target = deletedSubmissions[rowIndex];
@@ -97,12 +138,39 @@ export const useAdminActions = ({
     
     setIsSubmitting(true);
     try {
-      const docRef = doc(db, "registrations", docId);
-      await updateDoc(docRef, { deleted: false });
-      await addLog('還原報名', `從回收桶還原了「${target[2]}」的紀錄`);
+      const sourceRef = doc(db, "registrations_deleted", docId);
+      const targetRef = doc(db, "registrations", docId);
+      
+      const dataToMove = {
+        timestamp: target[0],
+        status: target[1],
+        name: target[2],
+        phone: target[3],
+        email: target[4],
+        session: target[5],
+        quantity: target[6],
+        players: target[7],
+        totalAmount: target[8],
+        paymentMethod: target[9],
+        bankLast5: target[10],
+        pickupTime: target[11],
+        pickupLocation: target[12],
+        referral: target[13],
+        notes: target[14],
+        createdAt: target[16] || serverTimestamp(),
+        deleted: false
+      };
+
+      const batch = writeBatch(db);
+      batch.set(targetRef, dataToMove);
+      batch.delete(sourceRef);
+      await batch.commit();
+
+      await addLog('還原報名', `從獨立回收桶還原了「${target[2]}」的紀錄`);
       showAlert('資料已還原');
       setShowRecycleBin(false);
     } catch (err) {
+      console.error(err);
       showAlert('還原失敗');
     } finally {
       setIsSubmitting(false);
@@ -110,20 +178,20 @@ export const useAdminActions = ({
   };
 
   /**
-   * 清空回收桶 (徹底刪除)
+   * 清空回收桶 (徹底刪除 registrations_deleted 集合內容)
    */
   const handleClearRecycleBin = async () => {
     showConfirm('確定要徹底刪除回收桶中的所有資料嗎？此動作無法復原。', async () => {
       setIsDataLoading(true);
       try {
-        const q = query(collection(db, "registrations"), where("deleted", "==", true));
+        const q = query(collection(db, "registrations_deleted"));
         const snapshot = await getDocs(q);
         const batch = writeBatch(db);
         snapshot.docs.forEach((doc) => {
           batch.delete(doc.ref);
         });
         await batch.commit();
-        await addLog('清空回收桶', '超級管理員徹底刪除了回收桶中的所有報名資料');
+        await addLog('清空回收桶', '超級管理員清空了獨立回收桶集合');
         showAlert('回收桶已清空');
         setShowRecycleBin(false);
       } catch (err) {
@@ -212,6 +280,7 @@ export const useAdminActions = ({
     handleUpdateSubmission
   };
 };
+
 
 
 

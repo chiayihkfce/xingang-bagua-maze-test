@@ -58,13 +58,12 @@ export const useAdminData = ({
     setSubmissions([header]);
     setTotalRows(0);
 
-    // 1. 報名資料查詢
+    // 1. 報名資料查詢 (現在直接監聽整個 registrations 集合)
     let qSub;
     if (adminFilterDate) {
       const formattedDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
       qSub = query(
         collection(db, "registrations"), 
-        where("deleted", "==", false),
         where("pickupTime", ">=", formattedDate),
         where("pickupTime", "<=", formattedDate + "\uf8ff"),
         orderBy("pickupTime", "desc")
@@ -72,7 +71,6 @@ export const useAdminData = ({
     } else {
       qSub = query(
         collection(db, "registrations"), 
-        where("deleted", "==", false),
         orderBy("createdAt", "desc"),
         limit(200)
       );
@@ -84,7 +82,7 @@ export const useAdminData = ({
         return [
           d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, 
           d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, 
-          d.pickupLocation, d.referral, d.notes, doc.id
+          d.pickupLocation, d.referral, d.notes, doc.id, d.createdAt
         ];
       });
 
@@ -102,12 +100,16 @@ export const useAdminData = ({
       setIsDataLoading(false);
     });
 
-    // 2. 監聽回收桶
-    const qBin = query(collection(db, "registrations"), where("deleted", "==", true), orderBy("createdAt", "desc"), limit(100));
+    // 2. 監聽回收桶 (使用 timestamp 排序以相容缺少 createdAt 的舊資料)
+    const qBin = query(collection(db, "registrations_deleted"), orderBy("timestamp", "desc"), limit(100));
     const unsubBin = onSnapshot(qBin, (snapshot) => {
       const data = snapshot.docs.map(doc => {
         const d = doc.data();
-        return [d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, d.pickupLocation, d.referral, d.notes, doc.id];
+        return [
+          d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, 
+          d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, 
+          d.pickupLocation, d.referral, d.notes, doc.id, d.createdAt
+        ];
       });
       setDeletedSubmissions(data);
     });
@@ -123,8 +125,8 @@ export const useAdminData = ({
       setLogs([logHeader, ...data]);
     });
 
-    // 4. 監聽統計數據
-    const qStats = query(collection(db, "registrations"), where("deleted", "==", false));
+    // 4. 監聽統計數據 (統計數據依然從活躍報名中計算)
+    const qStats = query(collection(db, "registrations"));
     const unsubStats = onSnapshot(qStats, (snapshot) => {
       let kits = 0, players = 0, revenue = 0, pending = 0;
       const todayStr = new Date().toISOString().split('T')[0];
