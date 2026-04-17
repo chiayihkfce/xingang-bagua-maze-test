@@ -54,11 +54,11 @@ export const generateCertificate = async (data: {
   ctx.lineWidth = 20; ctx.strokeRect(60, 60, w-120, h-120);
   ctx.lineWidth = 4; ctx.strokeRect(100, 100, w-200, h-200);
   
-  const drawCloud = (x: number, y: number, r1: number, r2: number) => {
+  const drawCloud = (x: number, y: number, r1: number) => {
     ctx.save(); ctx.translate(x, y); ctx.rotate(r1); ctx.beginPath();
     ctx.arc(0, 0, 80, 0, Math.PI * 1.2); ctx.stroke(); ctx.restore();
   };
-  [[60,60,0], [w-60,60,Math.PI/2], [60,h-60,-Math.PI/2], [w-60,h-60,Math.PI]].forEach(([x,y,r]) => drawCloud(x,y,r,0));
+  [[60,60,0], [w-60,60,Math.PI/2], [60,h-60,-Math.PI/2], [w-60,h-60,Math.PI]].forEach(([x,y,r]) => drawCloud(x,y,r));
 
   // 5. 文字樣式與配置
   const centerX = w / 2;
