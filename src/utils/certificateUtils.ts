@@ -12,23 +12,32 @@ export const generateCertificate = async (data: {
   const ctx = canvas.getContext('2d');
   if (!ctx) return null;
 
-  // 1. 解析度大幅提升 (4K 級別確保列印品質)
-  const w = 2400, h = 1696;
+  // 1. 設定極致解析度 (維持 16:9 比例)
+  const w = 3200, h = 1800;
   canvas.width = w;
   canvas.height = h;
 
-  // 2. 背景：深邃墨色 + 微金箔紋理
-  const grad = ctx.createLinearGradient(0, 0, 0, h);
-  grad.addColorStop(0, '#1a1a1a');
-  grad.addColorStop(1, '#0a0a0a');
-  ctx.fillStyle = grad;
+  // 2. 背景構建：暖黑底色 + 宣紙紋理 + 中心光暈
+  const bgGrad = ctx.createRadialGradient(w/2, h/2, 100, w/2, h/2, w/1.2);
+  bgGrad.addColorStop(0, '#1c1c1c');
+  bgGrad.addColorStop(1, '#050505');
+  ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, w, h);
 
-  // 模擬金箔紙質感 (隨機極細點)
-  ctx.fillStyle = 'rgba(212, 175, 55, 0.03)';
-  for (let i = 0; i < 3000; i++) {
-    ctx.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+  // 宣紙/絲絹紋理 (程式碼逐一繪製細微纖維)
+  ctx.save();
+  ctx.globalAlpha = 0.04;
+  ctx.strokeStyle = '#d4af37';
+  for (let i = 0; i < 4000; i++) {
+    ctx.beginPath();
+    const x = Math.random() * w;
+    const y = Math.random() * h;
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + Math.random() * 15, y + Math.random() * 5);
+    ctx.lineWidth = 0.5;
+    ctx.stroke();
   }
+  ctx.restore();
 
   // 3. 完整太極八卦水印 (亮度提升)
   ctx.save();
@@ -64,58 +73,132 @@ export const generateCertificate = async (data: {
   // 5. 文字樣式與配置
   const centerX = w / 2;
   const fontAntique = '"STXingkai", "華文行楷", "LiSu", "隸書", "STKaiti", serif';
+  const fontStandard = '"Noto Serif CJK TC", "Songti TC", serif';
   const fontEng = '"Montserrat", "Arial", sans-serif';
 
-  const drawMasterText = (text: string, x: number, y: number, font: string, color: string, shadow: number = 0) => {
-    ctx.save(); ctx.font = font; ctx.fillStyle = color; ctx.textAlign = 'center';
-    if (shadow > 0) { ctx.shadowBlur = shadow; ctx.shadowColor = color; }
-    ctx.fillText(text, x, y); ctx.restore();
+  const drawGoldenText = (text: string, x: number, y: number, font: string, size: number, isBold: boolean = false) => {
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.font = `${isBold ? 'bold ' : ''}${size}px ${font}`;
+    
+    // 製作立體鎏金陰影
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 10;
+    ctx.shadowOffsetX = 4;
+    ctx.shadowOffsetY = 4;
+
+    const textGrad = ctx.createLinearGradient(x, y - size, x, y + size/3);
+    textGrad.addColorStop(0, '#856d28');
+    textGrad.addColorStop(0.5, '#f1c40f');
+    textGrad.addColorStop(1, '#d4af37');
+    
+    ctx.fillStyle = textGrad;
+    ctx.fillText(text, x, y);
+    
+    // 加入微弱外發光
+    ctx.globalCompositeOperation = 'lighter';
+    ctx.shadowColor = 'rgba(212, 175, 55, 0.3)';
+    ctx.shadowBlur = 20;
+    ctx.fillText(text, x, y);
+    ctx.restore();
   };
 
-  // 標題縮小
-  drawMasterText('數位成就證書', centerX, 350, `bold 140px ${fontAntique}`, '#d4af37', 15);
-  drawMasterText('XINGANG BAGUA MYSTERY ACHIEVEMENT', centerX, 430, `32px ${fontEng}`, 'rgba(212, 175, 55, 0.6)');
+  // 主標題 (數位成就證書)
+  drawGoldenText('數位成就證書', centerX, 320, fontAntique, 160, true);
+  
+  // 英文副標 (弱化)
+  ctx.fillStyle = 'rgba(212, 175, 55, 0.5)';
+  ctx.font = `32px ${fontEng}`;
+  ctx.textAlign = 'center';
+  ctx.fillText('XINGANG BAGUA MYSTERY ACHIEVEMENT', centerX, 380);
 
-  // 頒發給
-  drawMasterText('頒發給', centerX, 650, `55px ${fontAntique}`, '#ffffff');
+  // 頒發給 (使用標準宋體)
+  ctx.fillStyle = 'rgba(212, 175, 55, 0.8)';
+  ctx.font = `50px ${fontStandard}`;
+  ctx.textAlign = 'center';
+  ctx.fillText('頒 發 給', centerX, 550);
 
-  // 姓名 (縮小至 220px，氣勢適中)
+  // 姓名 (核心視覺 - 氣勢大字)
   ctx.save();
-  ctx.font = `bold 220px ${fontAntique}`;
-  ctx.fillStyle = '#ffffff'; ctx.textAlign = 'center';
-  ctx.shadowBlur = 25; ctx.shadowColor = 'rgba(255,255,255,0.3)';
-  ctx.fillText(data.name || '挑戰者', centerX, 920);
+  ctx.textAlign = 'center';
+  ctx.font = `bold 260px ${fontAntique}`;
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowColor = 'rgba(255, 255, 255, 0.2)';
+  ctx.shadowBlur = 40;
+  ctx.fillText(data.name || '挑戰者', centerX, 850);
   ctx.restore();
   
-  // 裝飾底線
-  ctx.strokeStyle = '#d4af37'; ctx.lineWidth = 4; ctx.beginPath();
-  ctx.moveTo(centerX - 300, 960); ctx.lineTo(centerX + 300, 960); ctx.stroke();
+  // 名字下方的承托金線
+  ctx.strokeStyle = '#d4af37';
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(centerX - 400, 890);
+  ctx.lineTo(centerX + 400, 890);
+  ctx.stroke();
 
-  // 祝賀詞
-  const t1 = '恭喜完成', t2 = '【新港八卦謎蹤】', t3 = '挑戰！';
-  ctx.font = `65px ${fontAntique}`;
-  const w1 = ctx.measureText(t1).width, w3 = ctx.measureText(t3).width;
-  ctx.font = `bold 75px ${fontAntique}`;
-  const w2 = ctx.measureText(t2).width;
-  const startX = centerX - (w1 + w2 + w3 + 40) / 2;
+  // 祝賀詞 (精確對位與強調)
+  const challengeTitle = '【新港八卦謎蹤】';
+  ctx.font = `70px ${fontStandard}`;
+  const wPrefix = ctx.measureText('恭喜完成 ').width;
+  ctx.font = `bold 75px ${fontStandard}`;
+  const wTitle = ctx.measureText(challengeTitle).width;
+  ctx.font = `70px ${fontStandard}`;
+  const wSuffix = ctx.measureText(' 挑戰！').width;
+  
+  const startT = centerX - (wPrefix + wTitle + wSuffix) / 2;
 
   ctx.textAlign = 'left';
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-  ctx.font = `65px ${fontAntique}`; ctx.fillText(t1, startX, 1150);
-  ctx.fillStyle = '#d4af37'; ctx.font = `bold 75px ${fontAntique}`; ctx.fillText(t2, startX + w1 + 20, 1150);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.9)'; ctx.font = `65px ${fontAntique}`; ctx.fillText(t3, startX + w1 + w2 + 40, 1150);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.font = `70px ${fontStandard}`;
+  ctx.fillText('恭喜完成 ', startT, 1080);
+  
+  ctx.fillStyle = '#f1c40f'; // 挑戰名稱加亮
+  ctx.font = `bold 75px ${fontStandard}`;
+  ctx.fillText(challengeTitle, startT + wPrefix, 1080);
+  
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.font = `70px ${fontStandard}`;
+  ctx.fillText(' 挑戰！', startT + wPrefix + wTitle, 1080);
 
-  // 底部資訊縮小
-  const sName = data.session ? data.session.split('(')[0].trim() : '一般場次';
-  drawMasterText(`活動場次：${sName}`, centerX, 1320, `36px ${fontEng}`, 'rgba(255, 255, 255, 0.4)');
-  drawMasterText(`${data.date} | 新港文教基金會`, centerX, 1420, `48px ${fontAntique}`, 'rgba(255, 255, 255, 0.7)');
+  // E. 底部資訊
+  ctx.textAlign = 'center';
+  const sessionLabel = `活動場次：${data.session ? data.session.split('(')[0].trim() : '一般場次'}`;
+  ctx.font = `40px ${fontStandard}`;
+  ctx.fillStyle = 'rgba(212, 175, 55, 0.5)';
+  ctx.fillText(sessionLabel, centerX, 1280, w - 400);
+  
+  ctx.font = `50px ${fontAntique}`;
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+  ctx.fillText(`${data.date} ｜ 新港文教基金會`, centerX, 1380);
 
-  // 6. 紅印章 (精緻化)
-  ctx.save(); ctx.translate(w - 400, h - 350); ctx.rotate(-0.05);
-  ctx.strokeStyle = 'rgba(192, 57, 43, 0.9)'; ctx.lineWidth = 10; ctx.strokeRect(0, 0, 180, 180);
-  ctx.fillStyle = 'rgba(192, 57, 43, 0.9)'; ctx.font = `bold 42px "Microsoft JhengHei"`;
-  ctx.textAlign = 'center'; ctx.fillText('新港文教', 90, 75); ctx.fillText('基金會印', 90, 135);
-  ctx.restore();
+  // 7. 朱紅方形印章 (藝術化處理：墨色不均、疊印感)
+  const drawSeal = (x: number, y: number) => {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(-0.04);
+    
+    // 印章背景 (不規則邊緣)
+    const sealSize = 220;
+    ctx.fillStyle = 'rgba(192, 57, 43, 0.85)';
+    ctx.globalCompositeOperation = 'multiply'; 
+    ctx.beginPath();
+    ctx.moveTo(3, 3); ctx.lineTo(sealSize-5, 2); ctx.lineTo(sealSize+2, sealSize-4); ctx.lineTo(1, sealSize+3); ctx.closePath();
+    ctx.fill();
+    
+    // 印章邊框
+    ctx.strokeStyle = 'rgba(192, 57, 43, 0.9)';
+    ctx.lineWidth = 14;
+    ctx.strokeRect(12, 12, sealSize-24, sealSize-24);
+
+    // 印章文字
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.font = 'bold 48px "Microsoft JhengHei"';
+    ctx.textAlign = 'center';
+    ctx.fillText('新港文教', sealSize/2, sealSize/3 + 10);
+    ctx.fillText('基金會印', sealSize/2, (sealSize/3)*2 + 15);
+    ctx.restore();
+  };
+  drawSeal(w - 480, h - 450);
 
   return canvas.toDataURL('image/png');
 };
