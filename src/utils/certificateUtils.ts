@@ -59,13 +59,21 @@ export const generateCertificate = async (data: {
   });
 
   const r = 320;
-  ctx.lineWidth = 6;
-  ctx.beginPath(); ctx.arc(0, -r/2, r/2, Math.PI * 1.5, Math.PI * 0.5); ctx.arc(0, r/2, r/2, Math.PI * 1.5, Math.PI * 0.5, true); ctx.stroke();
+  ctx.lineCap = 'round';
+  ctx.beginPath();
+  // 繪製整合路徑
+  ctx.arc(0, 0, r, 0, Math.PI * 2);
+  ctx.moveTo(0, -r);
+  ctx.arc(0, -r/2, r/2, Math.PI * 1.5, Math.PI * 0.5);
+  ctx.arc(0, r/2, r/2, Math.PI * 1.5, Math.PI * 0.5, true);
+  
+  ctx.lineWidth = 12;
+  ctx.stroke();
+
+  // 繪製魚眼
   ctx.fillStyle = ctx.strokeStyle;
   ctx.beginPath(); ctx.arc(0, -r/2, 40, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc(0, r/2, 40, 0, Math.PI * 2); ctx.fill();
-  ctx.lineWidth = 12;
-  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
 
   const trigrams = [ [1,1,1], [0,1,1], [1,0,1], [0,0,1], [1,1,0], [0,1,0], [1,0,0], [0,0,0] ];
   trigrams.forEach((lines, i) => {
@@ -128,13 +136,13 @@ export const generateCertificate = async (data: {
   // 主標題 (數位成就證書)
   drawGoldenText('數位成就證書', centerX, 320, fontAntique, 160, true);
   
-  // 英文副標 (極致弱化：極淡、斜體、拉大字距)
+  // 英文副標 (強化顯眼度：增加透明度與字級感)
   ctx.save();
-  ctx.globalAlpha = 0.25;
-  ctx.fillStyle = isDark ? 'rgba(212, 175, 55, 0.4)' : 'rgba(184, 134, 11, 0.4)';
+  ctx.globalAlpha = 0.6; // 從 0.25 調升至 0.6
+  ctx.fillStyle = isDark ? 'rgba(212, 175, 55, 0.8)' : 'rgba(133, 109, 40, 0.8)';
   ctx.font = `italic 28px serif`;
   ctx.textAlign = 'center';
-  ctx.letterSpacing = '12px';
+  ctx.letterSpacing = '10px';
   ctx.fillText('XINGANG BAGUA MYSTERY ACHIEVEMENT', centerX, 390);
   ctx.restore();
 
