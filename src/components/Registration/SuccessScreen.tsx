@@ -35,73 +35,51 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
   const [bankLast5, setBankLast5] = React.useState('');
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [updateSuccess, setUpdateSuccess] = React.useState(false);
-
   const [hasClickedPayment, setHasClickedPayment] = React.useState(false);
-
-  const selectedPaymentDetail = (paymentMethods || []).find(m => m.name === formData.paymentMethod);
-
-  // 判斷是否真正完成「送出」動作
-  // 1. 現金支付：只要 isSaved 有 ID 就算完成
-  // 2. 銀行轉帳：需 updateSuccess 為 true
-  // 3. 電子支付：需 hasClickedPayment 為 true
-  const isFullyCompleted = 
-    selectedPaymentDetail?.type === 'bank' ? updateSuccess :
-    selectedPaymentDetail?.type === 'linepay' ? hasClickedPayment :
-    !!lastSubmissionId;
-
   const [hasDownloaded, setHasDownloaded] = React.useState(false);
 
-  // 自動偵測連結並下載高品質證書
-  React.useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const certId = urlParams.get('certId');
-    
-    // 如果有 certId 且 formData 已載入，且「尚未執行過下載」
-    if (certId && formData.name && isFullyCompleted && !hasDownloaded) {
-      const themeParam = urlParams.get('theme') as 'dark' | 'light' || 'light';
-      
-      const triggerAutoDownload = async () => {
-        try {
-          const dataUrl = await generateCertificate({
-            name: formData.name,
-            session: translateOption(getSessionDisplayName(formData.session), lang),
-            date: formData.pickupTime.split(' ')[0],
-            lang,
-            t,
-            theme: themeParam
-          });
-          if (dataUrl) {
-            downloadCertificate(dataUrl, t.certDownloadName);
-            setHasDownloaded(true); // 標記為已下載，停止迴圈
-          }
-        } catch (err) {
-          console.error("Auto Download Error:", err);
-        }
-      };
-      
-      const timer = setTimeout(triggerAutoDownload, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [formData.name, isFullyCompleted, hasDownloaded]); // 精簡依賴項
+  const selectedPaymentDetail = (paymentMethods || []).find(m => m.name === formData.paymentMethod);
+  const isFullyCompleted = selectedPaymentDetail?.type === 'bank' ? updateSuccess : (selectedPaymentDetail?.type === 'linepay' ? hasClickedPayment : !!lastSubmissionId);
 
-  // 離開頁面警告邏輯：若尚未完成付款動作，跳出警告
+  const urlParams = new URLSearchParams(window.location.search);
+  const isCertMode = !!urlParams.get('certId');
+
+  // 手動觸發高品質下載
+  const handleThemeDownload = async (selectedTheme: 'dark' | 'light') => {
+    if (!formData.name) return;
+    setIsUpdating(true);
+    try {
+      const dataUrl = await generateCertificate({
+        name: formData.name,
+        session: translateOption(getSessionDisplayName(formData.session), lang),
+        date: formData.pickupTime.split(' ')[0],
+        lang,
+        t,
+        theme: selectedTheme
+      });
+      if (dataUrl) {
+        downloadCertificate(dataUrl, `${t.certDownloadName || '成就證書'}_${selectedTheme === 'dark' ? '黑金' : '米白'}.png`);
+        setHasDownloaded(true);
+      }
+    } catch (err) {
+      console.error("Manual Download Error:", err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // 離開頁面警告
   React.useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!isFullyCompleted) {
+      if (!isFullyCompleted && !isCertMode) {
         e.preventDefault();
         e.returnValue = t.exitWarning || '報名尚未完成！';
         return e.returnValue;
       }
     };
-
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [isFullyCompleted, t.exitWarning]);
-
-  // 判斷是否顯示「返回首頁」按鈕
-  const canGoHome = 
-    (selectedPaymentDetail?.type === 'bank' ? updateSuccess : true) &&
-    (selectedPaymentDetail?.type === 'linepay' ? hasClickedPayment : true);
+  }, [isFullyCompleted, isCertMode, t.exitWarning]);
 
   const onUpdateLast5 = async () => {
     if (!bankLast5 || bankLast5.length !== 5) {
@@ -110,45 +88,23 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
     }
     if (handleUpdateBankLast5) {
       setIsUpdating(true);
-      // 傳入空字串 ID 代表尚未存檔，handleUpdateBankLast5 會執行 executeFinalSubmission
       const success = await handleUpdateBankLast5(lastSubmissionId || '', bankLast5);
       setIsUpdating(false);
-      if (success) {
-        setUpdateSuccess(true);
-      } else {
-        showAlert(lang === 'en' ? 'Update failed, please try again.' : '更新失敗，請稍後再試');
-      }
+      if (success) setUpdateSuccess(true);
+      else showAlert(lang === 'en' ? 'Update failed.' : '更新失敗');
     }
   };
 
   const onLinePayClick = async (e: React.MouseEvent) => {
-    // 如果已經存過檔了，就讓它正常跳轉
-    if (lastSubmissionId) {
-      setHasClickedPayment(true);
-      return;
-    }
-
-    // 尚未存檔，攔截跳轉先存檔
+    if (lastSubmissionId) { setHasClickedPayment(true); return; }
     e.preventDefault();
     const link = (e.currentTarget as HTMLAnchorElement).href;
-    
     if (handleUpdateBankLast5) {
       setIsUpdating(true);
       try {
-        // 傳入空字串 ID 代表執行最終存檔
         const success = await handleUpdateBankLast5('', '');
-        if (success) {
-          setHasClickedPayment(true);
-          // 存檔成功後，開啟連結
-          window.open(link, '_blank', 'noopener,noreferrer');
-        } else {
-          showAlert(lang === 'en' ? 'Connection failed, please try again.' : '連線失敗，請稍後再試');
-        }
-      } catch (err) {
-        console.error("LinePay Submit Error:", err);
-      } finally {
-        setIsUpdating(false);
-      }
+        if (success) { setHasClickedPayment(true); window.open(link, '_blank', 'noopener,noreferrer'); }
+      } catch (err) { console.error(err); } finally { setIsUpdating(false); }
     }
   };
 
@@ -171,14 +127,60 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
     });
   };
 
-  const urlParams = new URLSearchParams(window.location.search);
-  const isCertMode = !!urlParams.get('certId');
+  const canGoHome = (selectedPaymentDetail?.type === 'bank' ? updateSuccess : true) && (selectedPaymentDetail?.type === 'linepay' ? hasClickedPayment : true);
 
-  // 如果是證書領取模式，只顯示極簡載入狀態 (隱身模式)
+  // 如果是證書領取模式，顯示主題選擇畫面
   if (isCertMode) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: '#000', color: '#d4af37', textAlign: 'center' }}>
-        <p style={{ letterSpacing: '3px', fontSize: '1.2rem', fontWeight: 'bold' }}>正在為您準備最高畫質證書...</p>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#0a0a0a', color: '#fff', textAlign: 'center', padding: '20px' }}>
+        <div className="check-icon" style={{ background: '#27ae60', margin: '0 auto 20px' }}>✓</div>
+        <h2 style={{ fontSize: '2rem', letterSpacing: '4px', color: '#d4af37' }}>挑戰成就達成</h2>
+        <p style={{ marginTop: '10px', opacity: 0.8, fontSize: '1.2rem' }}>恭喜您，<strong>{formData.name}</strong>！</p>
+        <p style={{ marginTop: '10px', opacity: 0.7 }}>請選擇您喜愛的證書風格進行領取：</p>
+        
+        <div style={{ display: 'flex', gap: '20px', marginTop: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
+          {/* 米白宣紙選項 */}
+          <button 
+            onClick={() => handleThemeDownload('light')}
+            disabled={isUpdating}
+            style={{ 
+              width: '240px', padding: '40px 20px', background: '#f5f2e9', color: '#333', border: '4px solid #d4af37', 
+              borderRadius: '20px', cursor: 'pointer', transition: 'transform 0.3s', display: 'flex', flexDirection: 'column', alignItems: 'center' 
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <span style={{ fontSize: '2rem', marginBottom: '15px' }}>📜</span>
+            <span style={{ fontWeight: 'bold', fontSize: '1.3rem' }}>米白宣紙版</span>
+            <span style={{ fontSize: '0.9rem', marginTop: '15px', opacity: 0.7 }}>古典溫潤 · 書卷氣息</span>
+          </button>
+
+          {/* 深色黑金選項 */}
+          <button 
+            onClick={() => handleThemeDownload('dark')}
+            disabled={isUpdating}
+            style={{ 
+              width: '240px', padding: '40px 20px', background: '#1a1a1a', color: '#d4af37', border: '4px solid #d4af37', 
+              borderRadius: '20px', cursor: 'pointer', transition: 'transform 0.3s', display: 'flex', flexDirection: 'column', alignItems: 'center' 
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
+            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+          >
+            <span style={{ fontSize: '2rem', marginBottom: '15px' }}>🌟</span>
+            <span style={{ fontWeight: 'bold', fontSize: '1.3rem' }}>深色黑金版</span>
+            <span style={{ fontSize: '0.9rem', marginTop: '15px', opacity: 0.7 }}>莊重神祕 · 皇家氣勢</span>
+          </button>
+        </div>
+
+        {isUpdating && (
+          <div style={{ marginTop: '40px' }}>
+            <p style={{ color: '#d4af37', fontSize: '1.1rem' }}>正在為您繪製高品質證書，請稍候...</p>
+          </div>
+        )}
+        
+        {hasDownloaded && !isUpdating && (
+          <p style={{ marginTop: '40px', color: '#27ae60', fontWeight: 'bold', fontSize: '1.1rem' }}>✓ 證書已開始下載。您可以再次點擊選擇另一種配色。</p>
+        )}
       </div>
     );
   }
