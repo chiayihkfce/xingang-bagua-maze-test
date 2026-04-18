@@ -95,7 +95,8 @@ export const useAdminActions = ({
               session: target[5], quantity: target[6], players: target[7], totalAmount: target[8],
               paymentMethod: target[9], bankLast5: target[10], pickupTime: target[11],
               pickupLocation: target[12], referral: target[13], notes: target[14],
-              createdAt: target[16] || serverTimestamp()
+              createdAt: target[16] || serverTimestamp(),
+              certSent: target[17] || false // 補上證書發送狀態
             };
 
             batch.set(targetRef, dataToMove);
@@ -162,24 +163,14 @@ export const useAdminActions = ({
         const sourceRef = doc(db, "registrations", docId);
         const targetRef = doc(db, "registrations_deleted", docId);
         
-        // 構建原始對象 (不再需要 deleted 欄位，由集合位置決定狀態)
+        // 構建原始對象 (補上索引 17: certSent)
         const dataToMove = {
-          timestamp: target[0],
-          status: target[1],
-          name: target[2],
-          phone: target[3],
-          email: target[4],
-          session: target[5],
-          quantity: target[6],
-          players: target[7],
-          totalAmount: target[8],
-          paymentMethod: target[9],
-          bankLast5: target[10],
-          pickupTime: target[11],
-          pickupLocation: target[12],
-          referral: target[13],
-          notes: target[14],
-          createdAt: target[16] || serverTimestamp()
+          timestamp: target[0], status: target[1], name: target[2], phone: target[3], email: target[4],
+          session: target[5], quantity: target[6], players: target[7], totalAmount: target[8],
+          paymentMethod: target[9], bankLast5: target[10], pickupTime: target[11],
+          pickupLocation: target[12], referral: target[13], notes: target[14],
+          createdAt: target[16] || serverTimestamp(),
+          certSent: target[17] || false
         };
 
         const batch = writeBatch(db);
@@ -212,22 +203,13 @@ export const useAdminActions = ({
       const targetRef = doc(db, "registrations", docId);
       
       const dataToMove = {
-        timestamp: target[0],
-        status: target[1],
-        name: target[2],
-        phone: target[3],
-        email: target[4],
-        session: target[5],
-        quantity: target[6],
-        players: target[7],
-        totalAmount: target[8],
-        paymentMethod: target[9],
-        bankLast5: target[10],
-        pickupTime: target[11],
-        pickupLocation: target[12],
-        referral: target[13],
-        notes: target[14],
-        createdAt: target[16] || serverTimestamp()
+        timestamp: target[0], status: target[1], name: target[2], phone: target[3], email: target[4],
+        session: target[5], quantity: target[6], players: target[7], totalAmount: target[8],
+        paymentMethod: target[9], bankLast5: target[10], pickupTime: target[11],
+        pickupLocation: target[12], referral: target[13], notes: target[14],
+        createdAt: target[16] || serverTimestamp(),
+        certSent: target[17] || false,
+        deleted: false // 還原後標記為未刪除
       };
 
       const batch = writeBatch(db);

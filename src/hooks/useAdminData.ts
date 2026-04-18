@@ -58,7 +58,7 @@ export const useAdminData = ({
     setSubmissions([header]);
     setTotalRows(0);
 
-    // 1. 報名資料查詢 (現在直接監聽整個 registrations 集合)
+    // 1. 報名資料查詢 (監聽活躍報名)
     let qSub;
     if (adminFilterDate) {
       const formattedDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
@@ -72,7 +72,7 @@ export const useAdminData = ({
       qSub = query(
         collection(db, "registrations"), 
         orderBy("createdAt", "desc"),
-        limit(200)
+        limit(300)
       );
     }
 
@@ -82,9 +82,12 @@ export const useAdminData = ({
         return [
           d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, 
           d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, 
-          d.pickupLocation, d.referral, d.notes, doc.id, d.createdAt
+          d.pickupLocation, d.referral, d.notes, doc.id, d.createdAt, d.certSent // 補上索引 17: certSent
         ];
       });
+
+      // 過濾掉標記為 deleted 的資料 (防範萬一資料未被刪除只被標記)
+      data = data.filter(row => row[18] !== true); 
 
       if (adminFilterDate) {
         const formattedDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
@@ -100,7 +103,7 @@ export const useAdminData = ({
       setIsDataLoading(false);
     });
 
-    // 2. 監聽回收桶 (使用 timestamp 排序以相容缺少 createdAt 的舊資料)
+    // 2. 監聽回收桶 (使用 registrations_deleted 集合)
     const qBin = query(collection(db, "registrations_deleted"), orderBy("timestamp", "desc"), limit(100));
     const unsubBin = onSnapshot(qBin, (snapshot) => {
       const data = snapshot.docs.map(doc => {
@@ -108,7 +111,7 @@ export const useAdminData = ({
         return [
           d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, 
           d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, 
-          d.pickupLocation, d.referral, d.notes, doc.id, d.createdAt
+          d.pickupLocation, d.referral, d.notes, doc.id, d.createdAt, d.certSent // 補上索引 17: certSent
         ];
       });
       setDeletedSubmissions(data);
