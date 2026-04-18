@@ -58,6 +58,8 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
     
     // 如果有 certId 且 formData 已載入，且「尚未執行過下載」
     if (certId && formData.name && isFullyCompleted && !hasDownloaded) {
+      const themeParam = urlParams.get('theme') as 'dark' | 'light' || 'light';
+      
       const triggerAutoDownload = async () => {
         try {
           const dataUrl = await generateCertificate({
@@ -66,7 +68,7 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
             date: formData.pickupTime.split(' ')[0],
             lang,
             t,
-            theme: 'light' // 這裡可以設定 'dark' 或 'light'
+            theme: themeParam
           });
           if (dataUrl) {
             downloadCertificate(dataUrl, t.certDownloadName);

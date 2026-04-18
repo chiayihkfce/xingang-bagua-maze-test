@@ -165,16 +165,26 @@ export const generateCertificate = async (data: {
   ctx.strokeText(data.name || '挑戰者', centerX, 750);
   ctx.restore();
 
+  // D. 恭賀說明文字 (修正重疊，增加 20px 間距)
   const challengeTitle = '【新港八卦謎蹤】';
   ctx.font = `65px ${fontStandard}`;
   const w1 = ctx.measureText('恭喜完成 ').width, w2 = ctx.measureText(challengeTitle).width, w3 = ctx.measureText(' 挑戰！').width;
-  const startT = centerX - (w1 + w2 + w3) / 2;
-  ctx.textAlign = 'left'; ctx.fillStyle = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(34,34,34,0.8)';
+  
+  // 增加 20px 的額外緩衝間距避免重疊
+  const startT = centerX - (w1 + w2 + w3 + 60) / 2;
+
+  ctx.textAlign = 'left';
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(34, 34, 34, 0.8)';
+  ctx.font = `65px ${fontStandard}`;
   ctx.fillText('恭喜完成 ', startT, 980);
+  
   ctx.fillStyle = isDark ? '#d4af37' : '#856d28';
-  ctx.font = `bold 75px ${fontStandard}`; ctx.fillText(challengeTitle, startT + w1, 980);
-  ctx.font = `65px ${fontStandard}`; ctx.fillStyle = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(34,34,34,0.8)';
-  ctx.fillText(' 挑戰！', startT + w1 + w2, 980);
+  ctx.font = `bold 75px ${fontStandard}`;
+  ctx.fillText(challengeTitle, startT + w1 + 20, 980); // 加入 20px 間距
+  
+  ctx.font = `65px ${fontStandard}`;
+  ctx.fillStyle = isDark ? 'rgba(255,255,255,0.75)' : 'rgba(34, 34, 34, 0.8)';
+  ctx.fillText(' 挑戰！', startT + w1 + w2 + 40, 980); // 再加入 20px 間距
 
   ctx.textAlign = 'center';
   ctx.fillStyle = isDark ? 'rgba(212, 175, 55, 0.4)' : 'rgba(0,0,0,0.4)';

@@ -124,8 +124,8 @@ async function drawCertificateImage(data) {
         date: dateStr 
       });
 
-      // 呼叫 EmailJS (使用 GitHub Pages 網址)
-      const certUrl = `https://chiayihkfce.github.io/xingang-bagua-maze-test/?certId=${doc.id}`; 
+      // 呼叫 EmailJS (使用 GitHub Pages 網址，加入預設主題參數)
+      const certUrl = `https://chiayihkfce.github.io/xingang-bagua-maze-test/?certId=${doc.id}&theme=light`; 
       
       const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
