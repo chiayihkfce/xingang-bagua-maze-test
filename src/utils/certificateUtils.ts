@@ -24,17 +24,28 @@ export const generateCertificate = async (data: {
   ctx.fillStyle = bgGrad;
   ctx.fillRect(0, 0, w, h);
 
-  // 宣紙/絲絹紋理 (纖維感強化)
+  // 宣紙/絲絹紋理 (極致纖維感重構)
   ctx.save();
-  ctx.globalAlpha = 0.08;
-  for (let i = 0; i < 3000; i++) {
-    ctx.strokeStyle = Math.random() > 0.5 ? '#d4af37' : '#999999';
+  const colors = ['#d4af37', '#999999', '#ffffff', '#c0c0c0'];
+  for (let i = 0; i < 8000; i++) {
+    ctx.globalAlpha = Math.random() * 0.12; // 隨機透明度
+    ctx.strokeStyle = colors[Math.floor(Math.random() * colors.length)];
+    ctx.lineWidth = Math.random() * 0.6;
+    
     ctx.beginPath();
     const x = Math.random() * w;
     const y = Math.random() * h;
+    const len = Math.random() * 25 + 5;
+    const angle = Math.random() * Math.PI * 2;
+    
+    // 使用二次貝茲曲線繪製帶有弧度的細碎纖維
     ctx.moveTo(x, y);
-    ctx.lineTo(x + Math.random() * 20, y + Math.random() * 20);
-    ctx.lineWidth = 0.4;
+    ctx.quadraticCurveTo(
+      x + Math.random() * 10 - 5, 
+      y + Math.random() * 10 - 5,
+      x + Math.cos(angle) * len, 
+      y + Math.sin(angle) * len
+    );
     ctx.stroke();
   }
   ctx.restore();
@@ -53,17 +64,21 @@ export const generateCertificate = async (data: {
     ctx.beginPath(); ctx.arc(0, 0, radius, 0, Math.PI * 2); ctx.stroke();
   });
 
-  // 太極圓 (單層圓 + S曲線 + 魚眼)
+  // 太極圖 (修正順序：先畫內線與魚眼，最後畫圓圈壓陣)
   const r = 320;
-  ctx.lineWidth = 12;
-  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
+  
+  // A. 繪製 S 曲線
   ctx.lineWidth = 6;
   ctx.beginPath(); ctx.arc(0, -r/2, r/2, Math.PI * 1.5, Math.PI * 0.5); ctx.arc(0, r/2, r/2, Math.PI * 1.5, Math.PI * 0.5, true); ctx.stroke();
-
-  // 繪製魚眼
-  ctx.fillStyle = ctx.strokeStyle; // 使用法陣相同的金色
+  
+  // B. 繪製魚眼
+  ctx.fillStyle = ctx.strokeStyle;
   ctx.beginPath(); ctx.arc(0, -r/2, 40, 0, Math.PI * 2); ctx.fill();
   ctx.beginPath(); ctx.arc(0, r/2, 40, 0, Math.PI * 2); ctx.fill();
+
+  // C. 最後畫最外圈 (壓在所有線條上方)
+  ctx.lineWidth = 12;
+  ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.stroke();
 
   
   // 八卦爻位 (加粗清晰化並加入能量光暈)
@@ -211,50 +226,46 @@ export const generateCertificate = async (data: {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
   ctx.fillText(`${data.date} ｜ 新港文教基金會`, centerX, 1250);
 
-  // 7. 朱紅方形印章 (適配白底：增強破碎感與滲透感)
+  // 7. 朱紅方形印章 (鏤空篆刻化：大尺寸、透明、紅色文字、無底色)
   const drawSeal = (x: number, y: number) => {
     ctx.save();
     ctx.translate(x, y);
-    ctx.rotate(-0.06); 
-
-    const sealSize = 220;
-    // 在白底上使用 multiply 會非常自然
-    ctx.globalCompositeOperation = 'multiply';
-
-    // 繪製具備隨機邊緣缺陷的印背景 (顏色稍微古樸)
-    ctx.fillStyle = 'rgba(160, 40, 30, 0.8)';
-
-    ctx.beginPath();
-    ctx.moveTo(Math.random()*6, Math.random()*6);
-    ctx.lineTo(sealSize - Math.random()*6, Math.random()*6);
-    ctx.lineTo(sealSize + Math.random()*6, sealSize - Math.random()*6);
-    ctx.lineTo(Math.random()*6, sealSize + Math.random()*6);
-    ctx.closePath();
-    ctx.fill();
+    ctx.rotate(-0.05); 
     
-    // 加入印泥顆粒感 (墨色不均)
-    ctx.fillStyle = 'rgba(150, 0, 0, 0.4)';
-    for(let i=0; i<600; i++) {
-      ctx.fillRect(Math.random()*sealSize, Math.random()*sealSize, 2, 2);
+    const sealSize = 300; // 放大尺寸
+    ctx.globalAlpha = 0.6; // 增加透明度讓其更自然
+    ctx.globalCompositeOperation = 'multiply';
+    
+    // A. 繪製破碎的紅色邊框 (不填充背景，達成鏤空感)
+    ctx.strokeStyle = 'rgba(160, 40, 30, 1)';
+    ctx.lineWidth = 16;
+    ctx.beginPath();
+    ctx.moveTo(Math.random()*10, Math.random()*10);
+    ctx.lineTo(sealSize-Math.random()*10, Math.random()*5);
+    ctx.lineTo(sealSize+Math.random()*5, sealSize-Math.random()*10);
+    ctx.lineTo(Math.random()*5, sealSize+Math.random()*8);
+    ctx.closePath();
+    ctx.stroke();
+
+    // B. 加入隨機的印泥殘留噴點 (僅在邊框與文字附近)
+    ctx.fillStyle = 'rgba(160, 40, 30, 0.4)';
+    for(let i=0; i<400; i++) {
+      if (Math.random() > 0.7) { // 模擬不均勻感
+        ctx.fillRect(Math.random()*sealSize, Math.random()*sealSize, 3, 3);
+      }
     }
 
-    // 印章邊框 (加粗且破碎)
-    ctx.strokeStyle = 'rgba(192, 57, 43, 1)';
-    ctx.lineWidth = 18;
-    ctx.strokeRect(15, 15, sealSize - 30, sealSize - 30);
-
-    // D. 印章文字 (確保清晰可見，不再隱形)
-    ctx.globalCompositeOperation = 'source-over'; // 恢復標準疊加模式
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
-    ctx.font = 'bold 48px "Microsoft JhengHei"';
+    // C. 印章文字 (改為紅色，達成刻印質感)
+    ctx.fillStyle = 'rgba(160, 40, 30, 0.9)';
+    ctx.font = 'bold 65px "Microsoft JhengHei"';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('新港文教', sealSize/2, sealSize/3 + 8);
-    ctx.fillText('基金會印', sealSize/2, (sealSize/3)*2 + 18);
+    ctx.fillText('新港文教', sealSize/2, sealSize/3 + 15);
+    ctx.fillText('基金會印', sealSize/2, (sealSize/3)*2 + 25);
 
     ctx.restore();
-    };
-    drawSeal(w - 500, h - 480);
+  };
+  drawSeal(w - 550, h - 550);
 
 
   return canvas.toDataURL('image/png');
