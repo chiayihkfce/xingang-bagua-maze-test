@@ -11,6 +11,7 @@ import { db } from "../firebase";
 import { Session, TimeslotConfig, PaymentMethod, FormData } from '../types'
 
 export const useFirebaseListeners = (
+  formData: FormData,
   setFormData: React.Dispatch<React.SetStateAction<FormData>>,
   setSubmitted?: (val: boolean) => void,
   setLastSubmissionId?: (id: string | null) => void,
@@ -44,18 +45,22 @@ export const useFirebaseListeners = (
           if (docSnap.exists()) {
             const data = docSnap.data();
             setFormData({
-              name: data.name || '',
-              phone: data.phone || '',
               email: data.email || '',
+              name: data.name || '',
+              countryCode: data.countryCode || '+886',
+              phone: data.phone || '',
+              contactEmail: data.email || '', // 預設使用同一個 email
               session: data.session || '',
-              quantity: data.quantity || 1,
-              participants: data.participants || 1,
+              quantity: String(data.quantity || '1'),
+              players: String(data.players || '1'),
+              totalAmount: String(data.totalAmount || '0'),
+              paymentMethod: data.paymentMethod || '',
+              bankLast5: data.bankLast5 || '',
               pickupTime: data.pickupTime || '',
               pickupLocation: data.pickupLocation || '',
-              paymentMethod: data.paymentMethod || '',
-              note: data.note || '',
-              bankLast5: data.bankLast5 || '',
-              isGroup: data.isGroup || false
+              referral: data.referral || [],
+              notes: data.notes || data.note || '', // 相容 note 或 notes
+              hp_field: ''
             });
             setCalculatedTotal(data.totalAmount || 0);
             setLastSubmissionId(certId);

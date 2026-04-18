@@ -22,7 +22,7 @@ export const useAppController = () => {
   const state = useAppState();
   const routing = useAppRouting();
   const theme = useSystemTheme();
-  const firebase = useFirebaseListeners(state.setFormData, state.setSubmitted, state.setLastSubmissionId, state.setCalculatedTotal);
+  const firebase = useFirebaseListeners(state.formData, state.setFormData, state.setSubmitted, state.setLastSubmissionId, state.setCalculatedTotal);
   const display = useDisplayLogic({ lang: theme.lang, sessions: firebase.sessions, t: theme.t });
   const form = useRegistrationForm({ formData: state.formData, setFormData: state.setFormData, sessions: firebase.sessions, timeslotConfig: firebase.timeslotConfig, generalTimeSlots: firebase.generalTimeSlots, specialTimeSlots: firebase.specialTimeSlots, t: theme.t });
   const modal = useSystemModal();
