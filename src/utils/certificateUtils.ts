@@ -236,17 +236,19 @@ export const generateCertificate = async (data: {
     ctx.lineWidth = 18;
     ctx.strokeRect(15, 15, sealSize - 30, sealSize - 30);
 
-    // 印章文字
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-    ctx.font = 'bold 54px "Microsoft JhengHei"';
+    // D. 印章文字 (確保清晰可見，不再隱形)
+    ctx.globalCompositeOperation = 'source-over'; // 恢復標準疊加模式
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+    ctx.font = 'bold 48px "Microsoft JhengHei"';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('新港文教', sealSize/2, sealSize/3 + 8);
-    ctx.fillText('基金會印', sealSize/2, (sealSize/3)*2 + 20);
-    
+    ctx.fillText('基金會印', sealSize/2, (sealSize/3)*2 + 18);
+
     ctx.restore();
-  };
-  drawSeal(w - 500, h - 480);
+    };
+    drawSeal(w - 500, h - 480);
+
 
   return canvas.toDataURL('image/png');
 };
