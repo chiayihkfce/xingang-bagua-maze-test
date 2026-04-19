@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import "react-datepicker/dist/react-datepicker.css"
 import './App.css'
 import { registerLocale } from "react-datepicker";
