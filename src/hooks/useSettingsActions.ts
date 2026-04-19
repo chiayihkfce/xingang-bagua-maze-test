@@ -1,6 +1,6 @@
 import { collection, addDoc, updateDoc, doc, deleteDoc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
-import { Session, TimeslotConfig, PaymentMethod } from "../types";
+import { Session, TimeslotConfig, PaymentMethod, SealConfig, SealType } from "../types";
 import { cleanSessionTimeFormat } from "../utils/dateUtils";
 import { readExcelFile } from "../utils/excelUtils";
 
