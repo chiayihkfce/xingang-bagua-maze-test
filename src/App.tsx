@@ -33,7 +33,7 @@ function AppContent() {
 function App() {
   useEffect(() => {
     // 1. Google Analytics 4 (GA4) 注入邏輯
-    const GA_MEASUREMENT_ID = 'G-XXXXXXXXXX'; // <-- 請在此處填入您的 GA4 ID
+    const GA_MEASUREMENT_ID = 'G-CFNQQ2LKD5';
     
     if (GA_MEASUREMENT_ID !== 'G-XXXXXXXXXX') {
       const gaScript = document.createElement('script');
