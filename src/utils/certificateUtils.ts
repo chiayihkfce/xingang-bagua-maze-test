@@ -235,31 +235,31 @@ export const generateCertificate = async (data: {
     sCtx.lineTo(jitter(), r + jitter());
     sCtx.quadraticCurveTo(jitter(), jitter(), r + jitter(), jitter());
     sCtx.stroke();
+// B. 繪製印文 (群組邊界控制 & 自適應比例)
+sCtx.save();
+// --- 實作「物理裁切」：放寬邊界解決截斷 ---
+sCtx.beginPath();
+sCtx.rect(5, 5, s - 10, s - 10); 
+sCtx.clip();
 
-    // B. 繪製印文 (群組邊界控制 & 自適應比例)
-    sCtx.save();
-    sCtx.beginPath();
-    sCtx.rect(15, 15, s - 30, s - 30); 
-    sCtx.clip(); // 物理邊界保護
+sCtx.translate(s/2, s/2);
 
-    sCtx.translate(s/2, s/2);
+// 1. 漢文區 (固定黃金比例)
+sCtx.save();
+sCtx.fillStyle = sealColor;
+sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle';
+// 比例回歸：寬度 1.35，高度 1.65
+sCtx.scale(1.35, 1.65); 
+sCtx.font = 'bold 44px "LiSu", "STKaiti", "Microsoft JhengHei"';
+const yO = 38; const rx1 = 68, rx2 = 22; 
 
-    // 1. 漢文區 (自適應比例)
-    sCtx.save();
-    sCtx.fillStyle = sealColor;
-    sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle';
-    // 手機端使用 1.45x，電腦端使用 1.65x
-    const hH = isMobile ? 1.45 : 1.65;
-    sCtx.scale(1.45, hH); 
-    sCtx.font = 'bold 44px "LiSu", "STKaiti", "Microsoft JhengHei"';
-    const yO = 38; const rx1 = 68, rx2 = 22; 
     sCtx.fillText('新', rx1, -yO * 1.5); sCtx.fillText('港', rx1, -yO * 0.5);
     sCtx.fillText('文', rx1,  yO * 0.5); sCtx.fillText('教', rx1,  yO * 1.5);
     sCtx.fillText('基', rx2, -yO * 1.5); sCtx.fillText('金', rx2, -yO * 0.5);
     sCtx.fillText('會', rx2,  yO * 0.5); sCtx.fillText('印', rx2,  yO * 1.5);
     sCtx.restore();
 
-    // 2. 滿文區 (自適應比例)
+    // 2. 滿文區 (僅對滿文實作手機端高度縮減)
     sCtx.save();
     sCtx.fillStyle = sealColor;
     sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle';
@@ -267,14 +267,15 @@ export const generateCertificate = async (data: {
     const drawSManchu = (txt: string, ox: number) => {
       sCtx.save();
       sCtx.translate(ox, 0); sCtx.rotate(Math.PI / 2);
-      // 手機端高度大幅調降至 1.25x 防止裁切，電腦端維持 1.65x 氣勢
-      const mH = isMobile ? 1.25 : 1.65;
-      sCtx.scale(mH, 2.25); 
+      // 滿文專屬：手機端高度降至 1.1x 確保不截斷，寬度維持 2.15x
+      const mH = isMobile ? 1.1 : 1.65;
+      sCtx.scale(mH, 2.15); 
       sCtx.font = 'bold 34px "Mongolian Baiti", "Noto Sans Mongolian", serif';
       sCtx.fillText(txt, 0, 0);
       sCtx.restore();
     };
-    drawSManchu(mL1, -104); drawSManchu(mL2, -44); 
+    // 修正讀序與座標：左側邊界縮至 -98 防止壓到左邊圓角
+    drawSManchu(mL1, -98); drawSManchu(mL2, -42); 
     sCtx.restore();
 
     sCtx.restore(); // 結束裁切區域
