@@ -33,20 +33,20 @@ export const generateCertificate = async (data: {
   }
   ctx.fillRect(0, 0, w, h);
 
-  // 宣紙/絲絹紋理 (極致質感修正版：同色批次，15,000 條)
+  // 宣紙/絲絹紋理 (質感微調版：8,000 條纖維，增加透氣感)
   ctx.save();
   const fColors = isDark ? ['#d4af37', '#444444', '#ffffff', '#222222'] : ['#d4af37', '#999999', '#ffffff', '#c0c0c0', '#f1c40f'];
-  const fibersPerColor = 3000;
+  const fibersPerColor = 1600; // 總計約 8000 條
   
   fColors.forEach(color => {
     ctx.beginPath();
     ctx.strokeStyle = color;
-    ctx.globalAlpha = isDark ? 0.08 : 0.15;
-    ctx.lineWidth = 0.4;
+    ctx.globalAlpha = isDark ? 0.06 : 0.12;
+    ctx.lineWidth = 0.35;
     for (let i = 0; i < fibersPerColor; i++) {
-      const x = Math.random() * w, y = Math.random() * h, len = Math.random() * 35 + 5, angle = Math.random() * Math.PI * 2;
+      const x = Math.random() * w, y = Math.random() * h, len = Math.random() * 30 + 5, angle = Math.random() * Math.PI * 2;
       ctx.moveTo(x, y);
-      ctx.quadraticCurveTo(x + Math.random() * 12 - 6, y + Math.random() * 12 - 6, x + Math.cos(angle) * len, y + Math.sin(angle) * len);
+      ctx.quadraticCurveTo(x + Math.random() * 10 - 5, y + Math.random() * 10 - 5, x + Math.cos(angle) * len, y + Math.sin(angle) * len);
     }
     ctx.stroke();
   });
@@ -207,14 +207,120 @@ export const generateCertificate = async (data: {
   ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
   ctx.font = `50px ${fontAntique}`; ctx.fillText(`${data.date} ｜ 新港文教基金會`, centerX, 1250);
 
-  // 7. 朱紅官印
+  // 7. 朱紅官印 (物理透視侵蝕版)
   const drawSeal = (x: number, y: number) => {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(-0.01);
-    const s = 280, r = 40; ctx.globalAlpha = 0.7; ctx.globalCompositeOperation = 'multiply';
-    ctx.strokeStyle = 'rgba(160, 40, 30, 1)'; ctx.lineWidth = 14;
-    ctx.beginPath(); ctx.moveTo(r, 0); ctx.lineTo(s-r, 0); ctx.quadraticCurveTo(s,0,s,r); ctx.lineTo(s,s-r); ctx.quadraticCurveTo(s,s,s-r,s); ctx.lineTo(r,s); ctx.quadraticCurveTo(0,s,0,s-r); ctx.lineTo(0,r); ctx.quadraticCurveTo(0,0,r,0); ctx.stroke();
-    ctx.fillStyle = 'rgba(160, 40, 30, 1)'; ctx.font = 'bold 60px "Microsoft JhengHei"'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('新港文教', s/2, s/2 - 45); ctx.fillText('基金會印', s/2, s/2 + 45);
+    // A. 建立離屏畫布進行「挖空」處理
+    const s = 280, r = 40;
+    const sealCanvas = document.createElement('canvas');
+    sealCanvas.width = s + 40; sealCanvas.height = s + 40;
+    const sCtx = sealCanvas.getContext('2d');
+    if (!sCtx) return;
+
+    const jitter = (range = 2.5) => (Math.random() - 0.5) * range;
+    const sealColor = 'rgba(160, 40, 30, 0.95)';
+
+    // B. 在離屏畫布繪製「完美」印章
+    sCtx.translate(20, 20);
+    sCtx.strokeStyle = sealColor;
+    sCtx.lineWidth = 14;
+    sCtx.lineJoin = 'round';
+    sCtx.beginPath();
+    sCtx.moveTo(r + jitter(), jitter());
+    sCtx.lineTo(s - r + jitter(), jitter());
+    sCtx.quadraticCurveTo(s + jitter(), jitter(), s + jitter(), r + jitter());
+    sCtx.lineTo(s + jitter(), s - r + jitter());
+    sCtx.quadraticCurveTo(s + jitter(), s + jitter(), s - r + jitter(), s + jitter());
+    sCtx.lineTo(r + jitter(), s + jitter());
+    sCtx.quadraticCurveTo(jitter(), s + jitter(), jitter(), s - r + jitter());
+    sCtx.lineTo(jitter(), r + jitter());
+    sCtx.quadraticCurveTo(jitter(), jitter(), r + jitter(), jitter());
+    sCtx.stroke();
+
+    // B. 繪製印文 (滿漢文篆書合璧：左滿右漢、中央分隔)
+    sCtx.save();
+    sCtx.translate(s/2, s/2);
+    
+    // 中央分隔線 (清代官印經典特徵)
+    sCtx.strokeStyle = sealColor;
+    sCtx.lineWidth = 4;
+    sCtx.beginPath(); sCtx.moveTo(0, -120 + jitter(1)); sCtx.lineTo(0, 120 + jitter(1)); sCtx.stroke();
+
+    // --- 漢文區 (右半邊：兩行拉長字體) ---
+    sCtx.save();
+    sCtx.fillStyle = sealColor;
+    sCtx.textAlign = 'center';
+    sCtx.textBaseline = 'middle';
+    sCtx.scale(0.65, 1.5); 
+    sCtx.font = 'bold 38px "LiSu", "STKaiti", "Microsoft JhengHei"';
+    
+    const yOff = 40;
+    // 右一 (最右)：新港文教
+    const x1 = 100;
+    sCtx.fillText('新', x1 + jitter(1), -yOff * 1.5 + jitter(1));
+    sCtx.fillText('港', x1 + jitter(1), -yOff * 0.5 + jitter(1));
+    sCtx.fillText('文', x1 + jitter(1),  yOff * 0.5 + jitter(1));
+    sCtx.fillText('教', x1 + jitter(1),  yOff * 1.5 + jitter(1));
+    // 右二 (偏中)：基金會印
+    const x2 = 35;
+    sCtx.fillText('基', x2 + jitter(1), -yOff * 1.5 + jitter(1));
+    sCtx.fillText('金', x2 + jitter(1), -yOff * 0.5 + jitter(1));
+    sCtx.fillText('會', x2 + jitter(1),  yOff * 0.5 + jitter(1));
+    sCtx.fillText('印', x2 + jitter(1),  yOff * 1.5 + jitter(1));
+    sCtx.restore();
+
+    // --- 滿文區 (左半邊：手工模擬蜿蜒字體與圈點) ---
+    sCtx.save();
+    sCtx.strokeStyle = sealColor;
+    sCtx.fillStyle = sealColor;
+    sCtx.lineWidth = 6;
+    sCtx.lineCap = 'round';
+    sCtx.lineJoin = 'round';
+    
+    const drawManchu = (ox: number) => {
+      // 主幹
+      sCtx.beginPath();
+      sCtx.moveTo(ox + jitter(2), -100);
+      sCtx.lineTo(ox + jitter(2), -60);
+      sCtx.quadraticCurveTo(ox - 18 + jitter(2), -40, ox + jitter(2), -20);
+      sCtx.lineTo(ox + jitter(2), 20);
+      sCtx.quadraticCurveTo(ox + 20 + jitter(2), 40, ox + jitter(2), 60);
+      sCtx.lineTo(ox + jitter(2), 90);
+      sCtx.quadraticCurveTo(ox - 15 + jitter(2), 110, ox - 5 + jitter(2), 120);
+      sCtx.stroke();
+
+      // 圈點與小撇
+      sCtx.beginPath(); sCtx.arc(ox + 14, -40, 3.5, 0, Math.PI*2); sCtx.fill();
+      sCtx.beginPath(); sCtx.arc(ox - 14, 40, 3.5, 0, Math.PI*2); sCtx.fill();
+      sCtx.beginPath(); sCtx.arc(ox + 12, 110, 3.5, 0, Math.PI*2); sCtx.fill();
+      
+      sCtx.beginPath(); sCtx.moveTo(ox, -80); sCtx.lineTo(ox + 15, -90); sCtx.stroke();
+      sCtx.beginPath(); sCtx.moveTo(ox, 10); sCtx.lineTo(ox - 15, 20); sCtx.stroke();
+      sCtx.beginPath(); sCtx.moveTo(ox, 75); sCtx.lineTo(ox + 15, 65); sCtx.stroke();
+    };
+
+    drawManchu(-35);
+    drawManchu(-95);
+    sCtx.restore();
+
+    sCtx.restore();
+
+    // C. 關鍵「物理挖空」：在離屏畫布上製造透明孔洞
+    sCtx.globalCompositeOperation = 'destination-out';
+    for (let i = 0; i < 550; i++) {
+      const px = Math.random() * (s + 20) - 10;
+      const py = Math.random() * (s + 20) - 10;
+      const size = Math.random() * 2.8 + 0.6;
+      sCtx.beginPath();
+      sCtx.arc(px, py, size, 0, Math.PI * 2);
+      sCtx.fill();
+    }
+
+    // D. 將「帶孔印章」合成回主畫布
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(-0.015);
+    ctx.globalCompositeOperation = 'multiply'; // 與底色纖維完美融合
+    ctx.drawImage(sealCanvas, -20, -20);
     ctx.restore();
   };
   drawSeal(w - 500, h - 500);
