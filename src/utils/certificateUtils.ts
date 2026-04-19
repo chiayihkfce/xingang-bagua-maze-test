@@ -207,14 +207,13 @@ export const generateCertificate = async (data: {
   ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
   ctx.font = `50px ${fontAntique}`; ctx.fillText(`${data.date} ｜ 新港文教基金會`, centerX, 1250);
 
-  // 7. 朱紅官印 (外部 SVG 載入 + 物理質感版)
+  // 7. 朱紅官印 (固定圖片貼圖版 - 解決全裝置渲染差異)
   const drawSeal = async (x: number, y: number) => {
     const s = 280;
     const img = new Image();
     
-    // 從 public 資料夾載入完美的向量印章模板
-    // 使用專案相對路徑確保在 GitHub Pages 子目錄下依然正確
-    const sealUrl = './seal.svg';
+    // 優先從當前路徑載入，若失敗則從根路徑載入
+    const sealUrl = './seal.png';
     
     await new Promise((resolve, reject) => {
       img.onload = resolve;
@@ -227,10 +226,10 @@ export const generateCertificate = async (data: {
     const sCtx = sealCanvas.getContext('2d');
     if (!sCtx) return;
 
-    // 將 SVG 繪入離屏畫布
+    // 將固定比例的圖片繪入離屏畫布
     sCtx.drawImage(img, 0, 0, s, s);
 
-    // 實作「物理質感」：Canvas 隨機挖空 (維持手工印泥感)
+    // 實作「物理質感」：Canvas 隨機挖空 (維持手工斑駁感)
     sCtx.globalCompositeOperation = 'destination-out';
     for (let i = 0; i < 550; i++) {
       const px = Math.random() * s, py = Math.random() * s;

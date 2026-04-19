@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="280" viewBox="0 0 280 280">
+  <!-- 邊框 -->
+  <rect x="7" y="7" width="266" height="266" rx="40" fill="none" stroke="#a0281e" stroke-width="14" />
+  
+  <!-- 漢文區 (右半邊：消除重疊與邊距優化版) -->
+  <g transform="translate(140, 142) scale(1.3, 1.53)">
+    <text x="65" y="-62" font-family="LiSu, STKaiti, serif" font-weight="bold" font-size="40" fill="#a0281e" text-anchor="middle" dominant-baseline="central">新</text>
+    <text x="65" y="-21" font-family="LiSu, STKaiti, serif" font-weight="bold" font-size="40" fill="#a0281e" text-anchor="middle" dominant-baseline="central">港</text>
+    <text x="65" y="21" font-family="LiSu, STKaiti, serif" font-weight="bold" font-size="40" fill="#a0281e" text-anchor="middle" dominant-baseline="central">文</text>
+    <text x="65" y="62" font-family="LiSu, STKaiti, serif" font-weight="bold" font-size="40" fill="#a0281e" text-anchor="middle" dominant-baseline="central">教</text>
+    
+    <text x="21" y="-62" font-family="LiSu, STKaiti, serif" font-weight="bold" font-size="40" fill="#a0281e" text-anchor="middle" dominant-baseline="central">基</text>
+    <text x="21" y="-21" font-family="LiSu, STKaiti, serif" font-weight="bold" font-size="40" fill="#a0281e" text-anchor="middle" dominant-baseline="central">金</text>
+    <text x="21" y="21" font-family="LiSu, STKaiti, serif" font-weight="bold" font-size="40" fill="#a0281e" text-anchor="middle" dominant-baseline="central">會</text>
+    <text x="21" y="62" font-family="LiSu, STKaiti, serif" font-weight="bold" font-size="40" fill="#a0281e" text-anchor="middle" dominant-baseline="central">印</text>
+  </g>
+
+  <!-- 滿文區 (左半邊：比例優化) -->
+  <g transform="translate(140, 140)">
+    <!-- 第一行 -->
+    <text transform="translate(-98, 0) rotate(90) scale(1.6, 2.1)" font-family="serif" font-weight="bold" font-size="34" fill="#a0281e" text-anchor="middle" dominant-baseline="central">ᠰᡳᠨ ᡤᠠᠩ ᠸᡝᠨ ᠵᡳᠶᠣᠣ</text>
+    <!-- 第二行 -->
+    <text transform="translate(-41, 0) rotate(90) scale(1.6, 2.1)" font-family="serif" font-weight="bold" font-size="34" fill="#a0281e" text-anchor="middle" dominant-baseline="central">ᠵᡳ ᠵᡳᠨ ᡥᡡᡳ ᡩᠣᡵᠣᠨ</text>
+  </g>
+</svg>
