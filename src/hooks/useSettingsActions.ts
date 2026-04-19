@@ -21,6 +21,7 @@ interface UseSettingsActionsProps {
   setGeneralTimeSlots: (slots: string[]) => void;
   setSpecialTimeSlots: (slots: string[]) => void;
   setTimeslotConfig: (val: any) => void;
+  setSealConfig: (val: SealConfig) => void;
   addLog: (type: string, details: string) => Promise<void>;
   showAlert: (message: string) => void;
   showConfirm: (message: string, onConfirm: () => void) => void;
@@ -46,10 +47,29 @@ export const useSettingsActions = ({
   setGeneralTimeSlots,
   setSpecialTimeSlots,
   setTimeslotConfig,
+  setSealConfig,
   addLog,
   showAlert,
   showConfirm
 }: UseSettingsActionsProps) => {
+
+  /**
+   * 更新官印設定
+   */
+  const updateSealConfig = async (activeSeal: SealType) => {
+    setIsSubmitting(true);
+    try {
+      await setDoc(doc(db, "config", "seal_config"), { activeSeal });
+      setSealConfig({ activeSeal });
+      await addLog('更新設定', `變更官印款式為: ${activeSeal}`);
+      showAlert('官印設定已更新！');
+    } catch (e) {
+      console.error("Update Seal Error:", e);
+      showAlert('更新失敗');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   /**
    * 手動新增時段 (HH:mm)
@@ -348,7 +368,8 @@ export const useSettingsActions = ({
     deletePaymentMethod,
     handleImportSessionsExcel,
     handleManualTimeAdd,
-    removeTimeSlot
+    removeTimeSlot,
+    updateSealConfig
   };
 };
 
