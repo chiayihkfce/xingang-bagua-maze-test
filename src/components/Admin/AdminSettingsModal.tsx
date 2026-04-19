@@ -288,15 +288,15 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                       style={{ 
                         padding: '1rem',
                         borderRadius: '10px',
-                        border: `2px solid ${sealConfig.activeSeal === seal.id ? 'var(--primary-gold)' : 'var(--border-subtle)'}`,
-                        background: sealConfig.activeSeal === seal.id ? 'rgba(241, 196, 15, 0.1)' : 'rgba(255,255,255,0.02)',
+                        border: `2px solid ${sealConfig?.activeSeal === seal.id ? 'var(--primary-gold)' : 'var(--border-subtle)'}`,
+                        background: sealConfig?.activeSeal === seal.id ? 'rgba(241, 196, 15, 0.1)' : 'rgba(255,255,255,0.02)',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                        <span style={{ fontWeight: 'bold', color: sealConfig.activeSeal === seal.id ? 'var(--primary-gold)' : 'var(--text-light)' }}>{seal.name}</span>
-                        {sealConfig.activeSeal === seal.id && <span style={{ fontSize: '0.8rem' }}>✅ 已選用</span>}
+                        <span style={{ fontWeight: 'bold', color: sealConfig?.activeSeal === seal.id ? 'var(--primary-gold)' : 'var(--text-light)' }}>{seal.name}</span>
+                        {sealConfig?.activeSeal === seal.id && <span style={{ fontSize: '0.8rem' }}>✅ 已選用</span>}
                       </div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{seal.desc}</div>
                     </div>
