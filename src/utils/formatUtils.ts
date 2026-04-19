@@ -35,10 +35,17 @@ export const formatPhone = (value: string, countryCode: string): string => {
 };
 
 /**
- * 將國碼與電話號碼組合為存入資料庫的格式 (處理市話顯示)
+ * 將國碼與電話號碼組合為存入資料庫的格式 (強化標準化處理)
  */
 export const formatPhoneForDB = (countryCode: string, phone: string): string => {
-  const displayCode = countryCode === 'landline' ? '市內電話' : countryCode;
-  return `${displayCode} ${phone}`;
+  if (countryCode === 'landline') return `市內電話${phone}`;
+  
+  let cleanPhone = phone.trim();
+  // 針對台灣手機號碼進行去零標準化 (+886 09... -> +8869...)
+  if (countryCode === '+886' && cleanPhone.startsWith('0')) {
+    cleanPhone = cleanPhone.substring(1);
+  }
+  
+  return `${countryCode}${cleanPhone}`;
 };
 

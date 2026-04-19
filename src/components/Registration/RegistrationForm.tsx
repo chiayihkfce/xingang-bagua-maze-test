@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import { Session, FormData, FormErrors, TimeslotConfig, PaymentMethod } from '../../types';
 import { translateOption } from '../../utils/translateOptions';
 import { translations } from '../../locales/translations';
+import StatusLookupModal from './StatusLookupModal';
 
 interface RegistrationFormProps {
   t: any;
@@ -45,11 +46,68 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   getSessionDisplayName,
   paymentMethods
 }) => {
+  const [isLookupOpen, setIsLookupOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'choice' | 'form'>('choice'); // 預設顯示選擇入口
   const pad = (n: number) => String(n).padStart(2, '0');
   const selectedPaymentDetail = (paymentMethods || []).find(m => m.name === formData.paymentMethod);
 
+  // 1. 入口選擇畫面
+  if (viewMode === 'choice') {
+    return (
+      <section className="registration-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', gap: '30px' }}>
+        <h2 style={{ color: '#d4af37', fontSize: '1.8rem', letterSpacing: '4px', marginBottom: '10px' }}>{t.chooseAction}</h2>
+        
+        <div style={{ display: 'flex', gap: '25px', flexWrap: 'wrap', justifyContent: 'center', width: '100%', maxWidth: '800px' }}>
+          {/* 報名按鈕卡片 */}
+          <button 
+            onClick={() => setViewMode('form')}
+            style={{ 
+              flex: '1', minWidth: '280px', padding: '50px 30px', background: 'rgba(212, 175, 55, 0.05)', 
+              border: '2px solid #d4af37', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.3s',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(212, 175, 55, 0.15)'; e.currentTarget.style.transform = 'translateY(-5px)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(212, 175, 55, 0.05)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            <span style={{ fontSize: '3rem' }}>📜</span>
+            <span style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#d4af37', letterSpacing: '2px' }}>{t.startRegistration}</span>
+            <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>{t.regEntryDesc}</span>
+          </button>
+
+          {/* 查詢按鈕卡片 */}
+          <button 
+            onClick={() => setIsLookupOpen(true)}
+            style={{ 
+              flex: '1', minWidth: '280px', padding: '50px 30px', background: 'rgba(255,255,255,0.02)', 
+              border: '1px solid rgba(255,255,255,0.2)', borderRadius: '20px', cursor: 'pointer', transition: 'all 0.3s',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.border = '1px solid #d4af37'; e.currentTarget.style.transform = 'translateY(-5px)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.border = '1px solid rgba(255,255,255,0.2)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            <span style={{ fontSize: '3rem' }}>🔍</span>
+            <span style={{ fontSize: '1.4rem', fontWeight: 'bold', color: '#fff', letterSpacing: '2px' }}>{t.checkStatus}</span>
+            <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.6)' }}>{t.lookupEntryDesc}</span>
+          </button>
+        </div>
+
+        <StatusLookupModal isOpen={isLookupOpen} onClose={() => setIsLookupOpen(false)} lang={lang} t={t} />
+      </section>
+    );
+  }
+
+  // 2. 報名表單畫面
   return (
     <section className="registration-section">
+      <div style={{ marginBottom: '2rem' }}>
+        <button 
+          onClick={() => setViewMode('choice')}
+          style={{ background: 'none', border: 'none', color: '#d4af37', cursor: 'pointer', fontSize: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          {t.backToChoice}
+        </button>
+      </div>
+
       <form onSubmit={handleSubmit} className="reg-form">
         <div style={{ display: 'none' }} aria-hidden="true">
           <input 
@@ -558,6 +616,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           </>
         )}
       </form>
+
+      <StatusLookupModal 
+        isOpen={isLookupOpen} 
+        onClose={() => setIsLookupOpen(false)} 
+        lang={lang} 
+        t={t} 
+      />
     </section>
   );
 };
