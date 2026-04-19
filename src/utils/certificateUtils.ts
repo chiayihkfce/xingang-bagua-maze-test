@@ -207,10 +207,11 @@ export const generateCertificate = async (data: {
   ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
   ctx.font = `50px ${fontAntique}`; ctx.fillText(`${data.date} ｜ 新港文教基金會`, centerX, 1250);
 
-  // 7. 朱紅官印 (物理透視侵蝕版)
+  // 7. 朱紅官印 (群組邊界 & 跨裝置自適應版)
   const drawSeal = (x: number, y: number) => {
-    // A. 建立離屏畫布進行「挖空」處理
     const s = 280, r = 40;
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
     const sealCanvas = document.createElement('canvas');
     sealCanvas.width = s + 40; sealCanvas.height = s + 40;
     const sCtx = sealCanvas.getContext('2d');
@@ -219,11 +220,10 @@ export const generateCertificate = async (data: {
     const jitter = (range = 2.5) => (Math.random() - 0.5) * range;
     const sealColor = 'rgba(160, 40, 30, 0.95)';
 
-    // B. 在離屏畫布繪製「完美」印章
+    // A. 繪製邊框
     sCtx.translate(20, 20);
     sCtx.strokeStyle = sealColor;
-    sCtx.lineWidth = 14;
-    sCtx.lineJoin = 'round';
+    sCtx.lineWidth = 14; sCtx.lineJoin = 'round';
     sCtx.beginPath();
     sCtx.moveTo(r + jitter(), jitter());
     sCtx.lineTo(s - r + jitter(), jitter());
@@ -236,31 +236,30 @@ export const generateCertificate = async (data: {
     sCtx.quadraticCurveTo(jitter(), jitter(), r + jitter(), jitter());
     sCtx.stroke();
 
-    // B. 繪製印文 (群組邊界控制版：確保跨裝置不溢出)
+    // B. 繪製印文 (群組邊界控制 & 自適應比例)
     sCtx.save();
-    // --- 實作「物理裁切」：將文字強制約束在邊框內緣 ---
     sCtx.beginPath();
     sCtx.rect(15, 15, s - 30, s - 30); 
-    sCtx.clip();
+    sCtx.clip(); // 物理邊界保護
 
     sCtx.translate(s/2, s/2);
 
-    // 1. 漢文區 (右半邊：大氣撐滿版)
+    // 1. 漢文區 (自適應比例)
     sCtx.save();
     sCtx.fillStyle = sealColor;
     sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle';
-    // 比例極致化：寬度 1.45 (肉感)，高度 1.65 (舒展)
-    sCtx.scale(1.45, 1.65); 
+    // 手機端使用 1.45x，電腦端使用 1.65x
+    const hH = isMobile ? 1.45 : 1.65;
+    sCtx.scale(1.45, hH); 
     sCtx.font = 'bold 44px "LiSu", "STKaiti", "Microsoft JhengHei"';
-    const yO = 38; const rx1 = 68, rx2 = 22; // rx2 從 18 微調至 22 以增大中央間距
+    const yO = 38; const rx1 = 68, rx2 = 22; 
     sCtx.fillText('新', rx1, -yO * 1.5); sCtx.fillText('港', rx1, -yO * 0.5);
     sCtx.fillText('文', rx1,  yO * 0.5); sCtx.fillText('教', rx1,  yO * 1.5);
     sCtx.fillText('基', rx2, -yO * 1.5); sCtx.fillText('金', rx2, -yO * 0.5);
     sCtx.fillText('會', rx2,  yO * 0.5); sCtx.fillText('印', rx2,  yO * 1.5);
     sCtx.restore();
 
-
-    // 2. 滿文區 (左半邊：橫向極大化飽滿版)
+    // 2. 滿文區 (自適應比例)
     sCtx.save();
     sCtx.fillStyle = sealColor;
     sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle';
@@ -268,16 +267,15 @@ export const generateCertificate = async (data: {
     const drawSManchu = (txt: string, ox: number) => {
       sCtx.save();
       sCtx.translate(ox, 0); sCtx.rotate(Math.PI / 2);
-      // 滿文極限：高度 1.65 (飽滿垂直)，寬度 2.25 (極限撐開)
-      sCtx.scale(1.65, 2.25); 
+      // 手機端高度大幅調降至 1.25x 防止裁切，電腦端維持 1.65x 氣勢
+      const mH = isMobile ? 1.25 : 1.65;
+      sCtx.scale(mH, 2.25); 
       sCtx.font = 'bold 34px "Mongolian Baiti", "Noto Sans Mongolian", serif';
       sCtx.fillText(txt, 0, 0);
       sCtx.restore();
     };
-    // 修正讀序與座標：座標向外撐開，並微調 mL2 從 -38 改為 -44 以增大中央間距
     drawSManchu(mL1, -104); drawSManchu(mL2, -44); 
     sCtx.restore();
-
 
     sCtx.restore(); // 結束裁切區域
 
