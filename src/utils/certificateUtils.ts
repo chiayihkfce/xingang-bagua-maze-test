@@ -236,57 +236,50 @@ export const generateCertificate = async (data: {
     sCtx.quadraticCurveTo(jitter(), jitter(), r + jitter(), jitter());
     sCtx.stroke();
 
-    // B. 繪製印文 (九疊比例修正版：端莊、飽滿、不溢出)
+    // B. 繪製印文 (群組邊界控制版：確保跨裝置不溢出)
     sCtx.save();
-    sCtx.translate(s/2, s/2 - 2);
+    // --- 實作「物理裁切」：將文字強制約束在邊框內緣 ---
+    sCtx.beginPath();
+    sCtx.rect(15, 15, s - 30, s - 30); 
+    sCtx.clip();
 
-    // --- 漢文區 (右半邊：比例優化版) ---
+    sCtx.translate(s/2, s/2);
+
+    // 1. 漢文區 (右半邊：大氣撐滿版)
     sCtx.save();
     sCtx.fillStyle = sealColor;
     sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle';
-    // 漢文：寬度微縮至 1.35，高度維持 1.55
-    sCtx.scale(1.35, 1.55); 
+    // 比例極致化：寬度 1.45 (肉感)，高度 1.65 (舒展)
+    sCtx.scale(1.45, 1.65); 
     sCtx.font = 'bold 44px "LiSu", "STKaiti", "Microsoft JhengHei"';
-
-    const yOff = 40; 
-    const rx1 = 75, rx2 = 25; 
-    sCtx.fillText('新', rx1, -yOff * 1.5);
-    sCtx.fillText('港', rx1, -yOff * 0.5);
-    sCtx.fillText('文', rx1,  yOff * 0.5);
-    sCtx.fillText('教', rx1,  yOff * 1.5);
-    sCtx.fillText('基', rx2, -yOff * 1.5);
-    sCtx.fillText('金', rx2, -yOff * 0.5);
-    sCtx.fillText('會', rx2,  yOff * 0.5);
-    sCtx.fillText('印', rx2,  yOff * 1.5);
+    const yO = 38; const rx1 = 68, rx2 = 22; // rx2 從 18 微調至 22 以增大中央間距
+    sCtx.fillText('新', rx1, -yO * 1.5); sCtx.fillText('港', rx1, -yO * 0.5);
+    sCtx.fillText('文', rx1,  yO * 0.5); sCtx.fillText('教', rx1,  yO * 1.5);
+    sCtx.fillText('基', rx2, -yO * 1.5); sCtx.fillText('金', rx2, -yO * 0.5);
+    sCtx.fillText('會', rx2,  yO * 0.5); sCtx.fillText('印', rx2,  yO * 1.5);
     sCtx.restore();
 
 
-    // --- 滿文區 (左半邊：極致飽滿版) ---
+    // 2. 滿文區 (左半邊：橫向極大化飽滿版)
     sCtx.save();
     sCtx.fillStyle = sealColor;
     sCtx.textAlign = 'center'; sCtx.textBaseline = 'middle';
-    
-    const mL1 = "ᠰᡳᠨ ᡤᠠᠩ ᠸᡝᠨ ᠵᡳᠶᠣᠣ"; 
-    const mL2 = "ᠵᡳ ᠵᡳᠨ ᡥᡡᡳ ᡩᠣᡵᠣᠨ"; 
-
-    const drawManchuSeal = (text: string, ox: number) => {
+    const mL1 = "ᠰᡳᠨ ᡤᠠᠩ ᠸᡝᠨ ᠵᡳᠶᠣᠣ"; const mL2 = "ᠵᡳ ᠵᡳᠨ ᡥᡡᡳ ᡩᠣᡵᠣᠨ"; 
+    const drawSManchu = (txt: string, ox: number) => {
       sCtx.save();
-      sCtx.translate(ox, 0); 
-      sCtx.rotate(Math.PI / 2);
-      // 滿文：高度 1.5，寬度極限擴張至 2.1
-      sCtx.scale(1.5, 2.1); 
-      sCtx.font = 'bold 36px "Mongolian Baiti", "Noto Sans Mongolian", serif';
-      sCtx.fillText(text, 0, 0);
+      sCtx.translate(ox, 0); sCtx.rotate(Math.PI / 2);
+      // 滿文極限：高度 1.65 (飽滿垂直)，寬度 2.25 (極限撐開)
+      sCtx.scale(1.65, 2.25); 
+      sCtx.font = 'bold 34px "Mongolian Baiti", "Noto Sans Mongolian", serif';
+      sCtx.fillText(txt, 0, 0);
       sCtx.restore();
     };
-
-    // 修正滿文讀序：第一行(新港文教)放最左邊(-100)，第二行(基金會印)放中心旁(-38)
-    // 達成清代官印「滿文由左往右換行」的正統規範
-    drawManchuSeal(mL1, -100); 
-    drawManchuSeal(mL2, -38); 
+    // 修正讀序與座標：座標向外撐開，並微調 mL2 從 -38 改為 -44 以增大中央間距
+    drawSManchu(mL1, -104); drawSManchu(mL2, -44); 
     sCtx.restore();
 
-    sCtx.restore();
+
+    sCtx.restore(); // 結束裁切區域
 
     // C. 關鍵「物理挖空」：在離屏畫布上製造透明孔洞
     sCtx.globalCompositeOperation = 'destination-out';
