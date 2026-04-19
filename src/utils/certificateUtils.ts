@@ -8,6 +8,7 @@ export const generateCertificate = async (data: {
   lang: string;
   t: any;
   theme?: 'dark' | 'light';
+  activeSeal?: string;
 }) => {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
@@ -207,13 +208,26 @@ export const generateCertificate = async (data: {
   ctx.fillStyle = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
   ctx.font = `50px ${fontAntique}`; ctx.fillText(`${data.date} ｜ 新港文教基金會`, centerX, 1250);
 
-  // 7. 朱紅官印 (固定圖片貼圖版 - 解決全裝置渲染差異)
+  // 7. 朱紅官印 (動態圖片貼圖版)
   const drawSeal = async (x: number, y: number) => {
     const s = 280;
     const img = new Image();
     
-    // 優先從當前路徑載入，若失敗則從根路徑載入
-    const sealUrl = './seal.png';
+    // 定義官印代號與檔案名稱的映射
+    const sealMap: Record<string, string> = {
+      'full-yang': 'seal-full-yang.png',
+      'full-yin': 'seal-full-yin.png',
+      'zh-vert-rl-yang': 'seal-zh-vert-rl-yang.png',
+      'zh-vert-rl-yin': 'seal-zh-vert-rl-yin.png',
+      'zh-vert-lr-yang': 'seal-zh-vert-lr-yang.png',
+      'zh-vert-lr-yin': 'seal-zh-vert-lr-yin.png',
+      'zh-horiz-lr-yang': 'seal-zh-horiz-lr-yang.png',
+      'zh-horiz-lr-yin': 'seal-zh-horiz-lr-yin.png'
+    };
+
+    // 根據傳入的 activeSeal 決定圖檔，預設為滿漢並行陽刻
+    const fileName = sealMap[data.activeSeal || ''] || 'seal-full-yang.png';
+    const sealUrl = `./${fileName}`;
     
     await new Promise((resolve, reject) => {
       img.onload = resolve;
