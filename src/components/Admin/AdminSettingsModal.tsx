@@ -264,7 +264,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
               }}>
                 {isSubmitting ? '儲存中...' : '確認修改內容'}
               </button>
-            </div>
+            </form>
             ) : activeTab === 'seal' ? (
             <div className="seal-settings-section" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ background: 'rgba(241, 196, 15, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(241, 196, 15, 0.2)' }}>
