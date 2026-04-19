@@ -272,7 +272,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>選擇下載證書時所使用的印章樣式（全系統同步生效）</p>
 
                 <div className="seal-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '1rem' }}>
-                  {[
+                  {sealConfig?.activeSeal && [
                     { id: 'full-yang', name: '滿漢合璧・陽刻 (RL)', desc: '傳統清代官印格式' },
                     { id: 'full-yin', name: '滿漢合璧・陰刻 (RL)', desc: '厚重古樸蓋印感' },
                     { id: 'zh-vert-rl-yang', name: '純漢文・直排右起・陽刻', desc: '九疊篆傳統佈局' },
@@ -282,6 +282,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                     { id: 'zh-horiz-lr-yang', name: '純漢文・橫排左起・陽刻', desc: '現代匾額橫式排版' },
                     { id: 'zh-horiz-lr-yin', name: '純漢文・橫排左起・陰刻', desc: '現代橫式白文風格' }
                   ].map((seal) => (
+
                     <div 
                       key={seal.id}
                       onClick={() => updateSealConfig(seal.id as SealType)}
