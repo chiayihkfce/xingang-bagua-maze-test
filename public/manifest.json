@@ -9,7 +9,7 @@
   "theme_color": "#f1c40f",
   "icons": [
     {
-      "src": "seal-full-yang.png",
+      "src": "app-icon.png",
       "sizes": "512x512",
       "type": "image/png"
     }
