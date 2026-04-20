@@ -80,12 +80,17 @@ function App() {
             "addressCountry": "TW"
           }
         },
+        "performer": {
+          "@type": "Organization",
+          "name": "新港文教基金會"
+        },
         "offers": {
           "@type": "Offer",
           "url": "https://chiayihkfce.github.io/xingang-bagua-maze/",
           "price": "650",
           "priceCurrency": "TWD",
-          "availability": "https://schema.org/InStock"
+          "availability": "https://schema.org/InStock",
+          "validFrom": "2026-01-01T00:00:00"
         },
         "organizer": {
           "@type": "Organization",
