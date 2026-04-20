@@ -10,31 +10,22 @@ export default defineConfig({
     javascriptObfuscator({
       options: {
         compact: true,
-        controlFlowFlattening: true, 
-        controlFlowFlatteningThreshold: 0.8,
-        deadCodeInjection: true,
-        deadCodeInjectionThreshold: 0.4,
-        debugProtection: true,
-        debugProtectionInterval: 4000,
-        numbersToExpressions: true,
-        selfDefending: true,
+        controlFlowFlattening: false, 
+        deadCodeInjection: false,
+        debugProtection: false,
+        selfDefending: false,
         simplify: true,
         stringArray: true,
         stringArrayEncoding: ['base64'],
-        stringArrayThreshold: 0.8,
-        splitStrings: true,
-        unicodeEscapeSequence: true,
-        rotateStringArray: true,
-        shuffleStringArray: true
+        stringArrayThreshold: 0.75,
       },
     }),
     viteSingleFile()
   ],
-  base: './', // Ensures relative paths for GitHub Pages
+  base: './', 
   build: {
     sourcemap: false,
-    assetsInlineLimit: 100000000, // 確保所有資產都被嵌入
-    chunkSizeWarningLimit: 100000000,
+    assetsInlineLimit: 0, // 核心修正：強制圖標、海報走外部連結，不准塞進 HTML
     cssCodeSplit: false,
     rollupOptions: {
       output: {
