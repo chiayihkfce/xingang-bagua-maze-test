@@ -35,23 +35,6 @@ function App() {
     // 0. 強制設定網頁標題
     document.title = "新港八卦謎蹤";
 
-    // 1. Google Analytics 4 (GA4) 注入邏輯
-    const GA_MEASUREMENT_ID = 'G-CFNQQ2LKD5';
-    
-    const gaScript = document.createElement('script');
-    gaScript.async = true;
-    gaScript.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
-    document.head.appendChild(gaScript);
-
-    const gaInitScript = document.createElement('script');
-    gaInitScript.innerHTML = `
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', '${GA_MEASUREMENT_ID}');
-    `;
-    document.head.appendChild(gaInitScript);
-
     // 2. SEO 結構化資料注入邏輯
     const scriptId = 'google-event-jsonld';
     if (!document.getElementById(scriptId)) {
