@@ -61,31 +61,6 @@ body {
   padding: 1rem 0;
 }
 
-.logo-container {
-  margin-bottom: 1.5rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.header-logo {
-  height: clamp(80px, 15vw, 120px);
-  width: auto;
-  filter: drop-shadow(0 0 8px rgba(241, 196, 15, 0.3));
-  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  animation: logoGlow 4s ease-in-out infinite;
-}
-
-.header-logo:hover {
-  transform: scale(1.1) rotate(5deg);
-  filter: drop-shadow(0 0 15px rgba(241, 196, 15, 0.6));
-}
-
-@keyframes logoGlow {
-  0%, 100% { filter: drop-shadow(0 0 8px rgba(241, 196, 15, 0.3)); }
-  50% { filter: drop-shadow(0 0 20px rgba(241, 196, 15, 0.6)); }
-}
-
 .era-badge {
   display: inline-block;
   background: #c0392b;

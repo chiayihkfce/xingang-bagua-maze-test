@@ -12,9 +12,6 @@ interface HeaderProps {
 const Header: React.FC<HeaderProps> = ({ lang, setLang, theme, toggleTheme, t }) => {
   return (
     <header className="header">
-      <div className="logo-container">
-        <img src="seal-zh.svg" alt="Logo" className="header-logo" />
-      </div>
       <div className="lang-switcher">
         <button 
           className={lang === 'zh' ? 'active' : ''} 
