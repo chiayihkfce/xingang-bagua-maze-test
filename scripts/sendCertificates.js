@@ -144,44 +144,69 @@ async function run() {
       if (data.certSent === true) continue;
 
       const playDate = data.pickupTime ? data.pickupTime.split(' ')[0] : '未知日期';
-      console.log(`正在補寄給：${data.name} (${playDate})...`);
       
-      const base64Image = await drawCertificateImage({ 
-        name: data.name, 
-        session: data.session || '一般場次', 
-        date: playDate 
-      });
+      // 1. 取得隊員名單 (如果沒有多人名單，則只寄給報名人)
+      const players = data.playerList && data.playerList.length > 0 
+        ? data.playerList 
+        : [{ name: data.name, email: data.email }];
 
-      // 呼叫 EmailJS (使用 GitHub Pages 網址，加入預設主題參數)
-      const certUrl = `https://chiayihkfce.github.io/xingang-bagua-maze-test/?certId=${doc.id}&theme=light`; 
-      
-      const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          service_id: process.env.VITE_EMAILJS_SERVICE_ID || process.env.EMAILJS_SERVICE_ID,
-          template_id: process.env.EMAILJS_CERT_TEMPLATE_ID,
-          user_id: process.env.VITE_EMAILJS_PUBLIC_KEY || process.env.EMAILJS_PUBLIC_KEY,
-          accessToken: process.env.EMAILJS_PRIVATE_KEY,
-          template_params: {
-            to_email: data.email,
-            name: data.name,
-            content: base64Image,
-            cert_url: certUrl
+      console.log(`[處理訂單] ${data.name} (${playDate}) - 共有 ${players.length} 位隊員`);
+
+      let orderSuccess = true;
+
+      // 2. 遍歷名單分別寄送
+      for (const player of players) {
+        if (!player.email || !player.name) continue;
+
+        console.log(`  > 正在發送給：${player.name} (${player.email})...`);
+        
+        try {
+          const base64Image = await drawCertificateImage({ 
+            name: player.name, 
+            session: data.session || '一般場次', 
+            date: playDate 
+          });
+
+          // 正式版網址
+          const certUrl = `https://chiayihkfce.github.io/xingang-bagua-maze/?certId=${doc.id}&theme=light`; 
+          
+          const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              service_id: process.env.VITE_EMAILJS_SERVICE_ID || process.env.EMAILJS_SERVICE_ID,
+              template_id: process.env.EMAILJS_CERT_TEMPLATE_ID,
+              user_id: process.env.VITE_EMAILJS_PUBLIC_KEY || process.env.EMAILJS_PUBLIC_KEY,
+              accessToken: process.env.EMAILJS_PRIVATE_KEY,
+              template_params: {
+                to_email: player.email,
+                name: player.name,
+                content: base64Image,
+                cert_url: certUrl
+              }
+            })
+          });
+
+          if (!response.ok) {
+            const errText = await response.text();
+            console.error(`    ❌ 發送失敗 (${player.name}):`, errText);
+            orderSuccess = false;
+          } else {
+            console.log(`    ✅ 成功發送給 ${player.name}`);
           }
-        })
-      });
+        } catch (err) {
+          console.error(`    ❌ 處理過程報錯 (${player.name}):`, err);
+          orderSuccess = false;
+        }
+      }
 
-      if (response.ok) {
-        console.log(`成功發送！`);
+      // 3. 只有當所有人都發送嘗試完成後，才標記該訂單為已發送 (或依需求調整)
+      if (orderSuccess) {
         await doc.ref.update({ certSent: true });
-      } else {
-        const errText = await response.text();
-        console.error(`發送失敗 (${data.name}):`, errText);
+        successCount++;
       }
     }
-  } catch (err) { console.error('執行報錯:', err); }
-  }
+    console.log(`[任務完成] 本次共成功處理 ${successCount} 筆訂單的證書發送。`);
 
 
 run();

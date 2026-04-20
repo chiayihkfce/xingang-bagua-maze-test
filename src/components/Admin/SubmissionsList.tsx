@@ -309,7 +309,17 @@ const SubmissionsList: React.FC = () => {
                         }}>
                           {cell || '待審核'}
                         </span>
-                      ) : cell)}
+                        ) : (j === 15 ? (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', justifyContent: 'center' }}>
+                          <span style={{ fontSize: '0.85rem' }}>{cell}</span>
+                          {row[18] === true && (
+                            <span title="系統已自動發送證書" style={{ 
+                              background: '#27ae60', color: 'white', fontSize: '10px', 
+                              padding: '1px 5px', borderRadius: '4px', fontWeight: 'bold' 
+                            }}>已發證</span>
+                          )}
+                        </div>
+                        ) : cell))}
                 </td>
               ))}
             </tr>
