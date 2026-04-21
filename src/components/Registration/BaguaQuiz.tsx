@@ -13,6 +13,7 @@ const BaguaQuiz: React.FC<BaguaQuizProps> = ({ t, lang }) => {
   const [result, setResult] = useState<typeof BAGUAS[number] | null>(null);
   const [isSpinning, setIsSubmitting] = useState(false);
   const wheelRef = useRef<HTMLDivElement>(null);
+  const rotationRef = useRef(0); // 記錄當前累計旋轉角度
 
   const startQuiz = () => {
     if (isSpinning) return;
@@ -21,10 +22,22 @@ const BaguaQuiz: React.FC<BaguaQuizProps> = ({ t, lang }) => {
 
     const randomIdx = Math.floor(Math.random() * BAGUAS.length);
     const stopAt = BAGUAS[randomIdx];
-    const targetRotation = 1800 + (randomIdx * 45);
+
+    // 計算目標角度邏輯：
+    // 1. 為了讓隨機方位 i 對齊 12 點鐘指針，盤面需要轉到 - (i * 45) 度
+    const targetRelativeDeg = -(randomIdx * 45);
+    const currentDeg = rotationRef.current;
+
+    // 2. 在當前角度基礎上，增加至少 1800 度 (5圈)，並補足到目標方位的差距
+    // 使用模運算確保永遠是順時針向前轉
+    const spinRounds = 1800;
+    const offset = ((targetRelativeDeg - (currentDeg % 360) + 360) % 360);
+    const finalRotation = currentDeg + spinRounds + offset;
+
+    rotationRef.current = finalRotation;
 
     gsap.to(wheelRef.current, {
-      rotation: targetRotation,
+      rotation: finalRotation,
       duration: 3,
       ease: "power4.out",
       onComplete: () => {
@@ -37,6 +50,12 @@ const BaguaQuiz: React.FC<BaguaQuizProps> = ({ t, lang }) => {
   const closeQuiz = () => {
     setIsOpen(false);
     setResult(null);
+    // 不重置 rotationRef，讓下次打開時保持位置
+  };
+
+  const resetQuiz = () => {
+    setResult(null);
+    // 只清除結果文字，不重置轉盤旋轉
   };
 
   return (
@@ -124,7 +143,7 @@ const BaguaQuiz: React.FC<BaguaQuizProps> = ({ t, lang }) => {
                   {/* 中心太極 */}
                   <div style={{
                     position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-                    width: '85px', height: '80px', borderRadius: '50%',
+                    width: '80px', height: '80px', borderRadius: '50%',
                     border: '3px solid var(--primary-gold)', background: '#000',
                     zIndex: 5, overflow: 'hidden'
                   }}>
