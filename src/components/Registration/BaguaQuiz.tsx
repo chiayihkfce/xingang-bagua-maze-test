@@ -130,7 +130,25 @@ const BaguaQuiz: React.FC<BaguaQuizProps> = ({ t, lang }) => {
           boxSizing: 'border-box'
         }}
       >
-        <span className="entry-icon" style={{ transform: 'rotate(90deg)', WebkitTransform: 'rotate(90deg)' }}>☯</span>
+        <div className="entry-icon" style={{ 
+          transform: 'rotate(180deg)', 
+          WebkitTransform: 'rotate(180deg)',
+          width: '60px',
+          height: '60px',
+          borderRadius: '50%',
+          border: '2px solid var(--primary-gold)',
+          background: 'linear-gradient(to right, #fff 50%, #000 50%)',
+          position: 'relative',
+          overflow: 'hidden',
+          display: 'inline-block'
+        }}>
+          <div style={{ position: 'absolute', top: 0, left: '25%', width: '50%', height: '50%', background: '#fff', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ width: '25%', height: '25%', background: '#000', borderRadius: '50%' }}></div>
+          </div>
+          <div style={{ position: 'absolute', bottom: 0, left: '25%', width: '50%', height: '50%', background: '#000', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ width: '25%', height: '25%', background: '#fff', borderRadius: '50%' }}></div>
+          </div>
+        </div>
         <span className="entry-title">{t.quizTitle}</span>
         <span className="entry-desc">{t.quizIntro}</span>
         <div style={{ marginTop: '10px', color: 'var(--accent-orange)', fontWeight: 'bold', fontSize: '0.9rem' }}>
