@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { gsap } from 'gsap';
+import html2canvas from 'html2canvas';
 
 interface BaguaQuizProps {
   t: any;
@@ -11,13 +12,53 @@ const BAGUAS = ['乾', '坤', '震', '巽', '坎', '離', '艮', '兌'] as const
 const BaguaQuiz: React.FC<BaguaQuizProps> = ({ t, lang }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [result, setResult] = useState<typeof BAGUAS[number] | null>(null);
-  const [isSpinning, setIsSubmitting] = useState(false);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const wheelRef = useRef<HTMLDivElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
   const rotationRef = useRef(0); // 記錄當前累計旋轉角度
+
+  // 彈窗開啟時鎖定背景滾動
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
+  const handleShareCard = async () => {
+    if (!cardRef.current || isGenerating) return;
+    setIsGenerating(true);
+    try {
+      // 顯示隱藏的卡片以供截取
+      const card = cardRef.current;
+      card.style.display = 'block';
+      
+      const canvas = await html2canvas(card, {
+        backgroundColor: '#0a0a0a',
+        scale: 2, // 提高解析度
+        logging: false,
+        useCORS: true
+      });
+      
+      card.style.display = 'none';
+
+      const link = document.createElement('a');
+      link.download = `新港八卦謎蹤_天命卡片_${result}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } catch (err) {
+      console.error('Card generate error:', err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const startQuiz = () => {
     if (isSpinning) return;
-    setIsSubmitting(true);
+    setIsSpinning(true);
     setResult(null);
 
     const randomIdx = Math.floor(Math.random() * BAGUAS.length);
@@ -42,7 +83,7 @@ const BaguaQuiz: React.FC<BaguaQuizProps> = ({ t, lang }) => {
       ease: "power4.out",
       onComplete: () => {
         setResult(stopAt);
-        setIsSubmitting(false);
+        setIsSpinning(false);
       }
     });
   };
@@ -90,16 +131,18 @@ const BaguaQuiz: React.FC<BaguaQuizProps> = ({ t, lang }) => {
         }}>
           <div className="quiz-modal-content" style={{ 
             width: '100%', maxWidth: '500px', textAlign: 'center',
-            position: 'relative'
+            position: 'relative', maxHeight: '90vh', overflowY: 'auto',
+            padding: '20px 10px', scrollbarWidth: 'none' // 隱藏 Firefox 捲軸
           }}>
             {/* 關閉按鈕 */}
             <button onClick={closeQuiz} style={{
-              position: 'absolute', top: '-50px', right: '0',
-              background: 'transparent', border: '1px solid #fff', color: '#fff',
-              borderRadius: '50%', width: '40px', height: '40px', cursor: 'pointer'
+              position: 'sticky', top: '0', left: '100%',
+              background: 'rgba(0,0,0,0.5)', border: '1px solid #fff', color: '#fff',
+              borderRadius: '50%', width: '35px', height: '35px', cursor: 'pointer',
+              zIndex: 100, marginBottom: '-35px'
             }}>✕</button>
 
-            <h2 style={{ color: 'var(--primary-gold)', fontSize: '1.8rem', marginBottom: '30px' }}>{t.quizTitle}</h2>
+            <h2 style={{ color: 'var(--primary-gold)', fontSize: '1.6rem', marginBottom: '20px', marginTop: '10px' }}>{t?.quizTitle}</h2>
 
             <div className="quiz-container" style={{ 
               position: 'relative', width: '320px', height: '320px', margin: '0 auto'
@@ -166,7 +209,7 @@ const BaguaQuiz: React.FC<BaguaQuizProps> = ({ t, lang }) => {
 
             {!result ? (
               <button onClick={startQuiz} disabled={isSpinning} className="cta-button" style={{ marginTop: '40px' }}>
-                {isSpinning ? '...' : t.quizBtn}
+                {isSpinning ? '...' : (t?.quizBtn || '啟動命運之輪')}
               </button>
             ) : (
               <div className="result-box" style={{ 
@@ -175,21 +218,60 @@ const BaguaQuiz: React.FC<BaguaQuizProps> = ({ t, lang }) => {
                 animation: 'fadeIn 0.5s forwards'
               }}>
                 <h3 style={{ color: 'var(--accent-orange)', fontSize: '1.4rem', marginBottom: '10px' }}>
-                  {t.quizResultTitle} {result}
+                  {(t?.quizResultTitle || '【 您的天命方位 】')} {result}
                 </h3>
-                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>性格：{t.baguaData[result].role}</p>
-                <p style={{ opacity: 0.9, fontSize: '0.95rem', lineHeight: '1.6' }}>{t.baguaData[result].desc}</p>
+                <p style={{ fontWeight: 'bold', marginBottom: '10px' }}>性格：{t?.baguaData?.[result]?.role || '---'}</p>
+                <p style={{ opacity: 0.9, fontSize: '0.95rem', lineHeight: '1.6' }}>{t?.baguaData?.[result]?.desc || ''}</p>
                 <div style={{ marginTop: '15px', padding: '10px', background: 'rgba(0,0,0,0.3)', borderRadius: '10px', fontSize: '0.9rem', fontStyle: 'italic' }}>
-                  💡 {t.baguaData[result].tip}
+                  💡 {t?.baguaData?.[result]?.tip || ''}
                 </div>
-                <button onClick={() => setResult(null)} style={{ marginTop: '20px', background: 'transparent', color: '#888', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
-                  {t.quizReplay}
-                </button>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', marginTop: '20px' }}>
+                  <button 
+                    onClick={handleShareCard} 
+                    disabled={isGenerating}
+                    className="cta-button"
+                    style={{ padding: '10px 20px', fontSize: '0.9rem', background: 'var(--accent-orange)' }}
+                  >
+                    {isGenerating ? '...' : (lang === 'en' ? 'Save Card' : '儲存天命卡片')}
+                  </button>
+                  <button onClick={resetQuiz} style={{ background: 'transparent', color: '#888', border: 'none', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.9rem' }}>
+                    {t?.quizReplay || '再次問卜'}
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
       )}
+
+      {/* 隱藏的卡片模板 (用於圖片產生) */}
+      <div ref={cardRef} style={{
+        position: 'absolute', left: '-9999px', top: 0,
+        width: '500px', padding: '40px', background: '#0a0a0a',
+        color: '#c1a57b', border: '12px double #d4af37',
+        textAlign: 'center', fontFamily: 'serif'
+      }}>
+        <div style={{ fontSize: '1.2rem', letterSpacing: '4px', marginBottom: '20px', color: '#d4af37' }}>
+          {t.mainTitle}
+        </div>
+        <div style={{ fontSize: '5rem', margin: '20px 0' }}>{result}</div>
+        <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--accent-orange)', marginBottom: '15px' }}>
+          {t.quizResultTitle}
+        </div>
+        <div style={{ fontSize: '1.5rem', marginBottom: '20px', borderBottom: '1px solid #d4af37', paddingBottom: '10px' }}>
+          {result && t.baguaData[result].role}
+        </div>
+        <p style={{ fontSize: '1.1rem', lineHeight: '1.8', textAlign: 'left', opacity: 0.9 }}>
+          {result && t.baguaData[result].desc}
+        </p>
+        <div style={{ marginTop: '30px', padding: '20px', background: 'rgba(212,175,55,0.1)', borderRadius: '10px' }}>
+          <div style={{ fontSize: '0.9rem', opacity: 0.6, marginBottom: '5px' }}>天命指引</div>
+          <div style={{ fontSize: '1.1rem', fontStyle: 'italic' }}>{result && t.baguaData[result].tip}</div>
+        </div>
+        <div style={{ marginTop: '40px', fontSize: '0.8rem', opacity: 0.5 }}>
+          探索新港謎蹤 ‧ 尋找遺落的八卦
+        </div>
+      </div>
 
       <style dangerouslySetInnerHTML={{ __html: `
         .bagua-entry-card:hover {
