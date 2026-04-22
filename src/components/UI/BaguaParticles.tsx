@@ -2,12 +2,22 @@ import React, { useEffect, useRef } from 'react';
 
 const BaguaParticles: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isMobile, setIsMobile] = React.useState(window.innerWidth < 768);
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    window.addEventListener('resize', checkMobile);
+    checkMobile();
+
+    if (isMobile) return () => window.removeEventListener('resize', checkMobile);
+
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) return () => window.removeEventListener('resize', checkMobile);
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) return () => window.removeEventListener('resize', checkMobile);
 
     let clouds: Cloud[] = [];
     const cloudCount = 10; // 稍微增加雲量補償粒子移除後的空缺
@@ -110,24 +120,29 @@ const BaguaParticles: React.FC = () => {
     handleResize();
     animate();
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+    return () => {
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isMobile]);
 
   return (
     <>
-      <canvas
-        ref={canvasRef}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          pointerEvents: 'none',
-          zIndex: -2,
-          opacity: 0.6
-        }}
-      />
+      {!isMobile && (
+        <canvas
+          ref={canvasRef}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+            zIndex: -2,
+            opacity: 0.6
+          }}
+        />
+      )}
       {/* 背景中央太極基座 */}
       <div style={{
         position: 'fixed',
