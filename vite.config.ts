@@ -11,9 +11,9 @@ export default defineConfig({
         compact: true,
         controlFlowFlattening: false,
         deadCodeInjection: false,
-        debugProtection: true,
-        debugProtectionInterval: 4000,
-        disableConsoleOutput: true,
+        debugProtection: false,
+        debugProtectionInterval: 0,
+        disableConsoleOutput: false,
         selfDefending: true,
         splitStrings: false, // 關鍵：設為 false 避免破壞動態導入路徑
         stringArray: true,
