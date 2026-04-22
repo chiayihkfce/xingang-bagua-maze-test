@@ -4,13 +4,13 @@ import './App.css'
 import { registerLocale } from "react-datepicker";
 import { zhTW } from './utils/dateUtils'
 import { AppProvider, useAppContext } from './context/AppContext'
+import AdminPage from './pages/AdminPage';
 
 // 註冊語系
 registerLocale('zh', zhTW as any);
 
-// 使用 Lazy Loading 延遲載入頁面
+// 使用 Lazy Loading 延遲載入部分頁面
 const SuccessPage = lazy(() => import('./pages/SuccessPage'));
-const AdminPage = lazy(() => import('./pages/AdminPage'));
 const RegistrationPage = lazy(() => import('./pages/RegistrationPage'));
 
 /**
