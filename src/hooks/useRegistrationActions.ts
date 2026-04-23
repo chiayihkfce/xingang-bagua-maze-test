@@ -94,9 +94,16 @@ export const useRegistrationActions = ({
           id: data.id || data.lastSubmissionId, // 確保傳送 ID
           name: data.name,
           phone: data.phone,
+          email: data.email,
           session: data.session,
           pickupTime: data.pickupTime,
-          amount: data.totalAmount
+          amount: data.totalAmount,
+          players: data.players,
+          quantity: data.quantity, // 份數
+          paymentMethod: data.paymentMethod,
+          bankLast5: data.bankLast5, // 末五碼
+          notes: data.notes,
+          pickupLocation: data.pickupLocation // 報到地點
         })
       });
     } catch (e) {
