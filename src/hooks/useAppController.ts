@@ -18,7 +18,12 @@ import { calculateDashboardStats, sortSubmissions } from '../utils/dataUtils';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
 
+import { useAppVersion } from './useAppVersion';
+
 export const useAppController = () => {
+  const APP_VERSION = '2.0.0';
+  useAppVersion(APP_VERSION);
+  
   const state = useAppState();
   const routing = useAppRouting();
   const theme = useSystemTheme();
@@ -196,6 +201,7 @@ export const useAppController = () => {
     handleCopyAccount, getDisplayStats, handleDownloadExcel, handleImportExcel, handleDateFilter, handleSort, toggleFixedTime, formatFullDateTime, generateTimeSlots, loadPage, addLog,
     handlePrintCheckInSheet,
     handleBatchVerifyPayment: adminActions.handleBatchVerifyPayment,
-    handleBatchDelete: adminActions.handleBatchDelete
+    handleBatchDelete: adminActions.handleBatchDelete,
+    APP_VERSION
   };
 };

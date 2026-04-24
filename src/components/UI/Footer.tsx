@@ -1,10 +1,12 @@
 import React, { useState, useRef } from 'react';
+import { useAppContext } from '../../context/AppContext';
 
 interface FooterProps {
   t: any;
 }
 
 const Footer: React.FC<FooterProps> = ({ t }) => {
+  const { APP_VERSION } = useAppContext();
   const [clickCount, setClickCount] = useState(0);
   const [showEgg, setShowEgg] = useState(false);
   const timerRef = useRef<any>(null);
@@ -93,7 +95,7 @@ const Footer: React.FC<FooterProps> = ({ t }) => {
         >
           <img src="footer-logo.svg" alt="Hsinkang Foundation Logo" className="footer-admin-logo" />
         </div>
-        <p className="copy">{t.footerCopy}</p>
+        <p className="copy">{t.footerCopy} <span style={{ opacity: 0.5, fontSize: '0.8rem', marginLeft: '8px' }}>v{APP_VERSION}</span></p>
       </div>
 
       {/* 彩蛋彈窗 */}

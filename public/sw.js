@@ -1,5 +1,5 @@
 // Updated Service Worker for Hsinkang Bagua Maze
-const CACHE_NAME = 'bagua-maze-v2'; // 更新版本號
+const CACHE_NAME = 'bagua-maze-v3'; // 更新版本號
 
 self.addEventListener('install', (event) => {
   self.skipWaiting();
