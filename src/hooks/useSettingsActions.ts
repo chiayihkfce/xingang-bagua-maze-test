@@ -22,7 +22,6 @@ interface UseSettingsActionsProps {
   setSpecialTimeSlots: (slots: string[]) => void;
   setTimeslotConfig: (val: any) => void;
   setSealConfig: (val: SealConfig) => void;
-  setIdentityPricings: (val: IdentityPricing[]) => void;
   addLog: (type: string, details: string) => Promise<void>;
   showAlert: (message: string) => void;
   showConfirm: (message: string, onConfirm: () => void) => void;

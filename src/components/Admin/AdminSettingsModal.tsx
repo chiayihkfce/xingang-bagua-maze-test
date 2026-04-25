@@ -78,7 +78,7 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
     await saveIdentityPricing({
       id: editingIp?.id,
       name: ipName,
-      price: ipPrice,
+      price: Number(ipPrice) || 0,
       enabled: editingIp ? editingIp.enabled : true
     });
     handleCancelEditIp();

@@ -148,7 +148,6 @@ export const useAppController = () => {
     setSpecialTimeSlots: firebase.setSpecialTimeSlots, 
     setTimeslotConfig: firebase.setTimeslotConfig, 
     setSealConfig: firebase.setSealConfig,
-    setIdentityPricings: firebase.setIdentityPricings,
     addLog, 
     showAlert: modal.showAlert, 
     showConfirm: modal.showConfirm 
