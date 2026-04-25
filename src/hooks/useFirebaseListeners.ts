@@ -8,7 +8,7 @@ import {
   getDoc
 } from "firebase/firestore";
 import { db } from "../firebase";
-import { Session, TimeslotConfig, PaymentMethod, FormData, SealConfig } from '../types'
+import { Session, TimeslotConfig, PaymentMethod, FormData, SealConfig, IdentityPricing } from '../types'
 
 export const useFirebaseListeners = (
   formData: FormData,
@@ -29,6 +29,7 @@ export const useFirebaseListeners = (
   
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
   const [sealConfig, setSealConfig] = useState<SealConfig>({ activeSeal: 'full-yang' });
+  const [identityPricings, setIdentityPricings] = useState<IdentityPricing[]>([]);
   const [isEntryAnimating, setIsEntryAnimating] = useState(true); 
   const [shouldRenderEntry, setShouldRenderEntry] = useState(true);
 
@@ -211,10 +212,20 @@ export const useFirebaseListeners = (
       return unsubscribe;
     };
 
+    const fetchIdentityPricings = () => {
+      const q = query(collection(db, "identity_pricings"), orderBy("name"));
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as IdentityPricing));
+        setIdentityPricings(data);
+      });
+      return unsubscribe;
+    };
+
     const unsubSessions = fetchSessions();
     const unsubSlots = fetchTimeSlots();
     const unsubPayments = fetchPaymentMethods();
     const unsubSeal = fetchSealConfig();
+    const unsubIdentity = fetchIdentityPricings();
     triggerExitAnimation();
 
     return () => {
@@ -222,6 +233,7 @@ export const useFirebaseListeners = (
       unsubSlots();
       unsubPayments();
       unsubSeal();
+      unsubIdentity();
     };
   }, [setFormData]);
 
@@ -240,6 +252,8 @@ export const useFirebaseListeners = (
     setPaymentMethods,
     sealConfig,
     setSealConfig,
+    identityPricings,
+    setIdentityPricings,
     isEntryAnimating,
     shouldRenderEntry
   };

@@ -101,7 +101,8 @@ export const useRegistrationForm = ({
       const qty = parseInt(value) || 0;
       setFormData(prev => {
         let updatedSession = prev.session;
-        if (sessionType === '一般預約') {
+        // 關鍵修正：只有在身分是「一般民眾」時，才根據份數自動切換場次
+        if (sessionType === '一般預約' && prev.identityType === '一般民眾') {
           const filtered = sessions.filter(s => !s.isSpecial);
           if (qty >= 5) updatedSession = filtered.find(s => s.name.includes('團體優惠'))?.name || filtered[0]?.name || '';
           else updatedSession = filtered.find(s => s.name.includes('單人') || s.name.includes('個人') || s.name.includes('一般'))?.name || filtered[0]?.name || '';

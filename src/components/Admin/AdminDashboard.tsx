@@ -11,7 +11,7 @@ import LogsTable from './LogsTable';
 import RecycleBinModal from './RecycleBinModal';
 import PaymentManagement from './PaymentManagement';
 import AdminSettingsModal from './AdminSettingsModal';
-import { Session, Theme, TimeslotConfig, DashboardStats as IStats, PaymentMethod, AdminAccount, SealConfig, SealType } from '../../types';
+import { Session, Theme, TimeslotConfig, DashboardStats as IStats, PaymentMethod, AdminAccount, SealConfig, SealType, IdentityPricing } from '../../types';
 import DatePicker from 'react-datepicker';
 
 interface AdminDashboardProps {
@@ -25,6 +25,9 @@ interface AdminDashboardProps {
   setCurrentAdmin: (admin: AdminAccount | null) => void;
   sealConfig: SealConfig;
   updateSealConfig: (type: SealType) => Promise<void>;
+  identityPricings: IdentityPricing[];
+  saveIdentityPricing: (config: Partial<IdentityPricing>) => Promise<void>;
+  deleteIdentityPricing: (id: string, name: string) => Promise<void>;
   dashboardStats: IStats | null;
   logs: any[][];
   deletedSubmissions: any[][];
@@ -137,6 +140,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
         setCurrentAdmin={setCurrentAdmin}
         sealConfig={props.sealConfig}
         updateSealConfig={props.updateSealConfig}
+        identityPricings={props.identityPricings}
+        saveIdentityPricing={props.saveIdentityPricing}
+        deleteIdentityPricing={props.deleteIdentityPricing}
         showAlert={showAlert}
         showConfirm={showConfirm}
       />

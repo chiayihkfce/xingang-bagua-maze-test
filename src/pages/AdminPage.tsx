@@ -25,7 +25,8 @@ const AdminPage: React.FC = () => {
     setNewManualTime, handleManualTimeAdd, removeTimeSlot, saveTimeSlotsConfig, 
     formatFullDateTime, deletedSubmissions, showRecycleBin, setShowRecycleBin, 
     handleRestoreSubmission, dbStatus, paymentMethods, addPaymentMethod, 
-    deletePaymentMethod, sealConfig, updateSealConfig, handleClearLogs, handleClearRecycleBin, showAlert, 
+    deletePaymentMethod, sealConfig, updateSealConfig, identityPricings, saveIdentityPricing, deleteIdentityPricing,
+    handleClearLogs, handleClearRecycleBin, showAlert, 
     showConfirm, sysModal, adminUser, setAdminUser, adminPassword, 
     setAdminPassword, handleAdminLogin, navigate 
   } = useAppContext();
@@ -35,7 +36,7 @@ const AdminPage: React.FC = () => {
       <>
         <CustomCursor />
         <AdminDashboard 
-          {...{ t, theme, toggleTheme, setIsAdmin: (val: boolean) => { setIsAdmin(val); if(!val) navigate('/'); }, adminTab, setAdminTab, currentAdmin, setCurrentAdmin, dashboardStats, logs, sessions, startEditSession, handleDeleteSession, newSession, setNewSession, handleAddSession, isSubmitting, toggleFixedTime, specialTimeSlots, totalRows, handleDownloadExcel, handleImportExcel, handleImportSessionsExcel, adminFilterDate, handleDateFilter, adminSearchKeyword, setAdminSearchKeyword, showColumnFilter, setShowShowColumnFilter, submissions, visibleColumns, toggleColumn, currentPage, isDataLoading, loadPage, handleSort, sortConfig, setAuditTarget, setShowAuditModal, showAuditModal, auditTarget, handleVerifyPayment, startEditSubmission, isEditing, setIsEditing, editData, setEditData, handleUpdateSubmission, handleDeleteSubmission, isEditingSession, setIsEditingSession, editingSession, setEditingSession, handleUpdateSession, timeslotConfig, setTimeslotConfig, generalTimeSlots, setGeneralTimeSlots, setSpecialTimeSlots, generateTimeSlots, newManualTime, setNewManualTime, handleManualTimeAdd, removeTimeSlot, saveTimeSlotsConfig, formatFullDateTime, deletedSubmissions, showRecycleBin, setShowRecycleBin, handleRestoreSubmission, dbStatus, paymentMethods, addPaymentMethod, deletePaymentMethod, handleClearLogs, handleClearRecycleBin, sealConfig, updateSealConfig, showAlert, showConfirm }}
+          {...{ t, theme, toggleTheme, setIsAdmin: (val: boolean) => { setIsAdmin(val); if(!val) navigate('/'); }, adminTab, setAdminTab, currentAdmin, setCurrentAdmin, dashboardStats, logs, sessions, startEditSession, handleDeleteSession, newSession, setNewSession, handleAddSession, isSubmitting, toggleFixedTime, specialTimeSlots, totalRows, handleDownloadExcel, handleImportExcel, handleImportSessionsExcel, adminFilterDate, handleDateFilter, adminSearchKeyword, setAdminSearchKeyword, showColumnFilter, setShowShowColumnFilter, submissions, visibleColumns, toggleColumn, currentPage, isDataLoading, loadPage, handleSort, sortConfig, setAuditTarget, setShowAuditModal, showAuditModal, auditTarget, handleVerifyPayment, startEditSubmission, isEditing, setIsEditing, editData, setEditData, handleUpdateSubmission, handleDeleteSubmission, isEditingSession, setIsEditingSession, editingSession, setEditingSession, handleUpdateSession, timeslotConfig, setTimeslotConfig, generalTimeSlots, setGeneralTimeSlots, setSpecialTimeSlots, generateTimeSlots, newManualTime, setNewManualTime, handleManualTimeAdd, removeTimeSlot, saveTimeSlotsConfig, formatFullDateTime, deletedSubmissions, showRecycleBin, setShowRecycleBin, handleRestoreSubmission, dbStatus, paymentMethods, addPaymentMethod, deletePaymentMethod, handleClearLogs, handleClearRecycleBin, sealConfig, updateSealConfig, identityPricings, saveIdentityPricing, deleteIdentityPricing, showAlert, showConfirm }}
         />
         <SystemModal 
           show={sysModal.show}

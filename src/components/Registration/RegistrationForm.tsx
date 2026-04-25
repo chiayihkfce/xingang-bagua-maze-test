@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
-import { Session, FormData, FormErrors, TimeslotConfig, PaymentMethod } from '../../types';
+import { Session, FormData, FormErrors, TimeslotConfig, PaymentMethod, IdentityPricing } from '../../types';
 import { translateOption } from '../../utils/translateOptions';
 import { translations } from '../../locales/translations';
 import StatusLookupModal from './StatusLookupModal';
@@ -26,6 +26,8 @@ interface RegistrationFormProps {
   calculatedTotal: number;
   getSessionDisplayName: (name: string) => string;
   paymentMethods: PaymentMethod[];
+  identityPricings: IdentityPricing[];
+  showAlert: (message: string) => void;
 }
 
 const RegistrationForm: React.FC<RegistrationFormProps> = ({
@@ -47,7 +49,9 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   isSubmitting,
   calculatedTotal,
   getSessionDisplayName,
-  paymentMethods
+  paymentMethods,
+  identityPricings,
+  showAlert
 }) => {
   const [isLookupOpen, setIsLookupOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'choice' | 'form'>('choice'); // 預設顯示選擇入口
@@ -263,6 +267,54 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             </select>
           </div>
 
+          {sessionType === '一般預約' && identityPricings.some(ip => ip.enabled) && (
+            <div className="form-group">
+              <label>
+                {lang === 'en' ? '【Identity Type】' : '【身分類型】'}
+                <span className="required-mark">*</span>
+              </label>
+              <select 
+                name="identityType"
+                value={formData.identityType} 
+                required
+                onChange={(e) => {
+                  const val = e.target.value;
+                  handleInputChange(e);
+                  if (val !== '一般民眾') {
+                    const msg = lang === 'en' 
+                      ? 'Please bring relevant identification/proof on the day of the event for verification.' 
+                      : '【提醒】選擇此身分，請於遊玩當天攜帶相關證明文件以供查驗。';
+                    showAlert(msg, lang === 'en' ? 'Reminder' : '提示', undefined, lang === 'en' ? 'I understand' : '我瞭解了');
+                    
+                    // 將場次名稱設為：優惠專案場次（身分名稱）
+                    handleInputChange({ target: { name: 'session', value: `優惠專案場次（${val}）` } } as any);
+                  } else {
+                    // 切換回一般民眾時，觸發重新計算場次名稱 (模擬 sessionType 的邏輯)
+                    const qty = parseInt(formData.quantity) || 0;
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    const filtered = sessions.filter(s => !s.isSpecial);
+                    
+                    if (filtered.length > 0) {
+                      let targetValue = filtered[0].name;
+                      if (qty >= 5) {
+                        targetValue = filtered.find(s => s.name.includes('團體優惠'))?.name || targetValue;
+                      } else {
+                        targetValue = filtered.find(s => s.name.includes('單人') || s.name.includes('個人') || s.name.includes('一般'))?.name || targetValue;
+                      }
+                      handleInputChange({ target: { name: 'session', value: targetValue } } as any);
+                    }
+                  }
+                }}
+              >
+                <option value="一般民眾">{lang === 'en' ? 'General Public' : '一般民眾'}</option>
+                {identityPricings.filter(ip => ip.enabled).map(ip => (
+                  <option key={ip.id} value={ip.name}>{ip.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {sessionType !== '' && (
             <>
               <div className="form-group">
@@ -281,11 +333,16 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
                     lineHeight: '1.6'
                   }}>
                     <p style={{ margin: 0, fontWeight: 'bold' }}>
-                      {t.autoSelected} {translateOption(getSessionDisplayName(formData.session), lang) || t.calculating}
+                      {formData.identityType !== '一般民眾' 
+                        ? (lang === 'en' ? 'Special Project Price (No additional discounts)' : '優惠專案價 (不參與其他折扣)')
+                        : `${t.autoSelected} ${translateOption(getSessionDisplayName(formData.session), lang) || t.calculating}`
+                      }
                     </p>
-                    <div className="discount-hint" style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                      {t.discountHint}
-                    </div>
+                    {formData.identityType === '一般民眾' && (
+                      <div className="discount-hint" style={{ marginTop: '0.5rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                        {t.discountHint}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <select 

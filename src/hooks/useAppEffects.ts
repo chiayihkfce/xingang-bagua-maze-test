@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { FormData, Session } from '../types';
+import { FormData, Session, IdentityPricing } from '../types';
 
 interface UseAppEffectsProps {
   formData: FormData;
@@ -7,6 +7,7 @@ interface UseAppEffectsProps {
   sessions: Session[];
   sessionType: string;
   setCalculatedTotal: (total: number) => void;
+  identityPricings: IdentityPricing[];
   sysModalShow: boolean;
   showConfirmation: boolean;
   isSubmitting: boolean;
@@ -27,6 +28,7 @@ export const useAppEffects = ({
   sessions,
   sessionType,
   setCalculatedTotal,
+  identityPricings,
   sysModalShow,
   showConfirmation,
   isSubmitting,
@@ -56,10 +58,26 @@ export const useAppEffects = ({
    */
   useEffect(() => {
     const qty = parseInt(formData.quantity) || 0;
-    const sessionObj = sessions.find(s => s.name === formData.session);
-    const price = sessionType === '' ? 0 : (sessionObj ? sessionObj.price : 650);
+    let price = 0;
+    
+    if (sessionType !== '') {
+      // 1. 先從場次清單找出目前選擇場次的物件
+      const sessionObj = sessions.find(s => s.name === formData.session);
+      const basePrice = sessionObj ? sessionObj.price : 650;
+
+      // 2. 判斷是否選中了特殊身分優待價
+      // 若為「一般民眾」或身分功能未開啟，則使用場次原價
+      if (formData.identityType === '一般民眾') {
+        price = basePrice;
+      } else {
+        const matchedIdentity = identityPricings.find(ip => ip.enabled && ip.name === formData.identityType);
+        // 如果選了特殊身分但找不到對應費率（例如剛新增），則回退到場次原價，確保不為 0
+        price = matchedIdentity ? matchedIdentity.price : basePrice;
+      }
+    }
+    
     setCalculatedTotal(qty * price);
-  }, [formData.quantity, formData.session, sessions, sessionType, setCalculatedTotal]);
+  }, [formData.quantity, formData.session, formData.identityType, sessions, sessionType, identityPricings, setCalculatedTotal]);
 
   /**
    * 副作用 3：當彈窗或載入畫面顯示時，禁止背景滑動

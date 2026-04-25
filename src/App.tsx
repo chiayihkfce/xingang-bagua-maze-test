@@ -49,7 +49,12 @@ function AppContent() {
   );
 }
 
+import { useEasterEggs } from './hooks/useEasterEggs';
+
 function App() {
+  // 注入彩蛋邏輯
+  useEasterEggs();
+
   useEffect(() => {
     // 0. 強制設定網頁標題
     document.title = "新港八卦謎蹤";

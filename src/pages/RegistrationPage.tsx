@@ -17,11 +17,10 @@ const RegistrationPage: React.FC = () => {
     setSessionType, sessions, timeslotConfig, generalTimeSlots, specialTimeSlots, 
     handleInputChange, handlePlayerInfoChange, handleCheckboxChange, handleDateChange, handleCopyAccount, 
     handleSubmit, isSubmitting, calculatedTotal, getSessionDisplayName, 
-    getPickupLocationDisplay, getPaymentMethodDisplay, paymentMethods, 
+    getPickupLocationDisplay, getPaymentMethodDisplay, paymentMethods, identityPricings,
     isEntryAnimating, shouldRenderEntry, showConfirmation, setShowConfirmation, 
-    handleConfirmSubmit, sysModal
-  } = useAppContext();
-
+    handleConfirmSubmit, sysModal, showAlert
+    } = useAppContext();
   return (
     <div className="container">
       <CustomCursor />
@@ -47,7 +46,7 @@ const RegistrationPage: React.FC = () => {
             sessions, timeslotConfig, generalTimeSlots, specialTimeSlots, 
             handleInputChange, handlePlayerInfoChange, handleCheckboxChange, handleDateChange, 
             handleCopyAccount, handleSubmit, isSubmitting, calculatedTotal, 
-            getSessionDisplayName, paymentMethods 
+            getSessionDisplayName, paymentMethods, identityPricings, showAlert 
           }} 
         />
       </main>

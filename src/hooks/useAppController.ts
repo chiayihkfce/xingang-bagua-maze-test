@@ -148,6 +148,7 @@ export const useAppController = () => {
     setSpecialTimeSlots: firebase.setSpecialTimeSlots, 
     setTimeslotConfig: firebase.setTimeslotConfig, 
     setSealConfig: firebase.setSealConfig,
+    setIdentityPricing: firebase.setIdentityPricing,
     addLog, 
     showAlert: modal.showAlert, 
     showConfirm: modal.showConfirm 
@@ -155,7 +156,23 @@ export const useAppController = () => {
 
   const registrationActions = useRegistrationActions({ formData: state.formData, formErrors: form.formErrors, sessionType: form.sessionType, calculatedTotal: state.calculatedTotal, paymentMethods: firebase.paymentMethods, loadTime: state.loadTime, setIsSubmitting: state.setIsSubmitting, setLastSubmissionId: state.setLastSubmissionId, setSubmitted: state.setSubmitted, showAlert: modal.showAlert, setShowConfirmation: state.setShowConfirmation, addLog });
 
-  useAppEffects({ formData: state.formData, setFormData: state.setFormData, sessions: firebase.sessions, sessionType: form.sessionType, setCalculatedTotal: state.setCalculatedTotal, sysModalShow: modal.sysModal.show, showConfirmation: state.showConfirmation, isSubmitting: state.isSubmitting, isDataLoading: state.isDataLoading, showAuditModal: state.showAuditModal, isEditing: state.isEditing, isEditingSession: state.isEditingSession, showRecycleBin: state.showRecycleBin, shouldRenderEntry: firebase.shouldRenderEntry });
+  useAppEffects({ 
+    formData: state.formData, 
+    setFormData: state.setFormData, 
+    sessions: firebase.sessions, 
+    sessionType: form.sessionType, 
+    setCalculatedTotal: state.setCalculatedTotal, 
+    identityPricings: firebase.identityPricings,
+    sysModalShow: modal.sysModal.show, 
+    showConfirmation: state.showConfirmation, 
+    isSubmitting: state.isSubmitting, 
+    isDataLoading: state.isDataLoading, 
+    showAuditModal: state.showAuditModal, 
+    isEditing: state.isEditing, 
+    isEditingSession: state.isEditingSession, 
+    showRecycleBin: state.showRecycleBin, 
+    shouldRenderEntry: firebase.shouldRenderEntry 
+  });
 
   const loadPage = (page: number) => state.setCurrentPage(page);
 

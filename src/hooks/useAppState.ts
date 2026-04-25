@@ -33,7 +33,8 @@ export const useAppState = () => {
     pickupLocation: '新港文教基金會(閱讀館)',
     referral: ['基金會FB'] as string[],
     notes: '',
-    hp_field: '' 
+    hp_field: '',
+    identityType: '一般民眾' 
   });
 
   // 3. 管理員相關狀態

@@ -20,8 +20,8 @@ interface UseSettingsActionsProps {
   setIsDataLoading: (val: boolean) => void;
   setGeneralTimeSlots: (slots: string[]) => void;
   setSpecialTimeSlots: (slots: string[]) => void;
-  setTimeslotConfig: (val: any) => void;
   setSealConfig: (val: SealConfig) => void;
+  setIdentityPricing: (val: any) => void;
   addLog: (type: string, details: string) => Promise<void>;
   showAlert: (message: string) => void;
   showConfirm: (message: string, onConfirm: () => void) => void;
@@ -48,10 +48,65 @@ export const useSettingsActions = ({
   setSpecialTimeSlots,
   setTimeslotConfig,
   setSealConfig,
+  setIdentityPricing,
   addLog,
   showAlert,
   showConfirm
 }: UseSettingsActionsProps) => {
+
+  /**
+   * 新增或更新身分金額設定
+   */
+  const saveIdentityPricing = async (config: Partial<IdentityPricing>) => {
+    setIsSubmitting(true);
+    try {
+      const { id, ...data } = config;
+      
+      if (id) {
+        // 更新現有
+        const docRef = doc(db, "identity_pricings", id);
+        await updateDoc(docRef, {
+          ...data,
+          updatedAt: serverTimestamp()
+        });
+        await addLog('更新費率', `更新身分費率: ${data.name} ($${data.price})`);
+      } else {
+        // 新增
+        await addDoc(collection(db, "identity_pricings"), {
+          name: data.name || '',
+          price: data.price || 0,
+          enabled: data.enabled ?? true,
+          createdAt: serverTimestamp()
+        });
+        await addLog('新增費率', `新增身分費率: ${data.name} ($${data.price})`);
+      }
+      showAlert('身分金額設定已儲存！');
+    } catch (e) {
+      console.error("Save Identity Pricing Error:", e);
+      showAlert('儲存失敗');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  /**
+   * 刪除身分費率
+   */
+  const deleteIdentityPricing = async (id: string, name: string) => {
+    showConfirm(`確定要刪除「${name}」的費率設定嗎？`, async () => {
+      setIsSubmitting(true);
+      try {
+        await deleteDoc(doc(db, "identity_pricings", id));
+        await addLog('刪除費率', `刪除了身分費率: ${name}`);
+        showAlert('刪除成功');
+      } catch (e) {
+        console.error("Delete Identity Pricing Error:", e);
+        showAlert('刪除失敗');
+      } finally {
+        setIsSubmitting(false);
+      }
+    });
+  };
 
   /**
    * 更新官印設定
@@ -369,7 +424,9 @@ export const useSettingsActions = ({
     handleImportSessionsExcel,
     handleManualTimeAdd,
     removeTimeSlot,
-    updateSealConfig
+    updateSealConfig,
+    saveIdentityPricing,
+    deleteIdentityPricing
   };
 };
 

@@ -10,6 +10,9 @@ interface AdminSettingsModalProps {
   setCurrentAdmin: (admin: AdminAccount | null) => void;
   sealConfig: SealConfig;
   updateSealConfig: (type: SealType) => Promise<void>;
+  identityPricings: IdentityPricing[];
+  saveIdentityPricing: (config: Partial<IdentityPricing>) => Promise<void>;
+  deleteIdentityPricing: (id: string, name: string) => Promise<void>;
   showAlert: (message: string, title?: string) => void;
   showConfirm: (message: string, onConfirm: () => void, onCancel?: () => void, title?: string) => void;
 }
@@ -21,18 +24,26 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
   setCurrentAdmin,
   sealConfig,
   updateSealConfig,
+  identityPricings,
+  saveIdentityPricing,
+  deleteIdentityPricing,
   showAlert,
   showConfirm
 }) => {
   const [admins, setAdmins] = useState<AdminAccount[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'list' | 'seal'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'list' | 'seal' | 'pricing'>('profile');
   
   // 表單狀態
   const [nickname, setNickname] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   
+  // 身分金額狀態 (用於新增/編輯)
+  const [editingIp, setEditingIp] = useState<Partial<IdentityPricing> | null>(null);
+  const [ipName, setIpName] = useState('');
+  const [ipPrice, setIpPrice] = useState<number | string>('');
+
   // 新增管理者狀態
   const [newUsername, setNewUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -46,6 +57,32 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
       fetchAdmins();
     }
   }, [show, currentAdmin]);
+
+  const handleStartEditIp = (ip: IdentityPricing) => {
+    setEditingIp(ip);
+    setIpName(ip.name);
+    setIpPrice(ip.price);
+  };
+
+  const handleCancelEditIp = () => {
+    setEditingIp(null);
+    setIpName('');
+    setIpPrice(0);
+  };
+
+  const handleSaveIp = async () => {
+    if (!ipName) {
+      showAlert('請輸入身分名稱');
+      return;
+    }
+    await saveIdentityPricing({
+      id: editingIp?.id,
+      name: ipName,
+      price: ipPrice,
+      enabled: editingIp ? editingIp.enabled : true
+    });
+    handleCancelEditIp();
+  };
 
   const fetchAdmins = async () => {
     try {
@@ -233,10 +270,28 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
           >
             📜 系統官印
           </button>
+          <button 
+            className={`tab-btn ${activeTab === 'pricing' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pricing')}
+            style={{ 
+              flex: 1,
+              padding: '1rem', 
+              background: activeTab === 'pricing' ? 'rgba(241, 196, 15, 0.1)' : 'none', 
+              border: 'none', 
+              borderBottom: activeTab === 'pricing' ? '3px solid var(--primary-gold)' : '3px solid transparent', 
+              color: activeTab === 'pricing' ? 'var(--primary-gold)' : 'var(--text-muted)', 
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              transition: 'all 0.3s'
+            }}
+          >
+            💰 活動費率
+          </button>
         </div>
 
         <div className="modal-body" style={{ padding: '2rem', overflowY: 'auto', flex: 1 }}>
           {activeTab === 'profile' ? (
+            // ... (keep profile tab)
             <form onSubmit={handleUpdateProfile} className="settings-form" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div className="form-group">
                 <label style={{ display: 'block', marginBottom: '0.5rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>顯示暱稱</label>
@@ -265,6 +320,129 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                 {isSubmitting ? '儲存中...' : '確認修改內容'}
               </button>
             </form>
+            ) : activeTab === 'pricing' ? (
+              <div className="pricing-settings-section" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div style={{ background: 'rgba(241, 196, 15, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(241, 196, 15, 0.2)' }}>
+                  <h4 style={{ color: 'var(--primary-gold)', marginBottom: '0.5rem' }}>💰 特定身分優待費率管理</h4>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>您可以新增多種身分（如：志工、教職員、在地居民），並為其設定獨立的固定單價。</p>
+                  
+                  {/* 新增/編輯表單 */}
+                  <div style={{ 
+                    background: 'rgba(255,255,255,0.03)', 
+                    padding: '1.2rem', 
+                    borderRadius: '10px', 
+                    border: '1px dashed rgba(241, 196, 15, 0.3)',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <h5 style={{ color: 'var(--text-light)', marginBottom: '1rem' }}>{editingIp ? '✨ 編輯身分費率' : '➕ 新增身分費率'}</h5>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '10px', alignItems: 'flex-end' }}>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>身分名稱</label>
+                        <input 
+                          type="text" 
+                          value={ipName} 
+                          onChange={e => setIpName(e.target.value)} 
+                          placeholder="例如：志工" 
+                          style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: 'var(--input-bg)', color: 'var(--text-light)' }} 
+                        />
+                      </div>
+                      <div className="form-group" style={{ marginBottom: 0 }}>
+                        <label style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>固定單價 (NT$)</label>
+                        <input 
+                          type="number" 
+                          value={ipPrice} 
+                          onChange={e => setIpPrice(Number(e.target.value))} 
+                          placeholder="650" 
+                          style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--border-subtle)', background: 'var(--input-bg)', color: 'var(--text-light)' }} 
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: '5px' }}>
+                        <button 
+                          onClick={handleSaveIp}
+                          disabled={isSubmitting || !ipName}
+                          style={{ padding: '0.6rem 1.2rem', borderRadius: '6px', background: 'var(--primary-gold)', color: 'black', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
+                        >
+                          {editingIp ? '更新' : '新增'}
+                        </button>
+                        {editingIp && (
+                          <button 
+                            onClick={handleCancelEditIp}
+                            style={{ padding: '0.6rem 1rem', borderRadius: '6px', background: 'rgba(255,255,255,0.1)', color: 'white', border: 'none', cursor: 'pointer' }}
+                          >
+                            取消
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 費率列表 */}
+                  <div className="pricing-list" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    {identityPricings.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>尚未設定任何特殊身分費率</div>
+                    ) : (
+                      identityPricings.map(ip => (
+                        <div key={ip.id} style={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center', 
+                          padding: '1rem', 
+                          background: 'rgba(255,255,255,0.02)', 
+                          borderRadius: '8px', 
+                          border: '1px solid var(--border-subtle)'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                            <div 
+                              onClick={() => saveIdentityPricing({ ...ip, enabled: !ip.enabled })}
+                              style={{ 
+                                width: '40px', 
+                                height: '20px', 
+                                borderRadius: '10px', 
+                                background: ip.enabled ? 'var(--primary-gold)' : '#333', 
+                                position: 'relative', 
+                                cursor: 'pointer',
+                                transition: 'all 0.3s'
+                              }}
+                            >
+                              <div style={{ 
+                                width: '16px', 
+                                height: '16px', 
+                                borderRadius: '50%', 
+                                background: 'white', 
+                                position: 'absolute', 
+                                top: '2px', 
+                                left: ip.enabled ? '22px' : '2px',
+                                transition: 'all 0.3s'
+                              }} />
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 'bold', color: ip.enabled ? 'var(--text-light)' : 'var(--text-muted)' }}>
+                                {ip.name}
+                                {!ip.enabled && <span style={{ marginLeft: '8px', fontSize: '0.7rem', color: '#ff4d4d' }}>(已停用)</span>}
+                              </div>
+                              <div style={{ fontSize: '0.85rem', color: 'var(--primary-gold)' }}>NT$ {ip.price} / 每份</div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', gap: '10px' }}>
+                            <button 
+                              onClick={() => handleStartEditIp(ip)}
+                              style={{ background: 'none', border: 'none', color: '#3498db', cursor: 'pointer', fontSize: '0.9rem' }}
+                            >
+                              編輯
+                            </button>
+                            <button 
+                              onClick={() => deleteIdentityPricing(ip.id, ip.name)}
+                              style={{ background: 'none', border: 'none', color: '#ff4d4d', cursor: 'pointer', fontSize: '0.9rem' }}
+                            >
+                              刪除
+                            </button>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
             ) : activeTab === 'seal' ? (
             <div className="seal-settings-section" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div style={{ background: 'rgba(241, 196, 15, 0.05)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(241, 196, 15, 0.2)' }}>

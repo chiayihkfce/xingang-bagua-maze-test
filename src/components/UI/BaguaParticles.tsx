@@ -128,6 +128,21 @@ const BaguaParticles: React.FC = () => {
     };
   }, [isMobile]);
 
+  // 偵測是否處於覺醒模式
+  const isAwakened = document.body.classList.contains('awakened-mode');
+
+  // 秘密點擊序列 (白中黑, 黑中白...)
+  const [clickSeq, setClickSeq] = React.useState<string[]>([]);
+  const handleTaijiClick = (type: 'yin' | 'yang') => {
+    const newSeq = [...clickSeq, type].slice(-4);
+    setClickSeq(newSeq);
+    if (newSeq.join(',') === 'yin,yang,yin,yang') {
+      document.body.classList.add('awakened-mode');
+      // 觸發一個簡單的震動回饋
+      if (navigator.vibrate) navigator.vibrate(200);
+    }
+  };
+
   return (
     <>
       {!isMobile && (
@@ -141,7 +156,8 @@ const BaguaParticles: React.FC = () => {
             height: '100%',
             pointerEvents: 'none',
             zIndex: -2,
-            opacity: 0.6
+            opacity: isAwakened ? 0.9 : 0.6,
+            filter: isAwakened ? 'sepia(1) saturate(5) hue-rotate(10deg)' : 'none'
           }}
         />
       )}
@@ -161,12 +177,14 @@ const BaguaParticles: React.FC = () => {
         <div style={{
           width: 'min(80vw, 80vh)',
           height: 'min(80vw, 80vh)',
-          opacity: 0.03,
+          opacity: isAwakened ? 0.08 : 0.03,
           borderRadius: '50%',
           overflow: 'hidden',
-          border: '2px solid var(--primary-gold)',
-          animation: 'taijiRotate 60s linear infinite',
-          position: 'relative'
+          border: isAwakened ? '4px solid #ffeb3b' : '2px solid var(--primary-gold)',
+          animation: `taijiRotate ${isAwakened ? '3s' : '60s'} linear infinite`,
+          position: 'relative',
+          pointerEvents: 'auto', // 允許點擊中央太極
+          boxShadow: isAwakened ? '0 0 100px rgba(255, 235, 59, 0.4)' : 'none'
         }}>
           <div style={{
             width: '100%',
@@ -174,18 +192,26 @@ const BaguaParticles: React.FC = () => {
             background: 'linear-gradient(to right, #fff 50%, #000 50%)',
             position: 'relative'
           }}>
-            <div style={{
-              position: 'absolute', top: 0, left: '25%', width: '50%', height: '50%',
-              background: '#fff', borderRadius: '50%',
-              display: 'flex', justifyContent: 'center', alignItems: 'center'
-            }}>
+            <div 
+              onClick={() => handleTaijiClick('yin')}
+              style={{
+                position: 'absolute', top: 0, left: '25%', width: '50%', height: '50%',
+                background: '#fff', borderRadius: '50%',
+                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                cursor: 'pointer'
+              }}
+            >
               <div style={{ width: '20%', height: '20%', background: '#000', borderRadius: '50%' }}></div>
             </div>
-            <div style={{
-              position: 'absolute', bottom: 0, left: '25%', width: '50%', height: '50%',
-              background: '#000', borderRadius: '50%',
-              display: 'flex', justifyContent: 'center', alignItems: 'center'
-            }}>
+            <div 
+              onClick={() => handleTaijiClick('yang')}
+              style={{
+                position: 'absolute', bottom: 0, left: '25%', width: '50%', height: '50%',
+                background: '#000', borderRadius: '50%',
+                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                cursor: 'pointer'
+              }}
+            >
               <div style={{ width: '20%', height: '20%', background: '#fff', borderRadius: '50%' }}></div>
             </div>
           </div>

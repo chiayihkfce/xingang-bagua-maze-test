@@ -21,12 +21,13 @@ export const useSystemModal = () => {
     onConfirm: () => {}
   });
 
-  const showAlert = (message: string, title = '提示', onConfirm?: () => void) => {
+  const showAlert = (message: string, title = '提示', onConfirm?: () => void, confirmText = '確定') => {
     setSysModal({
       show: true,
       type: 'alert',
       title,
       message,
+      confirmText,
       onConfirm: () => {
         setSysModal(prev => ({ ...prev, show: false }));
         if (onConfirm) onConfirm();

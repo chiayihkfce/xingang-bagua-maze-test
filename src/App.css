@@ -1,5 +1,43 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&display=swap');
 
+/* --- Easter Egg: Zishi Mode (Midnight) --- */
+body.zishi-mode {
+  filter: hue-rotate(280deg) brightness(0.7);
+  transition: filter 2s ease-in-out;
+}
+body.zishi-mode::after {
+  content: "⌛ 子時已至";
+  position: fixed; bottom: 20px; left: 20px; color: #9b59b6;
+  font-size: 0.8rem; opacity: 0.6; z-index: 9999;
+}
+
+/* --- Easter Egg: Awakened Mode (Konami Code) --- */
+body.awakened-mode {
+  --primary-gold: #ffeb3b;
+  --accent-orange: #fff;
+  transition: all 1s ease;
+}
+
+body.awakened-mode .entry-title,
+body.awakened-mode .main-title,
+body.awakened-mode h2,
+body.awakened-mode .cta-button {
+  text-shadow: 0 0 15px rgba(255, 235, 59, 0.8);
+  animation: pulse-glow 2s infinite alternate;
+}
+
+@keyframes pulse-glow {
+  from { text-shadow: 0 0 5px rgba(255, 235, 59, 0.5); }
+  to { text-shadow: 0 0 25px rgba(255, 235, 59, 1); }
+}
+
+@keyframes fadeOutUp {
+  0% { opacity: 0; transform: translate(-50%, 0%); }
+  20% { opacity: 1; transform: translate(-50%, -50%); }
+  80% { opacity: 1; transform: translate(-50%, -50%); }
+  100% { opacity: 0; transform: translate(-50%, -100%); }
+}
+
 :root {
   --primary-gold: #f1c40f;
   --accent-orange: #e67e22;

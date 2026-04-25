@@ -54,6 +54,14 @@ export interface FormData {
   referral: string[];
   notes: string;
   hp_field: string;
+  identityType: string; // 新增：身分類型
+}
+
+export interface IdentityPricing {
+  id: string;
+  enabled: boolean;
+  name: string;
+  price: number;
 }
 
 export interface FormErrors {
