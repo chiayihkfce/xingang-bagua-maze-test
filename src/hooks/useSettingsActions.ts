@@ -48,7 +48,6 @@ export const useSettingsActions = ({
   setSpecialTimeSlots,
   setTimeslotConfig,
   setSealConfig,
-  setIdentityPricings,
   addLog,
   showAlert,
   showConfirm
