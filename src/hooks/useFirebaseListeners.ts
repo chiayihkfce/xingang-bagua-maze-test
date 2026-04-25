@@ -70,9 +70,11 @@ export const useFirebaseListeners = (
               pickupTime: data.pickupTime || '',
               pickupLocation: data.pickupLocation || '',
               referral: data.referral || [],
-              notes: data.notes || data.note || '', // 相容 note 或 notes
-              hp_field: ''
-            });
+              notes: data.notes || '',
+              hp_field: '',
+              identityType: data.identityType || '一般民眾'
+              });
+
             setCalculatedTotal(data.totalAmount || 0);
             setLastSubmissionId(certId);
             setSubmitted(true);

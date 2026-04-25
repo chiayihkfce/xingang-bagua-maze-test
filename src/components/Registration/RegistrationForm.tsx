@@ -27,7 +27,7 @@ interface RegistrationFormProps {
   getSessionDisplayName: (name: string) => string;
   paymentMethods: PaymentMethod[];
   identityPricings: IdentityPricing[];
-  showAlert: (message: string) => void;
+  showAlert: (message: string, title?: string, onConfirm?: () => void, confirmText?: string) => void;
 }
 
 const RegistrationForm: React.FC<RegistrationFormProps> = ({

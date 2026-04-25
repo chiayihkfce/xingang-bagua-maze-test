@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AdminAccount, SealConfig, SealType } from '../../types';
+import { AdminAccount, SealConfig, SealType, IdentityPricing } from '../../types';
 import { db } from '../../firebase';
 import { collection, addDoc, getDocs, updateDoc, doc, deleteDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
 

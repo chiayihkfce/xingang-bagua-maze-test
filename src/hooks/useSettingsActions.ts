@@ -1,6 +1,6 @@
 import { collection, addDoc, updateDoc, doc, deleteDoc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
 import { db } from "../firebase";
-import { Session, TimeslotConfig, PaymentMethod, SealConfig, SealType } from "../types";
+import { Session, TimeslotConfig, PaymentMethod, SealConfig, SealType, IdentityPricing } from "../types";
 import { cleanSessionTimeFormat } from "../utils/dateUtils";
 import { readExcelFile } from "../utils/excelUtils";
 
@@ -20,8 +20,9 @@ interface UseSettingsActionsProps {
   setIsDataLoading: (val: boolean) => void;
   setGeneralTimeSlots: (slots: string[]) => void;
   setSpecialTimeSlots: (slots: string[]) => void;
+  setTimeslotConfig: (val: any) => void;
   setSealConfig: (val: SealConfig) => void;
-  setIdentityPricing: (val: any) => void;
+  setIdentityPricings: (val: IdentityPricing[]) => void;
   addLog: (type: string, details: string) => Promise<void>;
   showAlert: (message: string) => void;
   showConfirm: (message: string, onConfirm: () => void) => void;
@@ -48,7 +49,7 @@ export const useSettingsActions = ({
   setSpecialTimeSlots,
   setTimeslotConfig,
   setSealConfig,
-  setIdentityPricing,
+  setIdentityPricings,
   addLog,
   showAlert,
   showConfirm
