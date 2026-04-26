@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { collection, query, where, limit, getDocs, updateDoc, doc } from "firebase/firestore";
 import { db } from "../firebase";
 import { AdminAccount } from '../types';
@@ -19,6 +19,9 @@ export const useAdminAuth = (props?: UseAdminAuthProps) => {
   const [adminUser, setAdminUser] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
   const [currentAdmin, setCurrentAdmin] = useState<AdminAccount | null>(null);
+  
+  // 避免重複登入的標記
+  const hasAttemptedLogin = useRef(false);
 
   // --- 新增：LINE 一鍵登入自動偵測邏輯 ---
   useEffect(() => {
@@ -27,7 +30,10 @@ export const useAdminAuth = (props?: UseAdminAuthProps) => {
       const urlParams = new URLSearchParams(window.location.hash.split('?')[1] || window.location.search);
       const lineUid = urlParams.get('uid');
 
-      if (lineUid && props) {
+      // 只有在有 uid 且尚未嘗試過登入時才執行
+      if (lineUid && props && !hasAttemptedLogin.current) {
+        hasAttemptedLogin.current = true; // 鎖定，不再重複執行
+        
         const { addLog, setIsDataLoading, showAlert } = props;
         setIsAuthenticating(true);
         setIsDataLoading(true);
@@ -53,7 +59,7 @@ export const useAdminAuth = (props?: UseAdminAuthProps) => {
               lastLogin: formatFullDateTime(new Date())
             });
 
-            addLog('系統', `管理者 [${adminData.nickname || adminData.username}] 透過 LINE 一鍵登入成功`, adminData.nickname || adminData.username);
+            await addLog('系統', `管理者 [${adminData.nickname || adminData.username}] 透過 LINE 一鍵登入成功`, adminData.nickname || adminData.username);
             
             // 清除網址列的 uid，避免重複觸發或分享網址時洩漏
             const cleanUrl = window.location.href.split('?')[0];
