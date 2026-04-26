@@ -122,6 +122,7 @@ export const useAdminAuth = (props?: UseAdminAuthProps) => {
   return {
     isAdmin,
     setIsAdmin,
+    isAuthenticating,
     adminUser,
     setAdminUser,
     adminPassword,
