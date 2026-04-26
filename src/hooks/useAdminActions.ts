@@ -302,7 +302,7 @@ export const useAdminActions = ({
   };
 
   /**
-   * 提交報名資料修改
+   * 提交報名資料修改 (增加詳細變更對比)
    */
   const handleUpdateSubmission = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -310,11 +310,43 @@ export const useAdminActions = ({
     setIsSubmitting(true);
     try {
       const docRef = doc(db, "registrations", editData.id);
+      
+      // 找出原始資料
+      const original = submissions.find(row => row[16] === editData.id);
+      let diffLogs = [];
+      
+      if (original) {
+        const fieldNames = ["報名時間", "狀態", "姓名", "電話", "Email", "場次", "份數", "人數", "金額", "支付方式", "末五碼", "預約時間", "地點", "得知管道", "備註"];
+        // 對比前 15 個欄位
+        for (let i = 1; i <= 14; i++) {
+          const oldVal = String(original[i] || "無");
+          const newVal = String((editData as any)[Object.keys(editData)[i]] || "無");
+          
+          // 這裡由於 editData 的 key 順序不一定對等，改用明確欄位對比
+          const fieldMap: any = {
+            1: 'status', 2: 'name', 3: 'phone', 4: 'email', 5: 'session', 
+            6: 'quantity', 7: 'players', 8: 'totalAmount', 9: 'paymentMethod', 
+            10: 'bankLast5', 11: 'pickupTime', 12: 'pickupLocation', 
+            13: 'referral', 14: 'notes'
+          };
+          
+          const key = fieldMap[i];
+          const currentOld = String(original[i] || "");
+          const currentNew = String((editData as any)[key] || "");
+          
+          if (currentOld !== currentNew) {
+            diffLogs.push(`${fieldNames[i]}: [${currentOld}] -> [${currentNew}]`);
+          }
+        }
+      }
+
       const updateData = { ...editData };
       delete updateData.id;
       await updateDoc(docRef, updateData);
       
-      await addLog('修改報名', `修改了「${editData.name}」的報名資訊`);
+      const detailStr = diffLogs.length > 0 ? `變更內容: ${diffLogs.join(', ')}` : "未偵測到內容變更";
+      await addLog('修改報名', `修改了「${editData.name}」的資訊。${detailStr}`);
+      
       setIsEditing(false);
       showAlert('修改成功');
     } catch (err) {

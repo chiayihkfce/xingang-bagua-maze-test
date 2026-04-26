@@ -35,8 +35,15 @@ export const useAppController = () => {
   const addLog = async (type: string, details: string, operatorOverride?: string) => {
     try {
       const operator = operatorOverride || (auth.currentAdmin ? (auth.currentAdmin.nickname || auth.currentAdmin.username) : '超級管理員');
+      const userAgent = navigator.userAgent;
+      const device = userAgent.includes('Mobi') ? '手機' : '電腦';
+      
       await addDoc(collection(db, "logs"), {
-        timestamp: formatFullDateTime(new Date()), type, operator, details, createdAt: serverTimestamp()
+        timestamp: formatFullDateTime(new Date()), 
+        type, 
+        operator, 
+        details: `[${device}] ${details}`, // 在細節前標註設備
+        createdAt: serverTimestamp()
       });
     } catch (e) { console.error("Log error:", e); }
   };
