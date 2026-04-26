@@ -110,28 +110,51 @@ const LogsTable: React.FC<LogsTableProps> = ({ logs, formatFullDateTime, handleC
             </tr>
           </thead>
           <tbody>
-            {currentRows.map((row, i) => (
-              <tr key={i}>
-                {row.map((cell: any, j: number) => (
-                  <td key={j}>
-                    {j === 0 && cell 
-                      ? formatFullDateTime(cell) 
-                      : (j === 1 ? (
-                          <span style={{
-                            padding: '0.2rem 0.6rem',
-                            borderRadius: '4px',
-                            fontSize: '0.8rem',
-                            fontWeight: 'bold',
-                            background: getLogTypeColor(cell),
-                            color: 'white'
-                          }}>{cell}</span>
-                        ) : (j === 2 ? (
-                          <strong style={{ color: 'var(--primary-color)' }}>{cell}</strong>
-                        ) : cell))}
-                  </td>
-                ))}
-              </tr>
-            ))}
+            {currentRows.map((row, i) => {
+              // 檢查是否需要顯示日期分隔標題
+              const currentDate = row[0] ? String(row[0]).split(' ')[0] : '';
+              const prevDate = i > 0 && currentRows[i-1][0] ? String(currentRows[i-1][0]).split(' ')[0] : '';
+              const showDateHeader = currentDate !== prevDate;
+
+              return (
+                <React.Fragment key={i}>
+                  {showDateHeader && (
+                    <tr className="date-group-header">
+                      <td colSpan={header.length} style={{ 
+                        background: 'var(--bg-secondary)', 
+                        padding: '0.8rem 1.2rem', 
+                        fontWeight: 'bold',
+                        color: 'var(--primary-color)',
+                        fontSize: '0.9rem',
+                        borderLeft: '4px solid var(--primary-color)'
+                      }}>
+                        📅 {currentDate}
+                      </td>
+                    </tr>
+                  )}
+                  <tr>
+                    {row.map((cell: any, j: number) => (
+                      <td key={j}>
+                        {j === 0 && cell 
+                          ? formatFullDateTime(cell) 
+                          : (j === 1 ? (
+                              <span style={{
+                                padding: '0.2rem 0.6rem',
+                                borderRadius: '4px',
+                                fontSize: '0.8rem',
+                                fontWeight: 'bold',
+                                background: getLogTypeColor(cell),
+                                color: 'white'
+                              }}>{cell}</span>
+                            ) : (j === 2 ? (
+                              <strong style={{ color: 'var(--primary-color)' }}>{cell}</strong>
+                            ) : cell))}
+                      </td>
+                    ))}
+                  </tr>
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
