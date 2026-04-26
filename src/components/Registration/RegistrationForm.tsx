@@ -390,8 +390,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               {/* 多人名單登記區塊 - 僅在人數大於 1 時顯示 */}
               {Number(formData.players) > 1 && (
                 <div className="player-list-section" style={{ marginTop: '1.5rem' }}>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--primary-gold)', fontWeight: 'bold', marginBottom: '1rem', borderLeft: '3px solid var(--accent-orange)', paddingLeft: '10px' }}>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--primary-gold)', fontWeight: 'bold', marginBottom: '0.5rem', borderLeft: '3px solid var(--accent-orange)', paddingLeft: '10px' }}>
                     {lang === 'en' ? 'Player Details:' : '隊員名單資料:'}
+                  </p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '1rem', paddingLeft: '13px' }}>
+                    {lang === 'en' 
+                      ? ' (Optional) Used for individual achievement certificates.' 
+                      : '（選填）此名單僅用於後續製作與領取個人成就證書使用。'}
                   </p>
                   {formData.playerList.map((player, index) => (
                     <div key={index} className="player-input-row" style={{ 
@@ -414,7 +419,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
                           value={player.name} 
                           onChange={(e) => handlePlayerInfoChange(index, 'name', e.target.value)}
                           placeholder={t.namePlaceholder}
-                          required
+                          required={index === 0}
                           style={index === 0 ? { opacity: 0.7, cursor: 'not-allowed' } : {}}
                           readOnly={index === 0}
                         />
@@ -428,7 +433,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
                           value={player.email} 
                           onChange={(e) => handlePlayerInfoChange(index, 'email', e.target.value)}
                           placeholder={t.emailPlaceholder}
-                          required
+                          required={index === 0}
                           style={index === 0 ? { opacity: 0.7, cursor: 'not-allowed' } : {}}
                           readOnly={index === 0}
                         />

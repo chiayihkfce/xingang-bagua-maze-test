@@ -37,8 +37,9 @@ export const useRegistrationLookup = () => {
         queryList.add('+886' + cleanKeyword);
       }
 
-      // 1. 準備 Email 與所有電話變體的查詢條件
+      // 1. 準備姓名、Email 與所有電話變體的查詢條件
       const queries = [
+        query(registrationsRef, where("name", "==", rawKeyword), limit(5)),
         query(registrationsRef, where("email", "==", cleanKeyword), limit(5)),
         ...Array.from(queryList).map(val => query(registrationsRef, where("phone", "==", val), limit(5)))
       ];
