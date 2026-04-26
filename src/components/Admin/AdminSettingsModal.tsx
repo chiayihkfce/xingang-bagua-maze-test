@@ -337,11 +337,11 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
                   }}>
                     <div style={{ textAlign: 'center' }}>
                       <p style={{ fontSize: '0.85rem', color: 'var(--primary-gold)', fontWeight: 'bold', marginBottom: '0.8rem' }}>步驟 1：掃描下方 QR Code 加入機器人好友</p>
-                      <img src="https://chiayihkfce.github.io/xingang-bagua-maze/line-qr.png" alt="Step 1" style={{ width: '180px', borderRadius: '12px', border: '2px solid white' }} />
+                      <img src="./line-qr.png" alt="Step 1" style={{ width: '180px', borderRadius: '12px', border: '2px solid white' }} />
                     </div>
                     <div style={{ textAlign: 'center' }}>
                       <p style={{ fontSize: '0.85rem', color: 'var(--primary-gold)', fontWeight: 'bold', marginBottom: '0.8rem' }}>步驟 2：對話框中輸入「取得ID」即可獲得專屬代碼</p>
-                      <img src="https://chiayihkfce.github.io/xingang-bagua-maze/line-step2.png" alt="Step 2" style={{ width: '100%', maxWidth: '280px', borderRadius: '12px', border: '2px solid white' }} />
+                      <img src="./line-step2.png" alt="Step 2" style={{ width: '100%', maxWidth: '280px', borderRadius: '12px', border: '2px solid white' }} />
                     </div>
                   </div>
                 )}
