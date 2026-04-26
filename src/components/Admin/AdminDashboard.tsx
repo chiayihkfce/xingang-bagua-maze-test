@@ -221,7 +221,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
       ) : adminTab === 'submissions' ? (
         <SubmissionsList />
       ) : adminTab === 'logs' ? (
-        <LogsTable logs={logs} formatFullDateTime={props.formatFullDateTime} handleClearLogs={handleClearLogs} currentAdmin={currentAdmin} />
+        <LogsTable logs={logs} handleClearLogs={handleClearLogs} currentAdmin={currentAdmin} />
       ) : adminTab === 'payments' ? (
         <PaymentManagement paymentMethods={paymentMethods} addPaymentMethod={addPaymentMethod} deletePaymentMethod={deletePaymentMethod} isSubmitting={isSubmitting} />
       ) : adminTab === 'analytics' ? (
