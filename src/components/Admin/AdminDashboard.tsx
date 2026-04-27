@@ -215,7 +215,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
       </header>
 
       {/* 安全提醒區域 */}
-      {currentAdmin && (!currentAdmin.lineUid || currentAdmin.password === '123456') && (
+      {currentAdmin && (!currentAdmin.lineUid || (currentAdmin.password && currentAdmin.password.toLowerCase().includes('admin'))) && (
         <div style={{
           background: 'rgba(241, 196, 15, 0.1)',
           border: '1px solid var(--primary-gold)',
@@ -233,11 +233,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
             <div>
               <h4 style={{ margin: 0, color: 'var(--primary-gold)', fontSize: '1rem' }}>帳號安全性提醒</h4>
               <p style={{ margin: '4px 0 0', fontSize: '0.85rem', color: 'var(--text-light)' }}>
-                {!currentAdmin.lineUid && currentAdmin.password === '123456' 
-                  ? '您的帳號尚未綁定 LINE ID 且仍在使用預設密碼，這存在極大安全風險。'
+                {!currentAdmin.lineUid && (currentAdmin.password && currentAdmin.password.toLowerCase().includes('admin'))
+                  ? '您的帳號尚未綁定 LINE ID 且仍在使用預設格式的密碼，這存在極大安全風險。'
                   : !currentAdmin.lineUid 
                     ? '您的帳號尚未綁定 LINE ID，將無法使用 LINE 一鍵登入功能。'
-                    : '您的帳號仍在使用預設密碼 (123456)，請立即修改以確保安全。'}
+                    : '您的帳號仍在使用預設格式的密碼 (包含 admin)，請立即修改以確保安全。'}
               </p>
             </div>
           </div>
