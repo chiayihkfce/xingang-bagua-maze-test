@@ -28,6 +28,7 @@ interface RegistrationFormProps {
   paymentMethods: PaymentMethod[];
   identityPricings: IdentityPricing[];
   showAlert: (message: string, title?: string, onConfirm?: () => void, confirmText?: string) => void;
+  setShowGames: (show: boolean) => void;
 }
 
 const RegistrationForm: React.FC<RegistrationFormProps> = ({
@@ -51,7 +52,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   getSessionDisplayName,
   paymentMethods,
   identityPricings,
-  showAlert
+  showAlert,
+  setShowGames
 }) => {
   const [isLookupOpen, setIsLookupOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'choice' | 'form'>('choice'); // 預設顯示選擇入口
@@ -89,6 +91,24 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
 
           {/* 八卦天命測驗 (佔滿整行) */}
           <BaguaQuiz t={t} lang={lang} />
+
+          {/* 遊戲入口區 - 更換圖示為羅盤並優化質感 */}
+          <button 
+            onClick={() => setShowGames(true)}
+            className="entry-card primary-card"
+            style={{ 
+              width: '100%', 
+              flex: '1 1 100%',
+              marginTop: '15px'
+            }}
+          >
+            <span className="entry-icon" style={{ 
+              fontSize: '2.8rem', 
+              filter: 'sepia(1) saturate(5) hue-rotate(-10deg) drop-shadow(0 0 5px rgba(212, 175, 55, 0.5))' 
+            }}>🧭</span>
+            <span className="entry-title">陣法挑戰</span>
+            <span className="entry-desc">在進入迷宮前，先試著感應八卦氣息吧！</span>
+          </button>
         </div>
 
         <StatusLookupModal isOpen={isLookupOpen} onClose={() => setIsLookupOpen(false)} lang={lang} />
