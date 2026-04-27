@@ -1,0 +1,189 @@
+.game-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+}
+
+.game-container {
+  width: 90%;
+  max-width: 500px;
+  background: #000;
+  border: 2px solid var(--primary-gold);
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 0 50px rgba(212, 175, 55, 0.3);
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(212, 175, 55, 0.1);
+  border-bottom: 1px solid var(--primary-gold);
+}
+
+.game-tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.game-tabs button {
+  background: transparent;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  color: var(--text-light);
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.game-tabs button.active {
+  background: var(--primary-gold);
+  color: #000;
+  font-weight: bold;
+}
+
+.game-close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 2rem;
+  cursor: pointer;
+}
+
+.game-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  overflow: hidden; /* 防止內部溢出 */
+  min-height: 400px;
+}
+
+/* 迷宮遊戲樣式 (優化版) */
+.maze-game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.maze-view-port {
+  width: 90%;
+  max-width: 280px; /* 稍微縮小以騰出上下空間 */
+  aspect-ratio: 1 / 1;
+  background: #000;
+  border-radius: 8px;
+  border: 1px solid var(--primary-gold);
+  position: relative;
+  overflow: hidden;
+  margin: 5px 0;
+}
+
+.maze-container-square {
+  width: 100%;
+  height: 100%;
+}
+
+.maze-svg-rect {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.maze-content-layer {
+  filter: brightness(1.2);
+}
+
+/* 搖桿樣式 */
+.joystick-wrapper {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 20px;
+}
+
+.joystick-base {
+  width: 100px;
+  height: 100px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: none; /* 防止滑動時頁面捲動 */
+}
+
+.joystick-stick {
+  width: 40px;
+  height: 40px;
+  background: var(--primary-gold);
+  border-radius: 50%;
+  box-shadow: 0 0 20px var(--primary-gold);
+  cursor: grab;
+  transition: transform 0.1s ease-out;
+  pointer-events: none;
+}
+
+.joystick-base:active .joystick-stick {
+  cursor: grabbing;
+}
+
+.win-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  animation: fade-in 0.5s;
+}
+
+.win-card {
+  text-align: center;
+  padding: 2rem;
+  color: var(--primary-gold);
+}
+
+.win-card h3 { font-size: 2rem; margin-bottom: 1rem; }
+.win-card button {
+  margin-top: 1rem;
+  padding: 10px 30px;
+  background: var(--primary-gold);
+  border: none;
+  border-radius: 50px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.game-placeholder {
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
