@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './MiniGames.css';
+import { useAppContext } from '../../context/AppContext';
 
 interface MiniGamesProps {
   show: boolean;
@@ -7,8 +8,20 @@ interface MiniGamesProps {
 }
 
 const MiniGames: React.FC<MiniGamesProps> = ({ show, onClose }) => {
+  const { setHasFlashlight } = useAppContext();
   const [activeGame, setActiveGame] = useState<'rotation' | 'maze' | 'match'>('rotation');
   const [isWin, setIsWin] = useState(false);
+  const [gameKey, setGameKey] = useState(0); // 用於強制重新啟動遊戲
+
+  const handleWin = () => {
+    setIsWin(true);
+    setHasFlashlight(true); 
+  };
+
+  const handleRestart = () => {
+    setIsWin(false);
+    setGameKey(prev => prev + 1); // 改變 Key 觸發重新掛載
+  };
 
   if (!show) return null;
 
@@ -20,19 +33,19 @@ const MiniGames: React.FC<MiniGamesProps> = ({ show, onClose }) => {
           <div className="game-tabs">
             <button 
               className={activeGame === 'rotation' ? 'active' : ''} 
-              onClick={() => { setActiveGame('rotation'); setIsWin(false); }}
+              onClick={() => { setActiveGame('rotation'); setIsWin(false); setGameKey(k => k + 1); }}
             >
               旋轉陣
             </button>
             <button 
               className={activeGame === 'maze' ? 'active' : ''} 
-              onClick={() => { setActiveGame('maze'); setIsWin(false); }}
+              onClick={() => { setActiveGame('maze'); setIsWin(false); setGameKey(k => k + 1); }}
             >
               尋生門
             </button>
             <button 
               className={activeGame === 'match' ? 'active' : ''} 
-              onClick={() => { setActiveGame('match'); setIsWin(false); }}
+              onClick={() => { setActiveGame('match'); setIsWin(false); setGameKey(k => k + 1); }}
             >
               對對碰
             </button>
@@ -42,9 +55,9 @@ const MiniGames: React.FC<MiniGamesProps> = ({ show, onClose }) => {
 
         {/* 遊戲內容區 */}
         <div className="game-content">
-          {activeGame === 'rotation' && <RotationGame onWin={() => setIsWin(true)} />}
-          {activeGame === 'maze' && <MazeGame onWin={() => setIsWin(true)} />}
-          {activeGame === 'match' && <MatchGame onWin={() => setIsWin(true)} />}
+          {activeGame === 'rotation' && <RotationGame key={`rot-${gameKey}`} onWin={handleWin} />}
+          {activeGame === 'maze' && <MazeGame key={`maze-${gameKey}`} onWin={handleWin} />}
+          {activeGame === 'match' && <MatchGame key={`match-${gameKey}`} onWin={handleWin} />}
         </div>
 
         {/* 勝利提示 */}
@@ -57,7 +70,10 @@ const MiniGames: React.FC<MiniGamesProps> = ({ show, onClose }) => {
                 {activeGame === 'maze' && '您在重重迷霧中找到了出口，展現了卓越的智慧。'}
                 {activeGame === 'match' && '所有卦象皆已歸位，混亂的氣流已平息。'}
               </p>
-              <button onClick={() => setIsWin(false)}>再玩一次</button>
+              <div style={{ color: 'var(--primary-gold)', fontWeight: 'bold', margin: '10px 0', fontSize: '0.9rem' }}>
+                ✨ 獲得神祕道具：【八卦手電筒】✨
+              </div>
+              <button onClick={handleRestart}>再玩一次</button>
             </div>
           </div>
         )}
@@ -457,9 +473,6 @@ const MatchGame: React.FC<{ onWin: () => void }> = ({ onWin }) => {
           </div>
         ))}
       </div>
-      <button className="reset-btn" onClick={initGame} style={{ marginTop: '20px', padding: '5px 15px', background: 'transparent', border: '1px solid var(--primary-gold)', color: 'var(--primary-gold)', borderRadius: '20px', fontSize: '0.8rem', cursor: 'pointer' }}>
-        重置陣法
-      </button>
     </div>
   );
 };
