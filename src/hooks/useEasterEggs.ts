@@ -252,12 +252,12 @@ export const useEasterEggs = () => {
             </div>
             </div>
 
-            <div id="box-text" style="opacity: 0; transition: all 1.5s ease 1.5s; max-width: 600px;">
-            <div style="color: #d4af37; font-size: 1.6rem; letter-spacing: 12px; font-family: 'Noto Serif TC', serif; text-shadow: 0 0 20px rgba(212,175,55,0.6); margin-bottom: 15px;">—— 八卦鎮守：新港奉天宮虎印 ——</div>
-            <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; line-height: 1.8; letter-spacing: 2px; font-style: italic; padding: 0 20px;">
-              「金虎爺神威顯赫，鎮守八卦方位。此印能避邪除穢，<br/>在重重迷陣之中，助有緣人尋得生門，化險為夷。」
+          <div id="box-text" style="opacity: 0; transition: all 1.5s ease 1.5s; max-width: 650px;">
+            <div style="color: #d4af37; font-size: 1.8rem; letter-spacing: 12px; font-family: 'Noto Serif TC', serif; text-shadow: 0 0 20px rgba(212,175,55,0.6); margin-bottom: 20px;">—— 虎爺符令 ——</div>
+            <div style="color: rgba(255,255,255,0.9); font-size: 1rem; line-height: 2.2; letter-spacing: 2.5px; font-style: italic; padding: 0 30px; text-align: justify; background: rgba(212, 175, 55, 0.05); border-left: 2px solid var(--primary-gold); border-right: 2px solid var(--primary-gold);">
+              中間斷裂用鐵片包覆，嘉慶年間奉天宮立廟時之虎爺大符印，上刻書「新南港 奉天宮 虎將軍」。古笨港沖毀後，街分南北，笨南港東遷麻園寮演變為「新南港」。奉天宮虎爺受封，奉於案桌上為全台獨有。
             </div>
-            </div>
+          </div>
           
           <style>
             @keyframes ribbon-move { 0%, 100% { transform: rotate(15deg) translateY(0); } 50% { transform: rotate(20deg) translateY(5px); } }
