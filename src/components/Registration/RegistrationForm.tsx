@@ -6,6 +6,7 @@ import { translations } from '../../locales/translations';
 import StatusLookupModal from './StatusLookupModal';
 import BaguaQuiz from './BaguaQuiz';
 import { useAppContext } from '../../context/AppContext';
+import { useEasterEggs } from '../../hooks/useEasterEggs';
 
 interface RegistrationFormProps {
   t: any;
@@ -70,7 +71,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   showAlert,
   setShowGames
 }) => {
-  const { hasFlashlight, isFlashlightOn, setIsFlashlightOn, isBagOpen, setIsBagOpen } = useAppContext();
+  const { hasFlashlight, hasPoetrySlip, isFlashlightOn, setIsFlashlightOn, isBagOpen, setIsBagOpen } = useAppContext();
+  const { showMysticScroll } = useEasterEggs(); 
   const [isLookupOpen, setIsLookupOpen] = useState(false);
   const [viewMode, setViewMode] = useState<'choice' | 'form'>('choice'); 
   const pad = (n: number) => String(n).padStart(2, '0');
@@ -132,20 +134,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
               marginTop: '15px'
             }}
           >
-            <span className="entry-icon">
-              <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* 寶箱主體 */}
-                <path d="M20 9V17C20 18.1046 19.1046 19 18 19H6C4.89543 19 4 18.1046 4 17V9H20Z" stroke="var(--primary-gold)" strokeWidth="2" strokeLinejoin="round"/>
-                {/* 寶箱蓋 */}
-                <path d="M20 9V7C20 5.89543 19.1046 5 18 5H6C4.89543 5 4 5.89543 4 7V9H20Z" stroke="var(--primary-gold)" strokeWidth="2" strokeLinejoin="round"/>
-                {/* 鎖頭 */}
-                <rect x="10" y="8" width="4" height="4" rx="1" fill="#000" stroke="var(--primary-gold)" strokeWidth="1"/>
-                <circle cx="12" cy="10" r="0.5" fill="var(--primary-gold)"/>
-                {/* 裝飾線條 */}
-                <path d="M8 5V19" stroke="var(--primary-gold)" strokeWidth="1" strokeDasharray="2 2" opacity="0.5"/>
-                <path d="M16 5V19" stroke="var(--primary-gold)" strokeWidth="1" strokeDasharray="2 2" opacity="0.5"/>
-              </svg>
-            </span>
+            <span className="entry-icon"><ChestIcon size={50} /></span>
             <span className="entry-title">我的道具箱</span>
             <span className="entry-desc">存放著您在冒險中獲得的神祕寶物</span>
           </button>
@@ -824,9 +813,11 @@ const BagModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   hasFlashlight: boolean;
+  hasPoetrySlip: boolean;
   isFlashlightOn: boolean;
   onToggleFlashlight: () => void;
-}> = ({ isOpen, onClose, hasFlashlight, isFlashlightOn, onToggleFlashlight }) => {
+  showMysticScroll: () => void;
+}> = ({ isOpen, onClose, hasFlashlight, hasPoetrySlip, isFlashlightOn, onToggleFlashlight, showMysticScroll }) => {
   if (!isOpen) return null;
 
   return (
@@ -889,18 +880,47 @@ const BagModal: React.FC<{
               </span>
             </div>
 
-            {/* 空插槽 (未來擴充) */}
-            {[1, 2].map(i => (
-              <div key={i} style={{
-                width: '90px', height: '90px',
-                background: 'rgba(255,255,255,0.02)',
-                border: '2px dashed #333',
+            {/* 神祕詩籤道具 */}
+            <div 
+              onClick={hasPoetrySlip ? showMysticScroll : undefined}
+              style={{
+                width: '90px',
+                height: '90px',
+                background: hasPoetrySlip ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255,255,255,0.05)',
+                border: `2px solid ${hasPoetrySlip ? 'var(--primary-gold)' : '#444'}`,
                 borderRadius: '16px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: hasPoetrySlip ? 'pointer' : 'not-allowed',
+                transition: 'all 0.3s ease',
+                opacity: hasPoetrySlip ? 1 : 0.4,
+                position: 'relative'
+              }}
+            >
+              <span style={{ fontSize: '2.8rem' }}>
+                {hasPoetrySlip ? '📜' : '🔒'}
+              </span>
+              <span style={{ 
+                position: 'absolute', bottom: '-28px', fontSize: '0.8rem', 
+                color: hasPoetrySlip ? 'var(--primary-gold)' : '#666',
+                whiteSpace: 'nowrap', fontWeight: 'bold'
               }}>
-                <span style={{ fontSize: '1.5rem', opacity: 0.1 }}>?</span>
-              </div>
-            ))}
+                {hasPoetrySlip ? '神祕詩籤' : '未獲得'}
+              </span>
+            </div>
+
+            {/* 空插槽 (未來擴充) */}
+            <div style={{
+              width: '90px', height: '90px',
+              background: 'rgba(255,255,255,0.02)',
+              border: '2px dashed #333',
+              borderRadius: '16px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}>
+              <span style={{ fontSize: '1.5rem', opacity: 0.1 }}>?</span>
+            </div>
           </div>
         </div>
 

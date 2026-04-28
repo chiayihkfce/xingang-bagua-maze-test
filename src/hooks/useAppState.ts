@@ -62,6 +62,12 @@ export const useAppState = () => {
   const [newManualTime, setNewManualTime] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
+  // 4. 隱藏道具狀態
+  const [hasFlashlight, setHasFlashlight] = useState(false);
+  const [hasPoetrySlip, setHasPoetrySlip] = useState(false);
+  const [isFlashlightOn, setIsFlashlightOn] = useState(false);
+  const [isBagOpen, setIsBagOpen] = useState(false);
+
   return {
     submitted, setSubmitted,
     lastSubmissionId, setLastSubmissionId,
@@ -87,6 +93,10 @@ export const useAppState = () => {
     visibleColumns, setVisibleColumns,
     showColumnFilter, setShowShowColumnFilter,
     newManualTime, setNewManualTime,
-    selectedIds, setSelectedIds
+    selectedIds, setSelectedIds,
+    hasFlashlight, setHasFlashlight,
+    hasPoetrySlip, setHasPoetrySlip,
+    isFlashlightOn, setIsFlashlightOn,
+    isBagOpen, setIsBagOpen
   };
 };

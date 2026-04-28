@@ -5,6 +5,7 @@ import { registerLocale } from "react-datepicker";
 import { zhTW } from './utils/dateUtils'
 import { AppProvider, useAppContext } from './context/AppContext'
 import AdminPage from './pages/AdminPage';
+import { useEasterEggs } from './hooks/useEasterEggs';
 
 // 註冊語系
 registerLocale('zh', zhTW as any);
@@ -29,6 +30,9 @@ const LoadingFallback = () => (
  * 應用程式內容區：負責根據 Context 狀態切換頁面
  */
 function AppContent() {
+  // 注入彩蛋邏輯
+  useEasterEggs();
+
   const app = useAppContext();
   const { SECRET_ADMIN_PATH, currentPath, submitted, isAuthenticating } = app;
 
@@ -53,12 +57,7 @@ function AppContent() {
   );
 }
 
-import { useEasterEggs } from './hooks/useEasterEggs';
-
 function App() {
-  // 注入彩蛋邏輯
-  useEasterEggs();
-
   useEffect(() => {
     // 0. 強制設定網頁標題
     document.title = "新港八卦謎蹤";

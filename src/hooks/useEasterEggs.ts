@@ -6,7 +6,16 @@ import { useAppContext } from '../context/AppContext';
  */
 export const useEasterEggs = () => {
   const [isAwakened, setIsAwakened] = useState(false);
-  const { isFlashlightOn, setIsFlashlightOn } = useAppContext();
+  const { isFlashlightOn, setIsFlashlightOn, setHasPoetrySlip } = useAppContext();
+
+  // 將 showMysticScroll 定義在內部以便復用
+  const showMysticScroll = () => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.85); z-index: 200000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); animation: fadeIn 0.8s ease; font-family: 'Noto Serif TC', serif;`;
+    overlay.innerHTML = `<div style="background: #1a1a1a; border: 2px solid #d4af37; padding: 40px; border-radius: 10px; text-align: center; max-width: 90%; box-shadow: 0 0 50px rgba(212,175,55,0.3); position: relative;"><div style="color: #d4af37; font-size: 1.5rem; margin-bottom: 25px; letter-spacing: 5px;">📜 獲得隱藏線索 📜</div><div style="color: #fff; font-size: 1.2rem; line-height: 2.5; letter-spacing: 3px; margin-bottom: 30px;"><p>新港街頭八卦生</p><p>培桂堂前影自橫</p><p>乾位尋真坤位引</p><p>萬象歸宗見太平</p></div><button id="close-scroll" style="background: transparent; border: 1px solid #d4af37; color: #d4af37; padding: 8px 30px; border-radius: 20px; cursor: pointer;">領悟</button></div>`;
+    document.body.appendChild(overlay);
+    overlay.querySelector('#close-scroll')?.addEventListener('click', () => overlay.remove());
+  };
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
