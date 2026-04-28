@@ -153,7 +153,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
             textShadow: '0 0 10px rgba(212,175,55,0.8)',
             transform: isFlashlightOn ? 'translateY(0)' : 'translateY(-10px)'
           }}>
-            {isFlashlightOn ? '—— 傳說輸入「CLUE」獲取殘卷，或「REVEAL」開啟顯影天眼 ——' : ''}
+            {isFlashlightOn ? '—— 傳說輸入「CLUE」獲取殘卷 ——' : ''}
           </div>
         </div>
 
@@ -164,7 +164,13 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           hasFlashlight={hasFlashlight}
           hasPoetrySlip={hasPoetrySlip}
           isFlashlightOn={isFlashlightOn}
-          onToggleFlashlight={() => setIsFlashlightOn(!isFlashlightOn)}
+          onToggleFlashlight={() => {
+            const nextState = !isFlashlightOn;
+            setIsFlashlightOn(nextState);
+            if (nextState) {
+              setIsBagOpen(false); // 僅在「開啟」時自動關閉道具箱
+            }
+          }}
           showMysticScroll={() => setIsScrollOpen(true)}
         />
 
