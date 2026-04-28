@@ -72,8 +72,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   setShowGames
 }) => {
   const { hasFlashlight, hasPoetrySlip, isFlashlightOn, setIsFlashlightOn, isBagOpen, setIsBagOpen } = useAppContext();
-  const { showMysticScroll } = useEasterEggs(); 
   const [isLookupOpen, setIsLookupOpen] = useState(false);
+  const [isScrollOpen, setIsScrollOpen] = useState(false); 
   const [viewMode, setViewMode] = useState<'choice' | 'form'>('choice'); 
   const pad = (n: number) => String(n).padStart(2, '0');
   const selectedPaymentDetail = (paymentMethods || []).find(m => m.name === formData.paymentMethod);
@@ -157,15 +157,6 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           </div>
         </div>
 
-        {/* 道具袋彈窗 */}
-        <BagModal 
-          isOpen={isBagOpen} 
-          onClose={() => setIsBagOpen(false)} 
-          hasFlashlight={hasFlashlight}
-          isFlashlightOn={isFlashlightOn}
-          onToggleFlashlight={() => setIsFlashlightOn(!isFlashlightOn)}
-        />
-
         {/* 道具箱彈窗 */}
         <BagModal 
           isOpen={isBagOpen} 
@@ -174,8 +165,69 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           hasPoetrySlip={hasPoetrySlip}
           isFlashlightOn={isFlashlightOn}
           onToggleFlashlight={() => setIsFlashlightOn(!isFlashlightOn)}
-          showMysticScroll={showMysticScroll}
+          showMysticScroll={() => setIsScrollOpen(true)}
         />
+
+        {/* 詩籤彈窗 (React 實作) */}
+        {isScrollOpen && (
+          <div className="modal-overlay" style={{ zIndex: 200000 }} onClick={() => setIsScrollOpen(false)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ 
+              background: '#0f0f0a', 
+              border: '2px solid var(--primary-gold)', 
+              padding: '50px 30px', 
+              borderRadius: '8px', 
+              textAlign: 'center', 
+              maxWidth: '450px', 
+              width: '85%',
+              boxShadow: '0 0 60px rgba(0, 0, 0, 0.9), 0 0 30px rgba(212, 175, 55, 0.2)', 
+              position: 'relative',
+              backgroundImage: 'radial-gradient(circle at center, #1a1a12 0%, #0a0a05 100%)'
+            }}>
+              <div style={{ 
+                color: 'var(--primary-gold)', 
+                fontSize: '1.6rem', 
+                marginBottom: '35px', 
+                letterSpacing: '8px',
+                fontWeight: 'bold',
+                textShadow: '0 0 10px rgba(212, 175, 55, 0.5)'
+              }}>📜 神祕詩籤 📜</div>
+              
+              <div style={{ 
+                color: '#ececec', 
+                fontSize: '1.25rem', 
+                lineHeight: '2.8', 
+                letterSpacing: '5px', 
+                marginBottom: '40px', 
+                fontFamily: "'Noto Serif TC', serif",
+                borderTop: '1px solid rgba(212, 175, 55, 0.1)',
+                borderBottom: '1px solid rgba(212, 175, 55, 0.1)',
+                padding: '20px 0'
+              }}>
+                <p style={{ margin: '10px 0' }}>新港街頭八卦生</p>
+                <p style={{ margin: '10px 0' }}>培桂堂前影自橫</p>
+                <p style={{ margin: '10px 0' }}>乾位尋真坤位引</p>
+                <p style={{ margin: '10px 0' }}>萬象歸宗見太平</p>
+              </div>
+              
+              <button 
+                className="submit-btn" 
+                onClick={() => setIsScrollOpen(false)} 
+                style={{ 
+                  background: 'transparent', 
+                  border: '1px solid var(--primary-gold)', 
+                  color: 'var(--primary-gold)', 
+                  padding: '10px 40px', 
+                  borderRadius: '25px',
+                  fontSize: '1rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s'
+                }}
+              >
+                領悟
+              </button>
+            </div>
+          </div>
+        )}
 
         <StatusLookupModal isOpen={isLookupOpen} onClose={() => setIsLookupOpen(false)} lang={lang} />
       </section>
