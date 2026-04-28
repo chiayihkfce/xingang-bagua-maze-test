@@ -128,6 +128,8 @@ export const useEasterEggs = () => {
     const clueCode = ['c', 'l', 'u', 'e'];
     let baguaIndex = 0;
     const baguaCode = ['b', 'a', 'g', 'u', 'a'];
+    let buguaIndex = 0;
+    const buguaCode = ['b', 'u', 'g', 'u', 'a'];
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
@@ -160,10 +162,19 @@ export const useEasterEggs = () => {
       if (key === baguaCode[baguaIndex]) {
         baguaIndex++;
         if (baguaIndex === baguaCode.length) {
-          triggerBaguaUltimate();
+          triggerBaguaBox();
           baguaIndex = 0;
         }
       } else baguaIndex = 0;
+
+      // 檢查 BUGUA (拼寫容錯)
+      if (key === buguaCode[buguaIndex]) {
+        buguaIndex++;
+        if (buguaIndex === buguaCode.length) {
+          triggerBaguaBox();
+          buguaIndex = 0;
+        }
+      } else buguaIndex = 0;
     };
 
     const triggerPulse = (msg: string, showVisual = true) => {
@@ -190,62 +201,97 @@ export const useEasterEggs = () => {
     };
 
 
-    const triggerBaguaUltimate = () => {
+    const triggerBaguaBox = () => {
+      if (document.getElementById('bagua-box-overlay')) return;
       setIsAwakened(true);
-      document.body.style.animation = 'shake 0.5s ease-in-out infinite, blurShift 2s ease-in-out forwards';
+
+      const overlay = document.createElement('div');
+      overlay.id = 'bagua-box-overlay';
+      overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 200000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); animation: fadeIn 0.8s ease;`;
       
-      const container = document.createElement('div');
-      container.style.cssText = `
-        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-        z-index: 100000; pointer-events: none; display: flex;
-        align-items: center; justify-content: center; overflow: hidden;
-        background: radial-gradient(circle, rgba(212,175,55,0.2) 0%, rgba(0,0,0,0.8) 100%);
-        animation: fadeInOut 4s forwards;
-      `;
+      overlay.innerHTML = `
+        <style>
+          @keyframes box-glow { 0%, 100% { box-shadow: 0 0 20px rgba(212,175,55,0.2); } 50% { box-shadow: 0 0 50px rgba(212,175,55,0.5); } }
+          @keyframes seal-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+          @keyframes light-beam { 0% { opacity: 0; transform: scaleY(0); } 50% { opacity: 0.5; transform: scaleY(1); } 100% { opacity: 0; transform: scaleY(1.2); } }
+        </style>
+        <div style="perspective: 1200px; text-align: center;">
+          <div id="mystic-box" style="width: 260px; height: 180px; position: relative; transform-style: preserve-3d; transition: transform 2s ease; margin: 0 auto 60px; animation: box-glow 3s infinite;">
+            <!-- 盒身 (Lacquer Wood) -->
+            <div style="position: absolute; width: 100%; height: 100%; background: #4a0404; border: 4px solid #d4af37; border-radius: 4px; box-shadow: inset 0 0 40px #000; z-index: 1;">
+              <!-- 內部金光 -->
+              <div id="box-light" style="position: absolute; width: 100%; height: 100%; background: radial-gradient(circle, #ffe082 0%, transparent 70%); opacity: 0; transition: opacity 1.5s ease 0.8s;"></div>
+            </div>
+            
+            <!-- 盒蓋 (帶有八卦圖) -->
+            <div id="box-lid" style="position: absolute; width: 268px; height: 188px; background: #5c0505; border: 4px solid #d4af37; border-radius: 4px; top: -8px; left: -8px; z-index: 5; transition: all 1.5s cubic-bezier(0.4, 0, 0.2, 1); transform-origin: top; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+               <svg width="120" height="120" viewBox="0 0 100 100">
+                 <circle cx="50" cy="50" r="45" stroke="#d4af37" stroke-width="1" fill="none" opacity="0.3"/>
+                 <path d="M50 20 L50 80 M20 50 L80 50 M28 28 L72 72 M28 72 L72 28" stroke="#d4af37" stroke-width="0.5" opacity="0.5"/>
+                 <circle cx="50" cy="50" r="25" fill="#d4af37" opacity="0.1"/>
+                 <text x="50" y="57" font-size="25" text-anchor="middle" fill="#d4af37" style="filter: drop-shadow(0 0 5px #d4af37)">☯</text>
+                 <g stroke="#d4af37" stroke-width="2">
+                   <line x1="45" y1="10" x2="55" y2="10" /> <line x1="45" y1="90" x2="55" y2="90" />
+                   <line x1="10" y1="45" x2="10" y2="55" /> <line x1="90" y1="45" x2="90" y2="55" />
+                 </g>
+               </svg>
+               <div style="position: absolute; bottom: 15px; color: #d4af37; font-size: 0.7rem; letter-spacing: 3px; opacity: 0.8;">點擊以此開啟</div>
+            </div>
 
-      const taiji = document.createElement('div');
-      taiji.innerHTML = '☯';
-      taiji.style.cssText = `
-        font-size: 15rem; color: #d4af37; text-shadow: 0 0 50px #d4af37;
-        animation: spin 2s linear infinite, scaleUp 0.5s ease-out forwards;
+            <!-- 使用使用者提供的精美玉璽圖片 -->
+            <div id="mystic-seal" style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0; z-index: 3; transition: all 2s ease 0.8s; pointer-events: none;">
+               <div style="position: relative;">
+                 <img 
+                   src="/8cdd1348-ba1c-4fee-89d4-f8255934d7d3-Photoroom.png" 
+                   alt="新港神龍玉璽" 
+                   style="width: 180px; height: auto; filter: drop-shadow(0 0 30px rgba(212,175,55,0.6));"
+                 />
+                 <!-- 底部印面金色光暈 -->
+                 <div style="position: absolute; bottom: -10px; left: 10%; width: 80%; height: 30px; background: radial-gradient(ellipse, #d4af37 0%, transparent 70%); filter: blur(10px); opacity: 0.6;"></div>
+               </div>
+            </div>
+          </div>
+          
+          <div id="box-text" style="color: #d4af37; font-size: 1.6rem; letter-spacing: 12px; opacity: 0; transition: all 1.5s ease 1.5s; font-family: 'Noto Serif TC', serif; text-shadow: 0 0 20px rgba(212,175,55,0.6);">—— 奉天承運：獲得新港龍印 ——</div>
+          
+          <style>
+            @keyframes ribbon-move { 0%, 100% { transform: rotate(15deg) translateY(0); } 50% { transform: rotate(20deg) translateY(5px); } }
+          </style>
+          <button id="close-box" style="margin-top: 40px; background: transparent; border: 1px solid #d4af37; color: #d4af37; padding: 10px 40px; border-radius: 30px; cursor: pointer; opacity: 0; transition: all 1s ease 2s; font-size: 1.1rem; letter-spacing: 2px;">領悟</button>
+        </div>
       `;
-      container.appendChild(taiji);
+      document.body.appendChild(overlay);
 
-      const trigrams = ['☰', '☱', '☲', '☳', '☴', '☵', '☶', '☷'];
-      trigrams.forEach((symbol, i) => {
-        const angle = (i * 45) * (Math.PI / 180);
-        const distance = Math.max(window.innerWidth, window.innerHeight);
-        const tx = Math.cos(angle) * distance;
-        const ty = Math.sin(angle) * distance;
-        const tDiv = document.createElement('div');
-        tDiv.innerHTML = symbol;
-        tDiv.style.cssText = `
-          position: absolute; font-size: 4rem; color: #fff;
-          text-shadow: 0 0 20px #d4af37; top: 50%; left: 50%;
-          transform: translate(-50%, -50%); --tx: ${tx}px; --ty: ${ty}px;
-          animation: shootOut 2.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
-        `;
-        container.appendChild(tDiv);
+      const lid = document.getElementById('box-lid');
+      const box = document.getElementById('mystic-box');
+      
+      const openBox = () => {
+        const light = document.getElementById('box-light');
+        const seal = document.getElementById('mystic-seal');
+        const text = document.getElementById('box-text');
+        const btn = document.getElementById('close-box');
+        
+        if (lid) {
+          lid.style.transform = 'rotateX(110deg)';
+          lid.style.opacity = '0';
+          lid.style.pointerEvents = 'none';
+        }
+        if (box) box.style.transform = 'scale(1.1)';
+        if (light) light.style.opacity = '1';
+        if (seal) { seal.style.opacity = '1'; } // 移除 translateY
+        if (text) { text.style.opacity = '1'; }
+        if (btn) btn.style.opacity = '1';
+      };
+
+      lid?.addEventListener('click', openBox);
+
+      overlay.querySelector('#close-box')?.addEventListener('click', () => {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          overlay.remove();
+          setIsAwakened(false);
+        }, 800);
       });
-
-      const style = document.createElement('style');
-      style.innerHTML = `
-        @keyframes shake { 0%, 100% { transform: translate(0,0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-5px,-5px); } 20%, 40%, 60%, 80% { transform: translate(5px,5px); } }
-        @keyframes blurShift { 0% { filter: blur(0); } 50% { filter: blur(4px) hue-rotate(45deg); } 100% { filter: blur(0); } }
-        @keyframes shootOut { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(3) rotate(720deg); opacity: 0; } }
-        @keyframes fadeInOut { 0% { opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { opacity: 0; } }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        @keyframes scaleUp { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-      `;
-      document.head.appendChild(style);
-      document.body.appendChild(container);
-
-      setTimeout(() => {
-        document.body.style.animation = '';
-        container.remove();
-        style.remove();
-        setIsAwakened(false);
-      }, 4000);
     };
 
     const showMysticScroll = () => {
