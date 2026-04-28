@@ -238,21 +238,26 @@ export const useEasterEggs = () => {
                <div style="position: absolute; bottom: 15px; color: #d4af37; font-size: 0.7rem; letter-spacing: 3px; opacity: 0.8;">點擊以此開啟</div>
             </div>
 
-            <!-- 使用使用者提供的精美玉璽圖片 -->
+            <!-- 使用奉天宮正宗虎印圖片 -->
             <div id="mystic-seal" style="position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; opacity: 0; z-index: 3; transition: all 2s ease 0.8s; pointer-events: none;">
                <div style="position: relative;">
                  <img 
-                   src="/tiger-seal.png" 
-                   alt="新港八卦虎印" 
-                   style="width: 180px; height: auto; filter: drop-shadow(0 0 30px rgba(212,175,55,0.6));"
+                   src="/奉天宮虎印.png" 
+                   alt="新港奉天宮虎印" 
+                   style="width: 220px; height: auto; filter: drop-shadow(0 0 30px rgba(212,175,55,0.7));"
                  />
                  <!-- 底部印面金色光暈 -->
-                 <div style="position: absolute; bottom: -10px; left: 10%; width: 80%; height: 30px; background: radial-gradient(ellipse, #d4af37 0%, transparent 70%); filter: blur(10px); opacity: 0.6;"></div>
+                 <div style="position: absolute; bottom: -10px; left: 10%; width: 80%; height: 30px; background: radial-gradient(ellipse, #d4af37 0%, transparent 70%); filter: blur(15px); opacity: 0.6;"></div>
                </div>
             </div>
-          </div>
-          
-          <div id="box-text" style="color: #d4af37; font-size: 1.6rem; letter-spacing: 12px; opacity: 0; transition: all 1.5s ease 1.5s; font-family: 'Noto Serif TC', serif; text-shadow: 0 0 20px rgba(212,175,55,0.6);">—— 奉天承運：獲得新港八卦虎印 ——</div>
+            </div>
+
+            <div id="box-text" style="opacity: 0; transition: all 1.5s ease 1.5s; max-width: 600px;">
+            <div style="color: #d4af37; font-size: 1.6rem; letter-spacing: 12px; font-family: 'Noto Serif TC', serif; text-shadow: 0 0 20px rgba(212,175,55,0.6); margin-bottom: 15px;">—— 八卦鎮守：新港奉天宮虎印 ——</div>
+            <div style="color: rgba(255,255,255,0.8); font-size: 0.95rem; line-height: 1.8; letter-spacing: 2px; font-style: italic; padding: 0 20px;">
+              「金虎爺神威顯赫，鎮守八卦方位。此印能避邪除穢，<br/>在重重迷陣之中，助有緣人尋得生門，化險為夷。」
+            </div>
+            </div>
           
           <style>
             @keyframes ribbon-move { 0%, 100% { transform: rotate(15deg) translateY(0); } 50% { transform: rotate(20deg) translateY(5px); } }
