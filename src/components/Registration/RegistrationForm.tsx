@@ -171,6 +171,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           hasTigerSeal={hasTigerSeal}
           hasDuckSoup={hasDuckSoup}
           hasCandy={hasCandy}
+          isFlashlightOn={isFlashlightOn}
           onToggleFlashlight={() => {
             const nextState = !isFlashlightOn;
             setIsFlashlightOn(nextState);
@@ -894,10 +895,11 @@ const BagModal: React.FC<{
   hasTigerSeal: boolean;
   hasDuckSoup: boolean;
   hasCandy: boolean;
+  isFlashlightOn: boolean;
   onToggleFlashlight: () => void;
   showMysticScroll: () => void;
   triggerBaguaBox: () => void;
-}> = ({ isOpen, onClose, hasFlashlight, hasPoetrySlip, hasTigerSeal, hasDuckSoup, hasCandy, onToggleFlashlight, showMysticScroll, triggerBaguaBox }) => {
+}> = ({ isOpen, onClose, hasFlashlight, hasPoetrySlip, hasTigerSeal, hasDuckSoup, hasCandy, isFlashlightOn, onToggleFlashlight, showMysticScroll, triggerBaguaBox }) => {
   if (!isOpen) return null;
 
   return (
