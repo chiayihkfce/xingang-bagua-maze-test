@@ -15,7 +15,8 @@ export const useAppRouting = () => {
   // 監聽網址變化
   useEffect(() => {
     const handleHashChange = () => {
-      const path = window.location.hash.replace(/^#\/?/, '').split('?')[0] || '/';
+      const path =
+        window.location.hash.replace(/^#\/?/, '').split('?')[0] || '/';
       setCurrentPath(path);
     };
     window.addEventListener('hashchange', handleHashChange);

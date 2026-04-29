@@ -3,48 +3,116 @@ import RotationGame from '../MiniGames/RotationGame';
 import MazeGame from '../MiniGames/MazeGame';
 import MatchGame from '../MiniGames/MatchGame';
 import './MiniGames.css';
+import { useAppContext } from '../../context/AppContext';
 
 interface MiniGamesProps {
   onClose: () => void;
 }
 
 const MiniGames: React.FC<MiniGamesProps> = ({ onClose }) => {
-  const [activeGame, setActiveTab] = useState<'rotation' | 'maze' | 'match'>('rotation');
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
+  const { setHasFlashlight } = useAppContext();
+  const [activeGame, setActiveGame] = useState<'rotation' | 'maze' | 'match'>(
+    'rotation'
+  );
+  const [isWin, setIsWin] = useState(false);
+  const [gameKey, setGameKey] = useState(0);
 
   const handleWin = () => {
-    const msgs = ['氣場穩定，乾坤歸位！', '迷霧散去，生路已現！', '萬象歸宗，神清氣爽！'];
-    setSuccessMsg(msgs[Math.floor(Math.random() * msgs.length)]);
-    setShowSuccess(true);
-    setTimeout(() => {
-      setShowSuccess(false);
-    }, 2000);
+    setIsWin(true);
+    setHasFlashlight(true);
+  };
+
+  const handleRestart = () => {
+    setIsWin(false);
+    setGameKey((prev) => prev + 1);
   };
 
   return (
-    <div className="modal-overlay games-modal-overlay" style={{ zIndex: 12000 }}>
-      <div className="modal-content games-container" onClick={e => e.stopPropagation()}>
-        <div className="games-header">
-          <div className="games-nav">
-            <button className={activeGame === 'rotation' ? 'active' : ''} onClick={() => setActiveTab('rotation')}>旋轉陣</button>
-            <button className={activeGame === 'maze' ? 'active' : ''} onClick={() => setActiveTab('maze')}>尋生門</button>
-            <button className={activeGame === 'match' ? 'active' : ''} onClick={() => setActiveTab('match')}>對對碰</button>
+    <div className="game-overlay">
+      <div className="game-container" onClick={(e) => e.stopPropagation()}>
+        {/* 頂部選單 */}
+        <div className="game-header">
+          <div className="game-tabs">
+            <button
+              className={activeGame === 'rotation' ? 'active' : ''}
+              onClick={() => {
+                setActiveGame('rotation');
+                setIsWin(false);
+                setGameKey((k) => k + 1);
+              }}
+            >
+              旋轉陣
+            </button>
+            <button
+              className={activeGame === 'maze' ? 'active' : ''}
+              onClick={() => {
+                setActiveGame('maze');
+                setIsWin(false);
+                setGameKey((k) => k + 1);
+              }}
+            >
+              尋生門
+            </button>
+            <button
+              className={activeGame === 'match' ? 'active' : ''}
+              onClick={() => {
+                setActiveGame('match');
+                setIsWin(false);
+                setGameKey((k) => k + 1);
+              }}
+            >
+              對對碰
+            </button>
           </div>
-          <button className="games-close" onClick={onClose}>&times;</button>
+          <button className="game-close" onClick={onClose}>
+            ×
+          </button>
         </div>
 
-        <div className="game-body">
-          {activeGame === 'rotation' && <RotationGame onWin={handleWin} />}
-          {activeGame === 'maze' && <MazeGame onWin={handleWin} />}
-          {activeGame === 'match' && <MatchGame onWin={handleWin} />}
+        {/* 遊戲內容區 */}
+        <div className="game-content">
+          {activeGame === 'rotation' && (
+            <RotationGame key={`rot-${gameKey}`} onWin={handleWin} />
+          )}
+          {activeGame === 'maze' && (
+            <MazeGame key={`maze-${gameKey}`} onWin={handleWin} />
+          )}
+          {activeGame === 'match' && (
+            <MatchGame key={`match-${gameKey}`} onWin={handleWin} />
+          )}
         </div>
 
-        {showSuccess && (
-          <div className="game-success-overlay">
-            <div className="success-content">
-              <span className="success-icon">✨</span>
-              <p>{successMsg}</p>
+        {/* 勝利提示 */}
+        {isWin && (
+          <div className="win-overlay">
+            <div className="win-card">
+              <h3>
+                🎉{' '}
+                {activeGame === 'rotation'
+                  ? '陣法已破！'
+                  : activeGame === 'maze'
+                    ? '尋得生門！'
+                    : '萬象歸宗！'}
+              </h3>
+              <p>
+                {activeGame === 'rotation' &&
+                  '您已成功感應八卦氣息，撥雲見日，陣法已開。'}
+                {activeGame === 'maze' &&
+                  '您在重重迷霧中找到了出口，展現了卓越的智慧。'}
+                {activeGame === 'match' &&
+                  '所有卦象皆已歸位，混亂的氣流已平息。'}
+              </p>
+              <div
+                style={{
+                  color: 'var(--primary-gold)',
+                  fontWeight: 'bold',
+                  margin: '10px 0',
+                  fontSize: '0.9rem'
+                }}
+              >
+                ✨ 獲得神祕道具：【八卦手電筒】✨
+              </div>
+              <button onClick={handleRestart}>再玩一次</button>
             </div>
           </div>
         )}

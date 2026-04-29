@@ -87,7 +87,15 @@ export interface DashboardStats {
   todayPlayers: number;
 }
 
-export type SealType = 'full-yang' | 'full-yin' | 'zh-vert-rl-yang' | 'zh-vert-rl-yin' | 'zh-vert-lr-yang' | 'zh-vert-lr-yin' | 'zh-horiz-lr-yang' | 'zh-horiz-lr-yin';
+export type SealType =
+  | 'full-yang'
+  | 'full-yin'
+  | 'zh-vert-rl-yang'
+  | 'zh-vert-rl-yin'
+  | 'zh-vert-lr-yang'
+  | 'zh-vert-lr-yin'
+  | 'zh-horiz-lr-yang'
+  | 'zh-horiz-lr-yin';
 
 export interface SealConfig {
   activeSeal: SealType;

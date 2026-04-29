@@ -7,8 +7,14 @@ interface StorySectionProps {
 const StorySection: React.FC<StorySectionProps> = ({ t }) => {
   const [displayedText, setDisplayedText] = useState<string[]>([]);
   const storyParas = [
-    t.storyPara1, t.storyPara2, t.storyPara3, t.storyPara4,
-    t.storyPara5, t.storyPara6, t.storyPara7, t.storyHighlight
+    t.storyPara1,
+    t.storyPara2,
+    t.storyPara3,
+    t.storyPara4,
+    t.storyPara5,
+    t.storyPara6,
+    t.storyPara7,
+    t.storyHighlight
   ];
 
   useEffect(() => {
@@ -18,9 +24,12 @@ const StorySection: React.FC<StorySectionProps> = ({ t }) => {
       if (currentParaIndex < storyParas.length) {
         const currentPara = storyParas[currentParaIndex];
         if (currentCharIndex < currentPara.length) {
-          setDisplayedText(prev => {
+          setDisplayedText((prev) => {
             const next = [...prev];
-            next[currentParaIndex] = currentPara.substring(0, currentCharIndex + 1);
+            next[currentParaIndex] = currentPara.substring(
+              0,
+              currentCharIndex + 1
+            );
             return next;
           });
           currentCharIndex++;
@@ -42,7 +51,10 @@ const StorySection: React.FC<StorySectionProps> = ({ t }) => {
         <h2 className="section-title">{t.storyTitle}</h2>
         <div className="story-text">
           {displayedText.map((text, index) => (
-            <p key={index} className={index === storyParas.length - 1 ? "highlight" : ""}>
+            <p
+              key={index}
+              className={index === storyParas.length - 1 ? 'highlight' : ''}
+            >
               {text}
             </p>
           ))}

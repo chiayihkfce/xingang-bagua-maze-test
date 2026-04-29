@@ -1,103 +1,161 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-TW">
   <head>
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFNQQ2LKD5"></script>
+    <script
+      async
+      src="https://www.googletagmanager.com/gtag/js?id=G-CFNQQ2LKD5"
+    ></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
+      function gtag() {
+        dataLayer.push(arguments);
+      }
       gtag('js', new Date());
 
       gtag('config', 'G-CFNQQ2LKD5');
     </script>
     <meta charset="UTF-8" />
-    <link rel="icon" href="./favicon.svg" sizes="any" />
-    <link rel="icon" href="./app-icon.png" />
-    <link rel="shortcut icon" href="./favicon.png" />
+    <link
+      rel="icon"
+      href="https://chiayihkfce.github.io/xingang-bagua-maze/favicon.svg"
+      sizes="any"
+    />
+    <link
+      rel="icon"
+      href="https://chiayihkfce.github.io/xingang-bagua-maze/app-icon.png"
+    />
+    <link
+      rel="shortcut icon"
+      href="https://chiayihkfce.github.io/xingang-bagua-maze/favicon.png"
+    />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>新港八卦謎蹤</title>
-    
+
     <!-- PWA Settings -->
-    <link rel="manifest" href="./manifest.json" />
+    <link rel="manifest" href="manifest.json" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta name="apple-mobile-web-app-title" content="新港八卦謎蹤" />
-    <link rel="apple-touch-icon" href="./app-icon.png" />
-    
+    <link
+      rel="apple-touch-icon"
+      href="https://chiayihkfce.github.io/xingang-bagua-maze/app-icon.png"
+    />
+
     <!-- Service Worker Registration -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
-            .then(reg => {
+          navigator.serviceWorker
+            .register('./sw.js', { updateViaCache: 'none' })
+            .then((reg) => {
               console.log('SW registered');
               // 檢查是否有更新，如果有則立刻強制接管
               reg.onupdatefound = () => {
                 const installingWorker = reg.installing;
                 if (installingWorker) {
                   installingWorker.onstatechange = () => {
-                    if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    if (
+                      installingWorker.state === 'installed' &&
+                      navigator.serviceWorker.controller
+                    ) {
                       window.location.reload();
                     }
                   };
                 }
               };
             })
-            .catch(err => console.log('SW error:', err));
+            .catch((err) => console.log('SW error:', err));
         });
       }
     </script>
-    
+
     <!-- Thumbnail for Google -->
-    <meta name="thumbnail" content="https://chiayihkfce.github.io/xingang-bagua-maze/poster.jpg" />
-    
+    <meta
+      name="thumbnail"
+      content="https://chiayihkfce.github.io/xingang-bagua-maze/poster.jpg"
+    />
+
     <!-- Google Search / Site Name -->
     <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "新港八卦謎蹤",
-      "alternateName": [
-        "新港八卦謎蹤",
-        "八卦謎蹤",
-        "新港文教基金會",
-        "Hsinkang Foundation",
-        "chiayihkfce.github.io"
-      ],
-      "url": "https://chiayihkfce.github.io/xingang-bagua-maze/",
-      "image": "https://chiayihkfce.github.io/xingang-bagua-maze/poster.jpg"
-    }
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "新港八卦謎蹤",
+        "alternateName": [
+          "新港八卦謎蹤",
+          "八卦謎蹤",
+          "新港文教基金會",
+          "Hsinkang Foundation",
+          "chiayihkfce.github.io"
+        ],
+        "url": "https://chiayihkfce.github.io/xingang-bagua-maze/",
+        "image": "https://chiayihkfce.github.io/xingang-bagua-maze/poster.jpg"
+      }
     </script>
-    <meta name="google-site-verification" content="98E7KHFq6FDhzFHGNSr1mJwRaIuC3D0EchEy1fjZ4ww" />
-    <meta name="description" content="昭和九年，一場神祕疫病肆虐新港... 穿梭時空，解開隱藏在古鎮巷弄間的八卦謎團。嘉義新港實境解謎活動，等你來破局！" />
-    <meta name="keywords" content="新港八卦謎蹤, 實境解謎, 嘉義旅遊, 培桂堂, 新港文教基金會, 密室逃脫" />
+    <meta
+      name="google-site-verification"
+      content="98E7KHFq6FDhzFHGNSr1mJwRaIuC3D0EchEy1fjZ4ww"
+    />
+    <meta
+      name="description"
+      content="昭和九年，一場神祕疫病肆虐新港... 穿梭時空，解開隱藏在古鎮巷弄間的八卦謎團。嘉義新港實境解謎活動，等你來破局！"
+    />
+    <meta
+      name="keywords"
+      content="新港八卦謎蹤, 實境解謎, 嘉義旅遊, 培桂堂, 新港文教基金會, 密室逃脫"
+    />
     <meta name="theme-color" content="#f1c40f" />
     <meta name="apple-mobile-web-app-status-bar-style" content="#f1c40f" />
     <meta name="msapplication-TileColor" content="#f1c40f" />
     <meta name="msapplication-navbutton-color" content="#f1c40f" />
-    
+
     <!-- Open Graph / Facebook / Line / Instagram / Threads -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="新港八卦謎蹤" />
-    <meta property="og:url" content="https://chiayihkfce.github.io/xingang-bagua-maze/" />
-    <meta property="og:title" content="新港八卦謎蹤 | 穿梭光緒與昭和的實境解謎" />
-    <meta property="og:description" content="🌀 嘉義新港實境冒險！協助穿越時空的白鸞卿，解鎖隱藏在巷弄間的八卦之謎。" />
-    <meta property="og:image" content="https://chiayihkfce.github.io/xingang-bagua-maze/poster.jpg" />
+    <meta
+      property="og:url"
+      content="https://chiayihkfce.github.io/xingang-bagua-maze/"
+    />
+    <meta
+      property="og:title"
+      content="新港八卦謎蹤 | 穿梭光緒與昭和的實境解謎"
+    />
+    <meta
+      property="og:description"
+      content="🌀 嘉義新港實境冒險！協助穿越時空的白鸞卿，解鎖隱藏在巷弄間的八卦之謎。"
+    />
+    <meta
+      property="og:image"
+      content="https://chiayihkfce.github.io/xingang-bagua-maze/poster.jpg"
+    />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="zh_TW" />
 
     <!-- Twitter Card (Threads 也支援) -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://chiayihkfce.github.io/xingang-bagua-maze/" />
+    <meta
+      property="twitter:url"
+      content="https://chiayihkfce.github.io/xingang-bagua-maze/"
+    />
     <meta property="twitter:title" content="新港八卦謎蹤 | 實境解謎活動" />
-    <meta property="twitter:description" content="昭和九年，一場神祕疫病肆虐新港... 穿梭時空，解開隱藏在古鎮巷弄間的八卦謎團。" />
-    <meta property="twitter:image" content="https://chiayihkfce.github.io/xingang-bagua-maze/poster.jpg" />
+    <meta
+      property="twitter:description"
+      content="昭和九年，一場神祕疫病肆虐新港... 穿梭時空，解開隱藏在古鎮巷弄間的八卦謎團。"
+    />
+    <meta
+      property="twitter:image"
+      content="https://chiayihkfce.github.io/xingang-bagua-maze/poster.jpg"
+    />
 
-    <link rel="preconnect" href="https://script.google.com">
-    <link rel="preconnect" href="https://script.googleusercontent.com">
-    <link rel="dns-prefetch" href="https://script.google.com">
+    <link rel="preconnect" href="https://script.google.com" />
+    <link rel="preconnect" href="https://script.googleusercontent.com" />
+    <link rel="dns-prefetch" href="https://script.google.com" />
   </head>
   <body>
     <div id="root"></div>

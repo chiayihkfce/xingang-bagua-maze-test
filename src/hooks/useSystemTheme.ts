@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
-import { Lang, Theme } from '../types'
-import { translations } from '../locales/translations'
+import { useState, useEffect } from 'react';
+import { Lang, Theme } from '../types';
+import { translations } from '../locales/translations';
 
 export const useSystemTheme = () => {
   const [lang, setLang] = useState<Lang>(() => {
@@ -24,7 +24,7 @@ export const useSystemTheme = () => {
   }, [theme]);
 
   const toggleTheme = () => {
-    setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
   const t = translations[lang];

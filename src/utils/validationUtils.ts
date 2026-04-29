@@ -3,9 +3,9 @@
  * 返回錯誤訊息字串，若無錯誤則返回空字串
  */
 export const validateFieldLogic = (
-  name: string, 
-  value: string, 
-  countryCode: string, 
+  name: string,
+  value: string,
+  countryCode: string,
   t: any
 ): string => {
   let error = '';
@@ -22,10 +22,13 @@ export const validateFieldLogic = (
         '+853': [8],
         '+60': [9, 10, 11],
         '+65': [8],
-        'landline': [9, 10]
+        landline: [9, 10]
       };
       const allowedLengths = rules[countryCode] || [6, 15];
-      if (!allowedLengths.includes(value.length) || (countryCode === 'landline' && !value.startsWith('0'))) {
+      if (
+        !allowedLengths.includes(value.length) ||
+        (countryCode === 'landline' && !value.startsWith('0'))
+      ) {
         error = t.errorPhone;
       }
     }

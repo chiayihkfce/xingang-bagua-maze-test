@@ -21,7 +21,12 @@ export const useSystemModal = () => {
     onConfirm: () => {}
   });
 
-  const showAlert = (message: string, title = '提示', onConfirm?: () => void, confirmText = '確定') => {
+  const showAlert = (
+    message: string,
+    title = '提示',
+    onConfirm?: () => void,
+    confirmText = '確定'
+  ) => {
     setSysModal({
       show: true,
       type: 'alert',
@@ -29,24 +34,29 @@ export const useSystemModal = () => {
       message,
       confirmText,
       onConfirm: () => {
-        setSysModal(prev => ({ ...prev, show: false }));
+        setSysModal((prev) => ({ ...prev, show: false }));
         if (onConfirm) onConfirm();
       }
     });
   };
 
-  const showConfirm = (message: string, onConfirm: () => void, onCancel?: () => void, title = '確認動作') => {
+  const showConfirm = (
+    message: string,
+    onConfirm: () => void,
+    onCancel?: () => void,
+    title = '確認動作'
+  ) => {
     setSysModal({
       show: true,
       type: 'confirm',
       title,
       message,
       onConfirm: () => {
-        setSysModal(prev => ({ ...prev, show: false }));
+        setSysModal((prev) => ({ ...prev, show: false }));
         onConfirm();
       },
       onCancel: () => {
-        setSysModal(prev => ({ ...prev, show: false }));
+        setSysModal((prev) => ({ ...prev, show: false }));
         if (onCancel) onCancel();
       }
     });

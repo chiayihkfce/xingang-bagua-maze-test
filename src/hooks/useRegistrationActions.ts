@@ -1,5 +1,11 @@
-import { collection, addDoc, updateDoc, doc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  serverTimestamp
+} from 'firebase/firestore';
+import { db } from '../firebase';
 import { FormData, FormErrors, PaymentMethod } from '../types';
 import { formatPhoneForDB } from '../utils/formatUtils';
 import { formatFullDateTime } from '../utils/dateUtils';
@@ -36,21 +42,20 @@ export const useRegistrationActions = ({
   setShowConfirmation,
   addLog
 }: UseRegistrationActionsProps) => {
-
   /**
    * 報名表單初步送出 (驗證並開啟確認視窗)
    */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (formErrors.email || formErrors.phone || formErrors.name) {
       showAlert('請修正表單中的錯誤紅字後再試。');
       return;
     }
 
     const requiredFields = [
-      { key: 'name', label: '姓名' }, 
-      { key: 'phone', label: '電話' }, 
+      { key: 'name', label: '姓名' },
+      { key: 'phone', label: '電話' },
       { key: 'email', label: 'Email' }
     ];
 
@@ -83,7 +88,8 @@ export const useRegistrationActions = ({
    */
   const sendLineNotification = async (data: any) => {
     // ⚠️ 請務必在此替換為您新創的 GAS 部署網址
-    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbxakCReNaHCX3BK7XpJZLZ8Gdp_d6quOXfReq6Ev5S-emwdQSxuzM2OILkXjEp9WVM9ug/exec';
+    const WEBHOOK_URL =
+      'https://script.google.com/macros/s/AKfycbxakCReNaHCX3BK7XpJZLZ8Gdp_d6quOXfReq6Ev5S-emwdQSxuzM2OILkXjEp9WVM9ug/exec';
     try {
       await fetch(WEBHOOK_URL, {
         method: 'POST',
@@ -95,7 +101,7 @@ export const useRegistrationActions = ({
         })
       });
     } catch (e) {
-      console.error("LINE Notification failed:", e);
+      console.error('LINE Notification failed:', e);
     }
   };
 
@@ -105,8 +111,11 @@ export const useRegistrationActions = ({
   const executeFinalSubmission = async (last5?: string) => {
     setIsSubmitting(true);
     try {
-      const combinedPhone = formatPhoneForDB(formData.countryCode, formData.phone);
-      
+      const combinedPhone = formatPhoneForDB(
+        formData.countryCode,
+        formData.phone
+      );
+
       const submissionData = {
         ...formData,
         phone: combinedPhone,
@@ -122,22 +131,28 @@ export const useRegistrationActions = ({
         deleted: false
       };
 
-      const docRef = await addDoc(collection(db, "registrations"), submissionData);
+      const docRef = await addDoc(
+        collection(db, 'registrations'),
+        submissionData
+      );
       const finalData = { ...submissionData, id: docRef.id }; // 包含新產生的 ID
       setLastSubmissionId(docRef.id);
-      
+
       // 🚀 關鍵修正：先傳送 LINE 通知 (不等待)，避免被後續 addLog 阻塞
       sendLineNotification(finalData);
-      
+
       try {
-        await addLog('報名提交', `${formData.name} 提交了報名 (${formData.session})`);
+        await addLog(
+          '報名提交',
+          `${formData.name} 提交了報名 (${formData.session})`
+        );
       } catch (logErr) {
-        console.error("Log failed:", logErr);
+        console.error('Log failed:', logErr);
       }
-      
+
       return docRef.id;
     } catch (err) {
-      console.error("提交失敗:", err);
+      console.error('提交失敗:', err);
       showAlert('提交失敗，請檢查網路連線。');
       throw err;
     } finally {
@@ -149,22 +164,38 @@ export const useRegistrationActions = ({
    * 確認視窗按下確認後的最終處理
    */
   const handleConfirmSubmit = async () => {
-    if (formData.hp_field !== '') return; 
+    if (formData.hp_field !== '') return;
     const timeDiff = (Date.now() - loadTime) / 1000;
-    if (timeDiff < 3) { showAlert('填表速度過快，請稍候再試'); return; }
-    
+    if (timeDiff < 3) {
+      showAlert('填表速度過快，請稍候再試');
+      return;
+    }
+
     const qty = parseInt(formData.quantity) || 0;
     const players = parseInt(formData.players) || 0;
     const maxPlayers = qty * 4;
-    
-    if (qty <= 0) { showAlert('份數必須至少為 1 份'); setShowConfirmation(false); return; }
-    if (players <= 0 || players > maxPlayers) { showAlert(`遊玩人數上限應為 ${maxPlayers} 人`); setShowConfirmation(false); return; }
-    
+
+    if (qty <= 0) {
+      showAlert('份數必須至少為 1 份');
+      setShowConfirmation(false);
+      return;
+    }
+    if (players <= 0 || players > maxPlayers) {
+      showAlert(`遊玩人數上限應為 ${maxPlayers} 人`);
+      setShowConfirmation(false);
+      return;
+    }
+
     setShowConfirmation(false);
 
-    const selectedPayment = (paymentMethods || []).find(m => m.name === formData.paymentMethod);
+    const selectedPayment = (paymentMethods || []).find(
+      (m) => m.name === formData.paymentMethod
+    );
 
-    if (selectedPayment?.type === 'bank' || selectedPayment?.type === 'linepay') {
+    if (
+      selectedPayment?.type === 'bank' ||
+      selectedPayment?.type === 'linepay'
+    ) {
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
@@ -185,7 +216,7 @@ export const useRegistrationActions = ({
   const handleUpdateBankLast5 = async (id: string, last5: string) => {
     try {
       if (id) {
-        const docRef = doc(db, "registrations", id);
+        const docRef = doc(db, 'registrations', id);
         await updateDoc(docRef, { bankLast5: last5 });
         return true;
       } else {
@@ -193,7 +224,7 @@ export const useRegistrationActions = ({
         return !!newId;
       }
     } catch (err) {
-      console.error("更新末五碼失敗:", err);
+      console.error('更新末五碼失敗:', err);
       return false;
     }
   };
@@ -213,7 +244,3 @@ export const useRegistrationActions = ({
     resetForm
   };
 };
-
-
-
-

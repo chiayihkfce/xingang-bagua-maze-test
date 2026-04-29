@@ -1,7 +1,13 @@
 import React from 'react';
 import { translateOption } from '../../utils/translateOptions';
-import { generateGoogleCalendarUrl, downloadIcalFile } from '../../utils/calendarUtils';
-import { generateCertificate, downloadCertificate } from '../../utils/certificateUtils';
+import {
+  generateGoogleCalendarUrl,
+  downloadIcalFile
+} from '../../utils/calendarUtils';
+import {
+  generateCertificate,
+  downloadCertificate
+} from '../../utils/certificateUtils';
 
 interface SuccessScreenProps {
   t: any;
@@ -40,8 +46,15 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
   const [hasClickedPayment, setHasClickedPayment] = React.useState(false);
   const [hasDownloaded, setHasDownloaded] = React.useState(false);
 
-  const selectedPaymentDetail = (paymentMethods || []).find(m => m.name === formData.paymentMethod);
-  const isFullyCompleted = selectedPaymentDetail?.type === 'bank' ? updateSuccess : (selectedPaymentDetail?.type === 'linepay' ? hasClickedPayment : !!lastSubmissionId);
+  const selectedPaymentDetail = (paymentMethods || []).find(
+    (m) => m.name === formData.paymentMethod
+  );
+  const isFullyCompleted =
+    selectedPaymentDetail?.type === 'bank'
+      ? updateSuccess
+      : selectedPaymentDetail?.type === 'linepay'
+        ? hasClickedPayment
+        : !!lastSubmissionId;
 
   const urlParams = new URLSearchParams(window.location.search);
   const isCertMode = !!urlParams.get('certId');
@@ -67,7 +80,7 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
         setHasDownloaded(true);
       }
     } catch (err) {
-      console.error("Manual Download Error:", err);
+      console.error('Manual Download Error:', err);
     } finally {
       setIsUpdating(false);
     }
@@ -93,7 +106,10 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
     }
     if (handleUpdateBankLast5) {
       setIsUpdating(true);
-      const success = await handleUpdateBankLast5(lastSubmissionId || '', bankLast5);
+      const success = await handleUpdateBankLast5(
+        lastSubmissionId || '',
+        bankLast5
+      );
       setIsUpdating(false);
       if (success) setUpdateSuccess(true);
       else showAlert(lang === 'en' ? 'Update failed.' : '更新失敗');
@@ -101,20 +117,33 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
   };
 
   const onLinePayClick = async (e: React.MouseEvent) => {
-    if (lastSubmissionId) { setHasClickedPayment(true); return; }
+    if (lastSubmissionId) {
+      setHasClickedPayment(true);
+      return;
+    }
     e.preventDefault();
     const link = (e.currentTarget as HTMLAnchorElement).href;
     if (handleUpdateBankLast5) {
       setIsUpdating(true);
       try {
         const success = await handleUpdateBankLast5('', '');
-        if (success) { setHasClickedPayment(true); window.open(link, '_blank', 'noopener,noreferrer'); }
-      } catch (err) { console.error(err); } finally { setIsUpdating(false); }
+        if (success) {
+          setHasClickedPayment(true);
+          window.open(link, '_blank', 'noopener,noreferrer');
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsUpdating(false);
+      }
     }
   };
 
   const handleGoogleCalendar = () => {
-    const sessionName = translateOption(getSessionDisplayName(formData.session), lang);
+    const sessionName = translateOption(
+      getSessionDisplayName(formData.session),
+      lang
+    );
     const url = generateGoogleCalendarUrl({
       title: `【新港八卦謎蹤】${sessionName}`,
       startTime: formData.pickupTime,
@@ -125,7 +154,10 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
   };
 
   const handleIcal = () => {
-    const sessionName = translateOption(getSessionDisplayName(formData.session), lang);
+    const sessionName = translateOption(
+      getSessionDisplayName(formData.session),
+      lang
+    );
     downloadIcalFile({
       title: `【新港八卦謎蹤】${sessionName}`,
       startTime: formData.pickupTime,
@@ -134,7 +166,9 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
     });
   };
 
-  const canGoHome = (selectedPaymentDetail?.type === 'bank' ? updateSuccess : true) && (selectedPaymentDetail?.type === 'linepay' ? hasClickedPayment : true);
+  const canGoHome =
+    (selectedPaymentDetail?.type === 'bank' ? updateSuccess : true) &&
+    (selectedPaymentDetail?.type === 'linepay' ? hasClickedPayment : true);
 
   // 處理社交分享
   const handleShare = async () => {
@@ -146,7 +180,7 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
         await navigator.share({
           title: '【新港八卦謎蹤】成就達成',
           text: shareText,
-          url: shareUrl,
+          url: shareUrl
         });
       } catch (err) {
         console.log('Share cancelled or failed:', err);
@@ -155,9 +189,15 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
       // 備援：複製連結
       try {
         await navigator.clipboard.writeText(shareText);
-        showAlert(lang === 'en' ? 'Share link copied!' : '分享資訊已複製，快去貼給好友吧！');
+        showAlert(
+          lang === 'en'
+            ? 'Share link copied!'
+            : '分享資訊已複製，快去貼給好友吧！'
+        );
       } catch (err) {
-        showAlert(lang === 'en' ? 'Please copy the URL manually.' : '請手動複製網址分享');
+        showAlert(
+          lang === 'en' ? 'Please copy the URL manually.' : '請手動複製網址分享'
+        );
       }
     }
   };
@@ -165,67 +205,159 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
   // 如果是證書領取模式，顯示主題選擇畫面
   if (isCertMode) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', background: '#0a0a0a', color: '#fff', textAlign: 'center', padding: '20px' }}>
-        <div className="check-icon" style={{ background: '#27ae60', margin: '0 auto 20px' }}>✓</div>
-        <h2 style={{ fontSize: '2rem', letterSpacing: '4px', color: '#d4af37' }}>挑戰成就達成</h2>
-        <p style={{ marginTop: '10px', opacity: 0.8, fontSize: '1.2rem' }}>恭喜您，<strong>{formData.name || '挑戰者'}</strong>！</p>
-        <p style={{ marginTop: '10px', opacity: 0.7 }}>請選擇您喜愛的證書風格進行領取：</p>
-        
-        <div style={{ display: 'flex', gap: '20px', marginTop: '40px', flexWrap: 'wrap', justifyContent: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          background: '#0a0a0a',
+          color: '#fff',
+          textAlign: 'center',
+          padding: '20px'
+        }}
+      >
+        <div
+          className="check-icon"
+          style={{ background: '#27ae60', margin: '0 auto 20px' }}
+        >
+          ✓
+        </div>
+        <h2
+          style={{ fontSize: '2rem', letterSpacing: '4px', color: '#d4af37' }}
+        >
+          挑戰成就達成
+        </h2>
+        <p style={{ marginTop: '10px', opacity: 0.8, fontSize: '1.2rem' }}>
+          恭喜您，<strong>{formData.name || '挑戰者'}</strong>！
+        </p>
+        <p style={{ marginTop: '10px', opacity: 0.7 }}>
+          請選擇您喜愛的證書風格進行領取：
+        </p>
+
+        <div
+          style={{
+            display: 'flex',
+            gap: '20px',
+            marginTop: '40px',
+            flexWrap: 'wrap',
+            justifyContent: 'center'
+          }}
+        >
           {/* 米白宣紙選項 */}
-          <button 
+          <button
             onClick={() => handleThemeDownload('light')}
             disabled={isUpdating}
-            style={{ 
-              width: '240px', padding: '40px 20px', background: '#f5f2e9', color: '#333', border: '4px solid #d4af37', 
-              borderRadius: '20px', cursor: 'pointer', transition: 'transform 0.3s', display: 'flex', flexDirection: 'column', alignItems: 'center' 
+            style={{
+              width: '240px',
+              padding: '40px 20px',
+              background: '#f5f2e9',
+              color: '#333',
+              border: '4px solid #d4af37',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              transition: 'transform 0.3s',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.transform = 'scale(1.05)')
+            }
+            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
           >
             <span style={{ fontSize: '2rem', marginBottom: '15px' }}>📜</span>
-            <span style={{ fontWeight: 'bold', fontSize: '1.3rem' }}>米白宣紙版</span>
-            <span style={{ fontSize: '0.9rem', marginTop: '15px', opacity: 0.7 }}>古典溫潤 · 書卷氣息</span>
+            <span style={{ fontWeight: 'bold', fontSize: '1.3rem' }}>
+              米白宣紙版
+            </span>
+            <span
+              style={{ fontSize: '0.9rem', marginTop: '15px', opacity: 0.7 }}
+            >
+              古典溫潤 · 書卷氣息
+            </span>
           </button>
 
           {/* 深色黑金選項 */}
-          <button 
+          <button
             onClick={() => handleThemeDownload('dark')}
             disabled={isUpdating}
-            style={{ 
-              width: '240px', padding: '40px 20px', background: '#1a1a1a', color: '#d4af37', border: '4px solid #d4af37', 
-              borderRadius: '20px', cursor: 'pointer', transition: 'transform 0.3s', display: 'flex', flexDirection: 'column', alignItems: 'center' 
+            style={{
+              width: '240px',
+              padding: '40px 20px',
+              background: '#1a1a1a',
+              color: '#d4af37',
+              border: '4px solid #d4af37',
+              borderRadius: '20px',
+              cursor: 'pointer',
+              transition: 'transform 0.3s',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
             }}
-            onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.05)'}
-            onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.transform = 'scale(1.05)')
+            }
+            onMouseLeave={(e) => (e.currentTarget.style.transform = 'scale(1)')}
           >
             <span style={{ fontSize: '2rem', marginBottom: '15px' }}>🌟</span>
-            <span style={{ fontWeight: 'bold', fontSize: '1.3rem' }}>深色黑金版</span>
-            <span style={{ fontSize: '0.9rem', marginTop: '15px', opacity: 0.7 }}>莊重神祕 · 皇家氣勢</span>
+            <span style={{ fontWeight: 'bold', fontSize: '1.3rem' }}>
+              深色黑金版
+            </span>
+            <span
+              style={{ fontSize: '0.9rem', marginTop: '15px', opacity: 0.7 }}
+            >
+              莊重神祕 · 皇家氣勢
+            </span>
           </button>
         </div>
 
-        <button 
+        <button
           onClick={handleShare}
           className="share-achievement-btn cta-button"
-          style={{ 
-            marginTop: '40px', padding: '12px 30px', background: 'transparent', color: '#d4af37', border: '1px solid #d4af37', 
-            borderRadius: '50px', cursor: 'pointer', fontSize: '1.1rem', letterSpacing: '2px', transition: 'all 0.3s'
+          style={{
+            marginTop: '40px',
+            padding: '12px 30px',
+            background: 'transparent',
+            color: '#d4af37',
+            border: '1px solid #d4af37',
+            borderRadius: '50px',
+            cursor: 'pointer',
+            fontSize: '1.1rem',
+            letterSpacing: '2px',
+            transition: 'all 0.3s'
           }}
-          onMouseEnter={(e) => { e.currentTarget.style.background = '#d4af37'; e.currentTarget.style.color = '#000'; }}
-          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#d4af37'; }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = '#d4af37';
+            e.currentTarget.style.color = '#000';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = '#d4af37';
+          }}
         >
           📢 向好友炫耀成就 (分享)
         </button>
 
         {isUpdating && (
           <div style={{ marginTop: '40px' }}>
-            <p style={{ color: '#d4af37', fontSize: '1.1rem' }}>正在為您繪製高品質證書，請稍候...</p>
+            <p style={{ color: '#d4af37', fontSize: '1.1rem' }}>
+              正在為您繪製高品質證書，請稍候...
+            </p>
           </div>
         )}
-        
+
         {hasDownloaded && !isUpdating && (
-          <p style={{ marginTop: '40px', color: '#27ae60', fontWeight: 'bold', fontSize: '1.1rem' }}>✓ 證書已開始下載。您可以再次點擊選擇另一種配色。</p>
+          <p
+            style={{
+              marginTop: '40px',
+              color: '#27ae60',
+              fontWeight: 'bold',
+              fontSize: '1.1rem'
+            }}
+          >
+            ✓ 證書已開始下載。您可以再次點擊選擇另一種配色。
+          </p>
         )}
       </div>
     );
@@ -234,73 +366,196 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
   return (
     <div className="container">
       <div className="success-screen">
-        <div className="check-icon" style={{ background: isFullyCompleted ? '#27ae60' : 'var(--accent-orange)' }}>
+        <div
+          className="check-icon"
+          style={{
+            background: isFullyCompleted ? '#27ae60' : 'var(--accent-orange)'
+          }}
+        >
           {isFullyCompleted ? '✓' : '!'}
         </div>
-        <h1>{isFullyCompleted ? t.submitSuccess : (t.awaitingPayment || '待完成付款動作')}</h1>
-        <p>{t.thanks} <strong>{formData.name}</strong>。</p>
-        <p>{isFullyCompleted ? t.received : (t.pleaseVerify || '請確認以下明細並完成繳費動作以完成報名。')}</p>
-        
-        <div className="summary-box">
-          <p><strong>{t.session}</strong> {translateOption(getSessionDisplayName(formData.session), lang)}</p>
-          <p><strong>{t.playTime}</strong> {formData.pickupTime}</p>
-          <p><strong>{t.orderTotal}</strong> NT$ {calculatedTotal}</p>
-          <p><strong>{t.paymentMethod}</strong> {translateOption(getPaymentMethodDisplay(formData.paymentMethod), lang)}</p>
+        <h1>
+          {isFullyCompleted
+            ? t.submitSuccess
+            : t.awaitingPayment || '待完成付款動作'}
+        </h1>
+        <p>
+          {t.thanks} <strong>{formData.name}</strong>。
+        </p>
+        <p>
+          {isFullyCompleted
+            ? t.received
+            : t.pleaseVerify || '請確認以下明細並完成繳費動作以完成報名。'}
+        </p>
 
-          <div className="calendar-actions" style={{ marginTop: '1.5rem', borderTop: '1px dashed rgba(255,255,255,0.1)', paddingTop: '1.2rem' }}>
-            <p style={{ fontSize: '0.9rem', marginBottom: '0.8rem', opacity: 0.8 }}>{t.addToCalendar}</p>
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button onClick={handleGoogleCalendar} className="copy-btn" style={{ background: '#4285F4', color: 'white', border: 'none' }}>{t.googleCalendar}</button>
-              <button onClick={handleIcal} className="copy-btn" style={{ background: '#333', color: 'white', border: 'none' }}>{t.iCalendar}</button>
+        <div className="summary-box">
+          <p>
+            <strong>{t.session}</strong>{' '}
+            {translateOption(getSessionDisplayName(formData.session), lang)}
+          </p>
+          <p>
+            <strong>{t.playTime}</strong> {formData.pickupTime}
+          </p>
+          <p>
+            <strong>{t.orderTotal}</strong> NT$ {calculatedTotal}
+          </p>
+          <p>
+            <strong>{t.paymentMethod}</strong>{' '}
+            {translateOption(
+              getPaymentMethodDisplay(formData.paymentMethod),
+              lang
+            )}
+          </p>
+
+          <div
+            className="calendar-actions"
+            style={{
+              marginTop: '1.5rem',
+              borderTop: '1px dashed rgba(255,255,255,0.1)',
+              paddingTop: '1.2rem'
+            }}
+          >
+            <p
+              style={{
+                fontSize: '0.9rem',
+                marginBottom: '0.8rem',
+                opacity: 0.8
+              }}
+            >
+              {t.addToCalendar}
+            </p>
+            <div
+              style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}
+            >
+              <button
+                onClick={handleGoogleCalendar}
+                className="copy-btn"
+                style={{
+                  background: '#4285F4',
+                  color: 'white',
+                  border: 'none'
+                }}
+              >
+                {t.googleCalendar}
+              </button>
+              <button
+                onClick={handleIcal}
+                className="copy-btn"
+                style={{ background: '#333', color: 'white', border: 'none' }}
+              >
+                {t.iCalendar}
+              </button>
             </div>
           </div>
-          
+
           {selectedPaymentDetail?.type === 'bank' && (
-            <div className="bank-info" style={{marginTop: '1.2rem', padding: '1.2rem', background: 'rgba(212, 175, 55, 0.05)', borderRadius: '12px', border: '1px solid rgba(212, 175, 55, 0.2)'}}>
-              <p style={{ color: 'var(--primary-gold)', fontWeight: 'bold', marginBottom: '0.8rem', fontSize: '1.1rem' }}>{t.bankInfoFull}</p>
-              
+            <div
+              className="bank-info"
+              style={{
+                marginTop: '1.2rem',
+                padding: '1.2rem',
+                background: 'rgba(212, 175, 55, 0.05)',
+                borderRadius: '12px',
+                border: '1px solid rgba(212, 175, 55, 0.2)'
+              }}
+            >
+              <p
+                style={{
+                  color: 'var(--primary-gold)',
+                  fontWeight: 'bold',
+                  marginBottom: '0.8rem',
+                  fontSize: '1.1rem'
+                }}
+              >
+                {t.bankInfoFull}
+              </p>
+
               <div style={{ marginBottom: '0.6rem' }}>
-                <strong>{t.bank || '銀行'}:</strong> {translateOption(selectedPaymentDetail.bankName || '', lang)}
+                <strong>{t.bank || '銀行'}:</strong>{' '}
+                {translateOption(selectedPaymentDetail.bankName || '', lang)}
               </div>
-              
-              <div className="account-container" style={{ display: 'flex', alignItems: 'center', gap: '10px', margin: '0.6rem 0' }}>
+
+              <div
+                className="account-container"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  margin: '0.6rem 0'
+                }}
+              >
                 <p style={{ margin: 0 }}>
-                  <strong>{t.accountLabel || '帳號'}:</strong> {translateOption(selectedPaymentDetail.accountNumber || '', lang)}
+                  <strong>{t.accountLabel || '帳號'}:</strong>{' '}
+                  {translateOption(
+                    selectedPaymentDetail.accountNumber || '',
+                    lang
+                  )}
                 </p>
-                <button 
-                  onClick={() => handleCopyAccount(selectedPaymentDetail.accountNumber || '')} 
+                <button
+                  onClick={() =>
+                    handleCopyAccount(selectedPaymentDetail.accountNumber || '')
+                  }
                   className="copy-btn"
                   style={{ padding: '4px 12px', fontSize: '0.85rem' }}
                 >
                   {t.copy || '複製'}
                 </button>
               </div>
-              
+
               <div style={{ marginBottom: '1.5rem' }}>
-                <strong>{t.accountNameLabel || '戶名'}:</strong> {translateOption(selectedPaymentDetail.accountName || '', lang)}
+                <strong>{t.accountNameLabel || '戶名'}:</strong>{' '}
+                {translateOption(selectedPaymentDetail.accountName || '', lang)}
               </div>
 
-              <div className="bank-last5-section" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.2rem' }}>
-                <p style={{ fontWeight: 'bold', marginBottom: '0.8rem', fontSize: '1rem' }}>
-                  {lang === 'en' ? 'Provide Last 5 Digits for Verification:' : '填寫轉帳帳號末五碼以供核對:'}
+              <div
+                className="bank-last5-section"
+                style={{
+                  borderTop: '1px solid rgba(255,255,255,0.1)',
+                  paddingTop: '1.2rem'
+                }}
+              >
+                <p
+                  style={{
+                    fontWeight: 'bold',
+                    marginBottom: '0.8rem',
+                    fontSize: '1rem'
+                  }}
+                >
+                  {lang === 'en'
+                    ? 'Provide Last 5 Digits for Verification:'
+                    : '填寫轉帳帳號末五碼以供核對:'}
                 </p>
-                
+
                 {updateSuccess ? (
-                  <div style={{ color: '#27ae60', fontWeight: 'bold', padding: '0.5rem', background: 'rgba(39, 174, 96, 0.1)', borderRadius: '8px', textAlign: 'center' }}>
-                    ✓ {lang === 'en' ? 'Verified info submitted!' : '核對資訊已送出！'}
+                  <div
+                    style={{
+                      color: '#27ae60',
+                      fontWeight: 'bold',
+                      padding: '0.5rem',
+                      background: 'rgba(39, 174, 96, 0.1)',
+                      borderRadius: '8px',
+                      textAlign: 'center'
+                    }}
+                  >
+                    ✓{' '}
+                    {lang === 'en'
+                      ? 'Verified info submitted!'
+                      : '核對資訊已送出！'}
                   </div>
                 ) : (
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       maxLength={5}
                       placeholder="12345"
                       value={bankLast5}
-                      onChange={(e) => setBankLast5(e.target.value.replace(/\D/g, ''))}
-                      style={{ 
-                        flex: 1, 
-                        padding: '0.8rem', 
-                        borderRadius: '8px', 
+                      onChange={(e) =>
+                        setBankLast5(e.target.value.replace(/\D/g, ''))
+                      }
+                      style={{
+                        flex: 1,
+                        padding: '0.8rem',
+                        borderRadius: '8px',
                         border: '1px solid var(--input-border)',
                         background: 'var(--input-bg)',
                         color: 'var(--input-text)',
@@ -309,80 +564,130 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
                         letterSpacing: '3px'
                       }}
                     />
-                    <button 
+                    <button
                       onClick={onUpdateLast5}
                       disabled={isUpdating}
                       className="submit-btn"
-                      style={{ 
-                        padding: '0 1.5rem', 
-                        margin: 0, 
+                      style={{
+                        padding: '0 1.5rem',
+                        margin: 0,
                         fontSize: '0.95rem',
                         height: 'auto',
                         width: 'auto',
                         minWidth: '80px'
                       }}
                     >
-                      {isUpdating ? '...' : (lang === 'en' ? 'Send' : '送出')}
+                      {isUpdating ? '...' : lang === 'en' ? 'Send' : '送出'}
                     </button>
                   </div>
                 )}
               </div>
 
-              <p style={{ fontSize: '0.85rem', opacity: 0.7, marginTop: '1rem' }}>
-                {lang === 'en' 
-                  ? 'Please complete the transfer and provide the digits above.' 
+              <p
+                style={{ fontSize: '0.85rem', opacity: 0.7, marginTop: '1rem' }}
+              >
+                {lang === 'en'
+                  ? 'Please complete the transfer and provide the digits above.'
                   : '匯款後請填寫上方末五碼以便審核。'}
               </p>
             </div>
           )}
 
-          {selectedPaymentDetail?.type === 'linepay' && selectedPaymentDetail.link && (
-            <div className="linepay-box" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-              <p style={{ marginBottom: '1rem', color: 'var(--text-light)', fontSize: '1rem' }}>{t.linePayInfo || '請點擊下方按鈕完成電子支付：'}</p>
-              <a 
-                href={selectedPaymentDetail.link} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                onClick={onLinePayClick}
-                className="submit-btn" 
-                style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
-                  gap: '8px',
-                  background: isUpdating ? '#ccc' : 'var(--primary-gold)', 
-                  textDecoration: 'none', 
-                  color: 'var(--card-bg)',
-                  fontWeight: 'bold',
-                  padding: '1rem 1.5rem',
-                  borderRadius: '50px',
-                  fontSize: '1.05rem',
-                  boxShadow: '0 10px 20px rgba(212, 175, 55, 0.2)',
-                  pointerEvents: isUpdating ? 'none' : 'auto',
-                  width: '100%',
-                  maxWidth: '320px',
-                  margin: '0 auto',
-                  boxSizing: 'border-box',
-                  lineHeight: '1.4'
+          {selectedPaymentDetail?.type === 'linepay' &&
+            selectedPaymentDetail.link && (
+              <div
+                className="linepay-box"
+                style={{ marginTop: '1.5rem', textAlign: 'center' }}
+              >
+                <p
+                  style={{
+                    marginBottom: '1rem',
+                    color: 'var(--text-light)',
+                    fontSize: '1rem'
+                  }}
+                >
+                  {t.linePayInfo || '請點擊下方按鈕完成電子支付：'}
+                </p>
+                <a
+                  href={selectedPaymentDetail.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={onLinePayClick}
+                  className="submit-btn"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px',
+                    background: isUpdating ? '#ccc' : 'var(--primary-gold)',
+                    textDecoration: 'none',
+                    color: 'var(--card-bg)',
+                    fontWeight: 'bold',
+                    padding: '1rem 1.5rem',
+                    borderRadius: '50px',
+                    fontSize: '1.05rem',
+                    boxShadow: '0 10px 20px rgba(212, 175, 55, 0.2)',
+                    pointerEvents: isUpdating ? 'none' : 'auto',
+                    width: '100%',
+                    maxWidth: '320px',
+                    margin: '0 auto',
+                    boxSizing: 'border-box',
+                    lineHeight: '1.4'
+                  }}
+                >
+                  {isUpdating
+                    ? lang === 'en'
+                      ? 'Processing...'
+                      : '正在準備支付連結...'
+                    : t.toLinePay || '立即前往支付 ➔'}
+                </a>
+                {selectedPaymentDetail.instructions && (
+                  <p
+                    style={{
+                      marginTop: '1rem',
+                      fontSize: '0.85rem',
+                      opacity: 0.7,
+                      overflowWrap: 'anywhere'
+                    }}
+                  >
+                    {selectedPaymentDetail.instructions}
+                  </p>
+                )}
+              </div>
+            )}
+
+          {selectedPaymentDetail?.type === 'other' &&
+            selectedPaymentDetail.instructions && (
+              <div
+                className="other-pay-box"
+                style={{
+                  marginTop: '1.2rem',
+                  padding: '1rem',
+                  background: 'rgba(255,255,255,0.05)',
+                  borderRadius: '12px'
                 }}
               >
-                {isUpdating ? (lang === 'en' ? 'Processing...' : '正在準備支付連結...') : (t.toLinePay || '立即前往支付 ➔')}
-              </a>
-              {selectedPaymentDetail.instructions && (
-                <p style={{ marginTop: '1rem', fontSize: '0.85rem', opacity: 0.7, overflowWrap: 'anywhere' }}>{selectedPaymentDetail.instructions}</p>
-              )}
-            </div>
-          )}
-
-          {selectedPaymentDetail?.type === 'other' && selectedPaymentDetail.instructions && (
-            <div className="other-pay-box" style={{ marginTop: '1.2rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '12px' }}>
-              <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>下一步指引:</p>
-              <p style={{ fontSize: '0.95rem', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere' }}>{selectedPaymentDetail.instructions}</p>
-            </div>
-          )}
+                <p style={{ fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                  下一步指引:
+                </p>
+                <p
+                  style={{
+                    fontSize: '0.95rem',
+                    whiteSpace: 'pre-wrap',
+                    overflowWrap: 'anywhere'
+                  }}
+                >
+                  {selectedPaymentDetail.instructions}
+                </p>
+              </div>
+            )}
         </div>
 
-        {canGoHome && <button onClick={resetForm} className="cta-button">{t.backToHome}</button>}
+        {canGoHome && (
+          <button onClick={resetForm} className="cta-button">
+            {t.backToHome}
+          </button>
+        )}
       </div>
     </div>
   );

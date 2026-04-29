@@ -22,7 +22,7 @@ export const formatBankLast5 = (value: string): string => {
  */
 export const formatPhone = (value: string, countryCode: string): string => {
   let clean = value.trim();
-  
+
   // 針對台灣國碼的處理：如果使用者貼上了帶國碼的號碼，幫他把國碼去掉，以免超出 10 碼限制
   if (countryCode === '+886') {
     if (clean.startsWith('+886')) {
@@ -30,7 +30,7 @@ export const formatPhone = (value: string, countryCode: string): string => {
     } else if (clean.startsWith('886')) {
       clean = clean.slice(3);
     }
-    
+
     // 如果去掉後變成 00 開頭 (例如原為 +88609...)，則去掉一個 0
     if (clean.startsWith('00')) {
       clean = clean.slice(1);
@@ -40,13 +40,13 @@ export const formatPhone = (value: string, countryCode: string): string => {
   // 僅保留數字
   const filtered = clean.replace(/\D/g, '');
 
-  const rules: { [key: string]: number } = { 
-    '+886': 10, 
-    '+852': 8, 
-    '+853': 8, 
-    '+60': 11, 
-    '+65': 8, 
-    'landline': 10 
+  const rules: { [key: string]: number } = {
+    '+886': 10,
+    '+852': 8,
+    '+853': 8,
+    '+60': 11,
+    '+65': 8,
+    landline: 10
   };
   const maxLen = rules[countryCode] || 15;
   return filtered.slice(0, maxLen);
@@ -55,9 +55,12 @@ export const formatPhone = (value: string, countryCode: string): string => {
 /**
  * 將國碼與電話號碼組合為存入資料庫的格式 (強化標準化處理)
  */
-export const formatPhoneForDB = (countryCode: string, phone: string): string => {
+export const formatPhoneForDB = (
+  countryCode: string,
+  phone: string
+): string => {
   if (countryCode === 'landline') return `市內電話${phone}`;
-  
+
   const cleanPhone = phone.trim();
 
   // 針對台灣號碼的特別處理：不存國碼，且在存檔前補 0
@@ -70,7 +73,6 @@ export const formatPhoneForDB = (countryCode: string, phone: string): string => 
     }
     return cleanPhone;
   }
-  
+
   return `${countryCode}${cleanPhone}`;
 };
-

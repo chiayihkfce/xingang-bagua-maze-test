@@ -12,7 +12,7 @@ export const useEasterEggs = (props?: {
   showAlert: (message: string, title?: string) => void;
 }) => {
   const [isAwakened, setIsAwakened] = useState(false);
-  
+
   // 優先使用 props，若無則不執行（相容舊邏輯但避免崩潰）
   const isFlashlightOn = props?.isFlashlightOn ?? false;
   const setIsFlashlightOn = props?.setIsFlashlightOn ?? (() => {});
@@ -42,7 +42,9 @@ export const useEasterEggs = (props?: {
       </div>
     `;
     document.body.appendChild(overlay);
-    overlay.querySelector('#close-scroll')?.addEventListener('click', () => overlay.remove());
+    overlay
+      .querySelector('#close-scroll')
+      ?.addEventListener('click', () => overlay.remove());
   };
 
   // 2. 顯示八卦寶盒 (虎爺符令)
@@ -54,7 +56,7 @@ export const useEasterEggs = (props?: {
     const overlay = document.createElement('div');
     overlay.id = 'bagua-box-overlay';
     overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.9); z-index: 200000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); animation: fadeIn 0.8s ease;`;
-    
+
     overlay.innerHTML = `
       <div style="perspective: 1200px; text-align: center;">
         <div id="mystic-box" style="width: 260px; height: 180px; position: relative; transform-style: preserve-3d; transition: transform 2s ease; margin: 0 auto 60px;">
@@ -88,7 +90,9 @@ export const useEasterEggs = (props?: {
 
     const lid = document.getElementById('box-lid');
     lid?.addEventListener('click', () => {
-      lid.style.transform = 'rotateX(110deg)'; lid.style.opacity = '0'; lid.style.pointerEvents = 'none';
+      lid.style.transform = 'rotateX(110deg)';
+      lid.style.opacity = '0';
+      lid.style.pointerEvents = 'none';
       document.getElementById('mystic-box')!.style.transform = 'scale(1.1)';
       document.getElementById('box-light')!.style.opacity = '1';
       document.getElementById('mystic-seal')!.style.opacity = '1';
@@ -98,7 +102,10 @@ export const useEasterEggs = (props?: {
 
     overlay.querySelector('#close-box')?.addEventListener('click', () => {
       overlay.style.opacity = '0';
-      setTimeout(() => { overlay.remove(); setIsAwakened(false); }, 800);
+      setTimeout(() => {
+        overlay.remove();
+        setIsAwakened(false);
+      }, 800);
     });
   };
 
@@ -107,16 +114,24 @@ export const useEasterEggs = (props?: {
       const lens = document.getElementById('bagua-lens-cursor');
       const overlay = document.getElementById('bagua-lens-overlay');
       if (!lens || !overlay) return;
-      lens.style.left = `${x}px`; lens.style.top = `${y}px`;
+      lens.style.left = `${x}px`;
+      lens.style.top = `${y}px`;
       overlay.style.webkitMaskImage = `radial-gradient(circle 150px at ${x}px ${y}px, transparent 0%, black 100%)`;
       document.querySelectorAll('.hidden-clue').forEach((clue: any) => {
         const rect = clue.getBoundingClientRect();
-        const dist = Math.sqrt(Math.pow(x - (rect.left + rect.width/2), 2) + Math.pow(y - (rect.top + rect.height/2), 2));
+        const dist = Math.sqrt(
+          Math.pow(x - (rect.left + rect.width / 2), 2) +
+            Math.pow(y - (rect.top + rect.height / 2), 2)
+        );
         clue.style.opacity = dist < 150 ? '1' : '0';
       });
     };
-    const handleMouseMove = (e: MouseEvent) => updatePosition(e.clientX, e.clientY);
-    const handleTouchMove = (e: TouchEvent) => { if (e.touches.length > 0) updatePosition(e.touches[0].clientX, e.touches[0].clientY); };
+    const handleMouseMove = (e: MouseEvent) =>
+      updatePosition(e.clientX, e.clientY);
+    const handleTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0)
+        updatePosition(e.touches[0].clientX, e.touches[0].clientY);
+    };
 
     if (isFlashlightOn) {
       if (document.getElementById('bagua-lens-overlay')) return;
@@ -124,48 +139,99 @@ export const useEasterEggs = (props?: {
       overlay.id = 'bagua-lens-overlay';
       overlay.style.cssText = `position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.92); z-index: 150000; pointer-events: none; -webkit-mask-image: radial-gradient(circle 150px at 0px 0px, transparent 100%, black 100%); transition: opacity 0.5s ease;`;
       const lens = document.createElement('div');
-      lens.id = 'bagua-lens-cursor'; lens.innerHTML = '☯';
+      lens.id = 'bagua-lens-cursor';
+      lens.innerHTML = '☯';
       lens.style.cssText = `position: fixed; width: 300px; height: 300px; border: 2px solid #d4af37; border-radius: 50%; top: 0; left: 0; transform: translate(-50%, -50%); z-index: 999999999; pointer-events: none; display: flex; align-items: center; justify-content: center; color: rgba(212, 175, 55, 0.3); font-size: 10rem; box-shadow: 0 0 50px rgba(212, 175, 55, 0.5);`;
       const tip = document.createElement('div');
-      tip.id = 'bagua-lens-tip'; tip.innerHTML = '【探照模式】移動尋找隱藏線索... (再按一次手電筒或 Esc 關閉)';
+      tip.id = 'bagua-lens-tip';
+      tip.innerHTML =
+        '【探照模式】移動尋找隱藏線索... (再按一次手電筒或 Esc 關閉)';
       tip.style.cssText = `position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: #d4af37; z-index: 999999999; font-family: 'Noto Serif TC', serif; background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 20px; font-size: 0.9rem;`;
-      document.body.appendChild(overlay); document.body.appendChild(lens); document.body.appendChild(tip);
+      document.body.appendChild(overlay);
+      document.body.appendChild(lens);
+      document.body.appendChild(tip);
       document.body.classList.add('lens-mode');
       window.addEventListener('mousemove', handleMouseMove);
       window.addEventListener('touchmove', handleTouchMove, { passive: false });
     } else {
       const existing = document.getElementById('bagua-lens-overlay');
       if (existing) {
-        existing.remove(); document.getElementById('bagua-lens-cursor')?.remove(); document.getElementById('bagua-lens-tip')?.remove();
+        existing.remove();
+        document.getElementById('bagua-lens-cursor')?.remove();
+        document.getElementById('bagua-lens-tip')?.remove();
         document.body.classList.remove('lens-mode');
-        window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('touchmove', handleTouchMove);
+        window.removeEventListener('mousemove', handleMouseMove);
+        window.removeEventListener('touchmove', handleTouchMove);
       }
     }
-    return () => { window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('touchmove', handleTouchMove); };
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchmove', handleTouchMove);
+    };
   }, [isFlashlightOn]);
 
   useEffect(() => {
-    const hexagrams = [{ name: '乾為天', tip: '大吉。元亨利貞，天行健。' }, { name: '坤為地', tip: '厚德載物。' }, { name: '水雷屯', tip: '宜建侯而不寧。' }, { name: '山水蒙', tip: '啟蒙之時。' }];
+    const hexagrams = [
+      { name: '乾為天', tip: '大吉。元亨利貞，天行健。' },
+      { name: '坤為地', tip: '厚德載物。' },
+      { name: '水雷屯', tip: '宜建侯而不寧。' },
+      { name: '山水蒙', tip: '啟蒙之時。' }
+    ];
     const randomHex = hexagrams[Math.floor(Math.random() * hexagrams.length)];
-    console.log(`%c【 新港八卦謎蹤 - 每日一卦 】\n卦名：${randomHex.name}\n指引：${randomHex.tip}`, 'color: #d4af37; font-weight: bold;');
+    console.log(
+      `%c【 新港八卦謎蹤 - 每日一卦 】\n卦名：${randomHex.name}\n指引：${randomHex.tip}`,
+      'color: #d4af37; font-weight: bold;'
+    );
 
-    const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-    
+    const konamiCode = [
+      'ArrowUp',
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowDown',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowLeft',
+      'ArrowRight',
+      'b',
+      'a'
+    ];
+
     // 英文備用密令
     const clueCode = ['c', 'l', 'u', 'e'];
     const baguaCode = ['b', 'a', 'g', 'u', 'a'];
-    let kIdx = 0, cIdx = 0, bIdx = 0;
+    let kIdx = 0,
+      cIdx = 0,
+      bIdx = 0;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       if (e.key === 'Escape' && isFlashlightOn) setIsFlashlightOn(false);
-      
+
       // 上上下下左右左右BA (無敵模式)
-      if (e.key === konamiCode[kIdx]) { kIdx++; if (kIdx === konamiCode.length) { kIdx = 0; setIsAwakened(true); } } else kIdx = 0;
-      
+      if (e.key === konamiCode[kIdx]) {
+        kIdx++;
+        if (kIdx === konamiCode.length) {
+          kIdx = 0;
+          setIsAwakened(true);
+        }
+      } else kIdx = 0;
+
       // 英文密令保留作為後門
-      if (key === clueCode[cIdx]) { cIdx++; if (cIdx === clueCode.length) { cIdx = 0; setHasPoetrySlip(true); showAlert('獲得了【神祕詩籤】！已放入道具箱。', '📜 獲得道具'); } } else cIdx = 0;
-      if (key === baguaCode[bIdx]) { bIdx++; if (bIdx === baguaCode.length) { bIdx = 0; triggerBaguaBox(); } } else bIdx = 0;
+      if (key === clueCode[cIdx]) {
+        cIdx++;
+        if (cIdx === clueCode.length) {
+          cIdx = 0;
+          setHasPoetrySlip(true);
+          showAlert('獲得了【神祕詩籤】！已放入道具箱。', '📜 獲得道具');
+        }
+      } else cIdx = 0;
+      if (key === baguaCode[bIdx]) {
+        bIdx++;
+        if (bIdx === baguaCode.length) {
+          bIdx = 0;
+          triggerBaguaBox();
+        }
+      } else bIdx = 0;
     };
 
     // 處理自定義密令事件 (支援中文)
@@ -179,10 +245,16 @@ export const useEasterEggs = (props?: {
         triggerBaguaBox();
       } else if (command === '鴨肉羹') {
         setHasDuckSoup(true);
-        showAlert('聞到了大火爆香的鴨肉與筍絲香味...獲得了【新港鴨肉羹】！', '🍜 獲得美食');
+        showAlert(
+          '聞到了大火爆香的鴨肉與筍絲香味...獲得了【新港鴨肉羹】！',
+          '🍜 獲得美食'
+        );
       } else if (command === '老鼠糖' || command === '新港飴') {
         setHasCandy(true);
-        showAlert('嚼著香 Q 帶勁的花生麥芽糖...獲得了【新港飴(老鼠糖)】！', '🍬 獲得美食');
+        showAlert(
+          '嚼著香 Q 帶勁的花生麥芽糖...獲得了【新港飴(老鼠糖)】！',
+          '🍬 獲得美食'
+        );
       } else if (command === '太平') {
         showAlert('萬象歸宗，天下太平。', '☯ 啟示');
       }
@@ -194,7 +266,13 @@ export const useEasterEggs = (props?: {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('secret-command' as any, handleSecretCommand);
     };
-  }, [isFlashlightOn, setIsFlashlightOn, setHasPoetrySlip, setHasTigerSeal, showAlert]);
+  }, [
+    isFlashlightOn,
+    setIsFlashlightOn,
+    setHasPoetrySlip,
+    setHasTigerSeal,
+    showAlert
+  ]);
 
   return { isAwakened, triggerBaguaBox, showMysticScroll };
 };

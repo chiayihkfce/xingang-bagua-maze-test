@@ -24,24 +24,24 @@ const SuccessPage: React.FC = () => {
   } = useAppContext();
   return (
     <>
-      <SuccessScreen 
-        {...{ 
-          t, 
-          formData, 
-          calculatedTotal, 
-          handleCopyAccount, 
-          getSessionDisplayName, 
-          getPaymentMethodDisplay, 
-          resetForm, 
-          paymentMethods, 
+      <SuccessScreen
+        {...{
+          t,
+          formData,
+          calculatedTotal,
+          handleCopyAccount,
+          getSessionDisplayName,
+          getPaymentMethodDisplay,
+          resetForm,
+          paymentMethods,
           sealConfig,
-          lang, 
-          lastSubmissionId, 
-          handleUpdateBankLast5, 
-          showAlert 
+          lang,
+          lastSubmissionId,
+          handleUpdateBankLast5,
+          showAlert
         }}
       />
-      <SystemModal 
+      <SystemModal
         show={sysModal.show}
         type={sysModal.type}
         title={sysModal.title}

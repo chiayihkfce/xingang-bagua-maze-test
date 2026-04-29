@@ -6,9 +6,14 @@ body.zishi-mode {
   transition: filter 2s ease-in-out;
 }
 body.zishi-mode::after {
-  content: "⌛ 子時已至";
-  position: fixed; bottom: 20px; left: 20px; color: #9b59b6;
-  font-size: 0.8rem; opacity: 0.6; z-index: 9999;
+  content: '⌛ 子時已至';
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  color: #9b59b6;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  z-index: 9999;
 }
 
 /* --- Easter Egg: Awakened Mode (Konami Code) --- */
@@ -23,7 +28,9 @@ body.awakened-mode .main-title,
 body.awakened-mode h2,
 body.awakened-mode .cta-button,
 body.awakened-mode .share-achievement-btn {
-  text-shadow: 0 0 15px rgba(255, 235, 59, 0.8), 0 0 5px rgba(0, 0, 0, 0.5);
+  text-shadow:
+    0 0 15px rgba(255, 235, 59, 0.8),
+    0 0 5px rgba(0, 0, 0, 0.5);
   animation: pulse-glow 2s infinite alternate;
   color: #ffeb3b !important;
 }
@@ -35,28 +42,48 @@ body.awakened-mode .share-achievement-btn {
 }
 
 @keyframes pulse-glow {
-  from { text-shadow: 0 0 5px rgba(255, 235, 59, 0.5); }
-  to { text-shadow: 0 0 25px rgba(255, 235, 59, 1); }
+  from {
+    text-shadow: 0 0 5px rgba(255, 235, 59, 0.5);
+  }
+  to {
+    text-shadow: 0 0 25px rgba(255, 235, 59, 1);
+  }
 }
 
 @keyframes fadeOutUp {
-  0% { opacity: 0; transform: translate(-50%, 0%); }
-  20% { opacity: 1; transform: translate(-50%, -50%); }
-  80% { opacity: 1; transform: translate(-50%, -50%); }
-  100% { opacity: 0; transform: translate(-50%, -100%); }
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0%);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  80% {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -100%);
+  }
 }
 
 :root {
   --primary-gold: #f1c40f;
   --accent-orange: #e67e22;
   --line-green: #00b900;
-  
+
   /* Default: Dark Theme */
   --bg-color: #1a1a1a;
   --card-bg: #2c3e50;
   --text-light: #ecf0f1;
   --text-muted: #bdc3c7;
-  --container-bg: linear-gradient(145deg, rgba(44, 62, 80, 0.8), rgba(26, 37, 47, 0.9));
+  --container-bg: linear-gradient(
+    145deg,
+    rgba(44, 62, 80, 0.8),
+    rgba(26, 37, 47, 0.9)
+  );
   --border-subtle: rgba(241, 196, 15, 0.3);
   --input-bg: rgba(0, 0, 0, 0.4);
   --input-border: rgba(255, 255, 255, 0.2);
@@ -84,7 +111,9 @@ body {
   font-family: 'Noto Sans TC', sans-serif;
   margin: 0;
   padding: 0;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
   color-scheme: dark; /* Default */
 }
 
@@ -124,11 +153,11 @@ body {
 
 .header h1 {
   font-family: 'Noto Serif TC', serif;
-  font-size: clamp(2.2rem, 10vw, 4.2rem); 
+  font-size: clamp(2.2rem, 10vw, 4.2rem);
   color: var(--primary-gold);
   margin: 0.5rem 0;
   line-height: 1.1;
-  text-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
 
 .main-title {
@@ -145,7 +174,9 @@ body {
   max-width: 800px;
   margin: 0 auto 3rem;
   border: 4px solid var(--primary-gold);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 20px rgba(241, 196, 15, 0.2);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(241, 196, 15, 0.2);
   line-height: 0;
   overflow: hidden;
   border-radius: 12px;
@@ -169,17 +200,19 @@ body {
 }
 
 /* 區塊容器樣式 */
-.story-box, .event-info {
+.story-box,
+.event-info {
   background: var(--card-bg); /* 強制使用不透明背景 */
   padding: 2rem;
   border-radius: 20px;
   margin-bottom: 3rem;
   border: 2px solid var(--border-subtle);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
 }
 
 @media (min-width: 768px) {
-  .story-box, .event-info {
+  .story-box,
+  .event-info {
     padding: 3rem;
   }
 }
@@ -314,7 +347,7 @@ body {
 
 .entry-icon {
   font-size: 3.5rem;
-  filter: drop-shadow(0 5px 10px rgba(0,0,0,0.3));
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
   display: inline-block;
 }
 
@@ -330,18 +363,31 @@ body {
 }
 
 /* 探照燈模式 */
-.lens-mode, .lens-mode * {
+.lens-mode,
+.lens-mode * {
   cursor: none !important;
 }
 
 /* 確保道具系統特效存在 */
 @keyframes pulse-gold {
-  0% { transform: scale(1); box-shadow: 0 0 0 rgba(212, 175, 55, 0); }
-  50% { transform: scale(1.1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
-  100% { transform: scale(1); box-shadow: 0 0 0 rgba(212, 175, 55, 0); }
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(212, 175, 55, 0);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 rgba(212, 175, 55, 0);
+  }
 }
 
-.hidden-clue { pointer-events: none; user-select: none; }
+.hidden-clue {
+  pointer-events: none;
+  user-select: none;
+}
 
 .secondary-card .entry-title {
   color: rgba(255, 255, 255, 0.9);
@@ -405,7 +451,7 @@ body.light-theme .entry-card:hover {
   background: var(--card-bg);
   padding: 1.5rem;
   border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   transition: background-color 0.3s ease;
 }
 
@@ -435,10 +481,10 @@ body.light-theme .entry-card:hover {
   display: block;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="tel"],
-input[type="number"],
+input[type='text'],
+input[type='email'],
+input[type='tel'],
+input[type='number'],
 .date-picker-input,
 select,
 textarea {
@@ -594,7 +640,7 @@ textarea {
   border-color: var(--primary-gold) !important;
   border-style: solid !important;
   border-width: 2px 2px 0 0 !important;
-  content: "" !important;
+  content: '' !important;
   display: block !important;
   height: 6px !important;
   width: 6px !important;
@@ -604,7 +650,8 @@ textarea {
 }
 
 /* 修正箭頭旋轉與精確置中 (24px 容器下的補償) */
-.react-datepicker__navigation--previous .react-datepicker__navigation-icon::before {
+.react-datepicker__navigation--previous
+  .react-datepicker__navigation-icon::before {
   transform: translate(-30%, -50%) rotate(-135deg) !important;
 }
 
@@ -627,7 +674,7 @@ textarea {
   margin: 0 !important;
   height: 100% !important;
   top: 0 !important;
-  right: 8px !important; 
+  right: 8px !important;
   width: 24px !important;
 }
 
@@ -642,13 +689,13 @@ textarea {
   align-items: center !important;
   justify-content: center !important;
   border-radius: 50% !important;
-  content: "×" !important;
+  content: '×' !important;
   transition: all 0.2s ease !important;
   line-height: 0 !important; /* 使用 0 line-height 搭配 flex 居中 */
   padding: 0 0 2px 0 !important; /* 極細微調叉叉垂直位置 */
   margin: 0 !important;
   cursor: pointer !important;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .react-datepicker__close-icon:hover::after {
@@ -656,7 +703,10 @@ textarea {
   transform: scale(1.15);
 }
 
-input:focus, select:focus, textarea:focus, .date-picker-input:focus {
+input:focus,
+select:focus,
+textarea:focus,
+.date-picker-input:focus {
   outline: none;
   border-color: var(--primary-gold);
   background: var(--input-bg);
@@ -724,9 +774,9 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   font-size: 0.95rem;
 }
 
-.radio-group input[type="radio"],
-.checkbox-grid input[type="checkbox"],
-.column-filter-dropdown input[type="checkbox"] {
+.radio-group input[type='radio'],
+.checkbox-grid input[type='checkbox'],
+.column-filter-dropdown input[type='checkbox'] {
   appearance: none;
   -webkit-appearance: none;
   width: 1.25rem;
@@ -754,28 +804,28 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 }
 
 /* 勾選框圓角 */
-.checkbox-grid input[type="checkbox"],
-.column-filter-dropdown input[type="checkbox"] {
+.checkbox-grid input[type='checkbox'],
+.column-filter-dropdown input[type='checkbox'] {
   border-radius: 4px;
 }
 
 /* 點選框圓形 */
-.radio-group input[type="radio"] {
+.radio-group input[type='radio'] {
   border-radius: 50%;
 }
 
 /* 選取後的邊框顏色 */
-.radio-group input[type="radio"]:checked,
-.checkbox-grid input[type="checkbox"]:checked,
-.column-filter-dropdown input[type="checkbox"]:checked {
+.radio-group input[type='radio']:checked,
+.checkbox-grid input[type='checkbox']:checked,
+.column-filter-dropdown input[type='checkbox']:checked {
   border-color: var(--accent-orange);
   background: transparent !important;
 }
 
 /* 勾選框的 勾勾 (使用虛擬元素繪製) */
-.checkbox-grid input[type="checkbox"]::before,
-.column-filter-dropdown input[type="checkbox"]::before {
-  content: "";
+.checkbox-grid input[type='checkbox']::before,
+.column-filter-dropdown input[type='checkbox']::before {
+  content: '';
   width: 0.7rem;
   height: 0.7rem;
   transform: scale(0);
@@ -786,14 +836,14 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   display: block;
 }
 
-.checkbox-grid input[type="checkbox"]:checked::before,
-.column-filter-dropdown input[type="checkbox"]:checked::before {
+.checkbox-grid input[type='checkbox']:checked::before,
+.column-filter-dropdown input[type='checkbox']:checked::before {
   transform: scale(1);
 }
 
 /* 點選框的 圓點 */
-.radio-group input[type="radio"]::before {
-  content: "";
+.radio-group input[type='radio']::before {
+  content: '';
   position: absolute;
   top: 50%;
   left: 50%;
@@ -806,13 +856,13 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   transition: 150ms transform cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.radio-group input[type="radio"]:checked::before {
+.radio-group input[type='radio']:checked::before {
   transform: translate(-50%, -50%) scale(1);
 }
 
 /* 懸停效果 */
-.radio-group input[type="radio"]:hover,
-.checkbox-grid input[type="checkbox"]:hover {
+.radio-group input[type='radio']:hover,
+.checkbox-grid input[type='checkbox']:hover {
   border-color: var(--primary-gold);
   box-shadow: 0 0 8px rgba(241, 196, 15, 0.2);
 }
@@ -842,7 +892,7 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   background: var(--card-bg);
   padding: 1.2rem 1.5rem;
   border-radius: 16px;
-  box-shadow: 0 -5px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.5);
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -862,7 +912,7 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   }
   .total-display {
     width: 100%;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     padding-bottom: 0.5rem;
   }
   .submit-btn {
@@ -901,8 +951,14 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .check-icon {
@@ -988,7 +1044,7 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   padding: 3rem 1.5rem;
   border-radius: 20px;
   border: 2px solid var(--border-subtle);
-  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
   margin-bottom: 3rem;
 }
 
@@ -1013,7 +1069,9 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   border: 1px solid var(--border-subtle);
 }
 
-.refund-policy h4 { color: var(--accent-orange); }
+.refund-policy h4 {
+  color: var(--accent-orange);
+}
 
 /* 頁尾底部版權與後台入口 */
 .footer-bottom {
@@ -1028,7 +1086,9 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 
 .admin-trigger {
   cursor: pointer;
-  transition: transform 0.3s ease, filter 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    filter 0.3s ease;
   display: flex;
   align-items: center;
 }
@@ -1070,9 +1130,10 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1), 
-              transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
-              visibility 0.8s;
+  transition:
+    opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.8s cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0.8s;
   overflow: hidden;
 }
 
@@ -1128,14 +1189,17 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 
 /* 陰線 (Broken Line) 的樣式 */
 .broken-line {
-  background: linear-gradient(90deg, 
-    var(--primary-gold) 42%, 
-    transparent 42%, 
-    transparent 58%, 
-    var(--primary-gold) 58%) !important;
+  background: linear-gradient(
+    90deg,
+    var(--primary-gold) 42%,
+    transparent 42%,
+    transparent 58%,
+    var(--primary-gold) 58%
+  ) !important;
 }
 
-.trigram::before, .trigram::after {
+.trigram::before,
+.trigram::after {
   content: '';
   position: absolute;
   width: 100%;
@@ -1146,34 +1210,92 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   box-shadow: none;
 }
 
-.trigram::before { transform: translateY(-10px); }
-.trigram::after { transform: translateY(10px); }
+.trigram::before {
+  transform: translateY(-10px);
+}
+.trigram::after {
+  transform: translateY(10px);
+}
 
 /* 8 個卦象的精確定義 */
-.trigram-0 { background: var(--primary-gold); }
-.trigram-1::after { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+.trigram-0 {
+  background: var(--primary-gold);
 }
-.trigram-2::before, .trigram-2::after { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+.trigram-1::after {
+  background: linear-gradient(
+    90deg,
+    var(--primary-gold) 42%,
+    transparent 42%,
+    transparent 58%,
+    var(--primary-gold) 58%
+  );
 }
-.trigram-3 { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+.trigram-2::before,
+.trigram-2::after {
+  background: linear-gradient(
+    90deg,
+    var(--primary-gold) 42%,
+    transparent 42%,
+    transparent 58%,
+    var(--primary-gold) 58%
+  );
+}
+.trigram-3 {
+  background: linear-gradient(
+    90deg,
+    var(--primary-gold) 42%,
+    transparent 42%,
+    transparent 58%,
+    var(--primary-gold) 58%
+  );
 }
 .trigram-3::after {
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+  background: linear-gradient(
+    90deg,
+    var(--primary-gold) 42%,
+    transparent 42%,
+    transparent 58%,
+    var(--primary-gold) 58%
+  );
 }
-.trigram-4, .trigram-4::before, .trigram-4::after { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+.trigram-4,
+.trigram-4::before,
+.trigram-4::after {
+  background: linear-gradient(
+    90deg,
+    var(--primary-gold) 42%,
+    transparent 42%,
+    transparent 58%,
+    var(--primary-gold) 58%
+  );
 }
-.trigram-5, .trigram-5::before { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+.trigram-5,
+.trigram-5::before {
+  background: linear-gradient(
+    90deg,
+    var(--primary-gold) 42%,
+    transparent 42%,
+    transparent 58%,
+    var(--primary-gold) 58%
+  );
 }
-.trigram-6 { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+.trigram-6 {
+  background: linear-gradient(
+    90deg,
+    var(--primary-gold) 42%,
+    transparent 42%,
+    transparent 58%,
+    var(--primary-gold) 58%
+  );
 }
-.trigram-7::before { 
-  background: linear-gradient(90deg, var(--primary-gold) 42%, transparent 42%, transparent 58%, var(--primary-gold) 58%);
+.trigram-7::before {
+  background: linear-gradient(
+    90deg,
+    var(--primary-gold) 42%,
+    transparent 42%,
+    transparent 58%,
+    var(--primary-gold) 58%
+  );
 }
 
 .bagua-center {
@@ -1202,7 +1324,8 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   animation: taijiRotate 4s linear infinite;
 }
 
-.taiji::before, .taiji::after {
+.taiji::before,
+.taiji::after {
   content: '';
   position: absolute;
   width: 50%;
@@ -1227,7 +1350,11 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   position: absolute;
   width: 150px;
   height: 150px;
-  background: radial-gradient(circle, rgba(241, 196, 15, 0.2) 0%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgba(241, 196, 15, 0.2) 0%,
+    transparent 70%
+  );
   border-radius: 50%;
   animation: glowPulse 2s ease-in-out infinite;
 }
@@ -1255,23 +1382,46 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
 }
 
 @keyframes baguaRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes taijiRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(-360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-360deg);
+  }
 }
 
 @keyframes glowPulse {
-  0%, 100% { transform: scale(1); opacity: 0.5; }
-  50% { transform: scale(1.3); opacity: 0.8; }
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.8;
+  }
 }
 
 @keyframes textFadeIn {
-  from { opacity: 0; transform: translateY(10px); filter: blur(5px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
 }
 
 .modal-overlay {
@@ -1281,7 +1431,7 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   right: 0;
   bottom: 0;
   /* 效能優化：移除消耗極大的背景模糊，改用略深的半透明背景以維持專注度 */
-  background: rgba(0, 0, 0, 0.9); 
+  background: rgba(0, 0, 0, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1302,17 +1452,22 @@ input:focus, select:focus, textarea:focus, .date-picker-input:focus {
   background: var(--card-bg);
   border-radius: 16px;
   border: 4px solid var(--primary-gold);
-  box-shadow: 0 20px 50px rgba(0,0,0,0.8), 0 0 20px rgba(241, 196, 15, 0.2);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(241, 196, 15, 0.2);
   /* 效能優化：提示層級 */
   will-change: transform, opacity;
 }
 
 /* 統一按鈕過渡，避免 all */
-button, .submit-btn, .cancel-btn {
-  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), 
-              background-color 0.2s ease, 
-              box-shadow 0.2s ease,
-              border-color 0.2s ease !important;
+button,
+.submit-btn,
+.cancel-btn {
+  transition:
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    background-color 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease !important;
 }
 
 .modal-body {
@@ -1354,7 +1509,8 @@ button, .submit-btn, .cancel-btn {
   box-sizing: border-box !important;
 }
 
-.modal-header, .modal-actions {
+.modal-header,
+.modal-actions {
   flex-shrink: 0;
   box-sizing: border-box;
 }
@@ -1363,7 +1519,7 @@ button, .submit-btn, .cancel-btn {
   .modal-body {
     padding: 1.2rem !important;
   }
-  
+
   .modal-header h2 {
     font-size: 1.2rem !important;
   }
@@ -1412,9 +1568,8 @@ button, .submit-btn, .cancel-btn {
 }
 
 /* 新增管理員帳號的 Grid 響應式佈局 */
-  
 
-  /* 管理員後台各區塊 */
+/* 管理員後台各區塊 */
 /* 新增管理員帳號的 Grid 響應式佈局 */
 .add-admin-grid {
   display: grid;
@@ -1426,15 +1581,15 @@ button, .submit-btn, .cancel-btn {
   .add-admin-grid {
     grid-template-columns: 1fr; /* 手機版改為一行一個 */
   }
-  
+
   .modal-overlay {
     padding: 10px;
   }
-  
+
   .modal-header h2 {
     font-size: 1.2rem !important;
   }
-  
+
   .admin-settings-modal {
     width: 100% !important;
     height: auto;
@@ -1485,13 +1640,15 @@ button, .submit-btn, .cancel-btn {
   width: 90%;
   max-width: 480px;
   text-align: center;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.8), 0 0 20px rgba(241, 196, 15, 0.1);
+  box-shadow:
+    0 30px 60px rgba(0, 0, 0, 0.8),
+    0 0 20px rgba(241, 196, 15, 0.1);
   box-sizing: border-box;
   color: var(--text-light);
   position: relative;
 }
 
-.admin-login-title, 
+.admin-login-title,
 .admin-edit-modal .form-section-title {
   font-size: 2rem !important;
   margin-bottom: 2rem !important;
@@ -1566,7 +1723,7 @@ button, .submit-btn, .cancel-btn {
   margin: 0 !important;
   background: var(--card-bg);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 -10px 30px rgba(0,0,0,0.3);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
   display: flex !important;
   flex-direction: row !important;
   gap: 1rem !important;
@@ -1682,7 +1839,8 @@ button, .submit-btn, .cancel-btn {
   gap: 0.8rem;
 }
 
-.edit-btn, .delete-btn {
+.edit-btn,
+.delete-btn {
   padding: 0.5rem 1rem;
   border-radius: 8px;
   font-weight: bold;
@@ -1702,7 +1860,8 @@ button, .submit-btn, .cancel-btn {
   color: white;
 }
 
-.edit-btn:hover, .delete-btn:hover {
+.edit-btn:hover,
+.delete-btn:hover {
   transform: scale(1.05);
   opacity: 0.9;
 }
@@ -1808,7 +1967,7 @@ button, .submit-btn, .cancel-btn {
 /* 表格滾動提示：在小螢幕上顯示一個淡淡的陰影提示可滾動 */
 @media (max-width: 768px) {
   .submissions-table-container::after {
-    content: "↔ 左右滑動檢視完整資料";
+    content: '↔ 左右滑動檢視完整資料';
     position: absolute;
     bottom: -25px;
     left: 50%;
@@ -1856,7 +2015,7 @@ button, .submit-btn, .cancel-btn {
     text-overflow: ellipsis;
     overflow: hidden;
   }
-  
+
   .admin-nav button:last-child {
     grid-column: span 2;
     margin-top: 0.5rem;
@@ -1869,7 +2028,7 @@ button, .submit-btn, .cancel-btn {
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .admin-section {
     padding: 1rem 0.5rem !important;
   }
@@ -1905,7 +2064,7 @@ button, .submit-btn, .cancel-btn {
   }
 }
 
-.submissions-table th, 
+.submissions-table th,
 .submissions-table td {
   padding: 0.8rem;
   text-align: center !important;
@@ -1925,7 +2084,8 @@ button, .submit-btn, .cancel-btn {
   transition: opacity 0.2s;
 }
 
-.sort-btn:hover, .sort-btn.active {
+.sort-btn:hover,
+.sort-btn.active {
   opacity: 1;
 }
 
@@ -1976,7 +2136,8 @@ button, .submit-btn, .cancel-btn {
 .social-btn {
   width: 54px;
   height: 54px;
-  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 54 54' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.5 1L37.5 1L53 16.5L53 37.5L37.5 53L16.5 53L1 37.5L1 16.5L16.5 1Z' stroke='%23f1c40f' stroke-width='1.2'/%3E%3C/svg%3E") no-repeat center;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 54 54' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M16.5 1L37.5 1L53 16.5L53 37.5L37.5 53L16.5 53L1 37.5L1 16.5L16.5 1Z' stroke='%23f1c40f' stroke-width='1.2'/%3E%3C/svg%3E")
+    no-repeat center;
   background-size: contain;
   display: flex;
   align-items: center;
@@ -1988,7 +2149,8 @@ button, .submit-btn, .cancel-btn {
   animation: socialFloat 4s ease-in-out infinite;
 }
 
-.social-btn::before, .social-btn::after {
+.social-btn::before,
+.social-btn::after {
   display: none;
 }
 
@@ -2012,8 +2174,13 @@ button, .submit-btn, .cancel-btn {
 }
 
 @keyframes socialFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 @media (max-width: 600px) {
@@ -2091,8 +2258,14 @@ button, .submit-btn, .cancel-btn {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 語言切換按鈕 */
@@ -2105,7 +2278,8 @@ button, .submit-btn, .cancel-btn {
   z-index: 1000;
 }
 
-.lang-switcher button, .theme-toggle {
+.lang-switcher button,
+.theme-toggle {
   background: var(--card-bg);
   color: var(--text-light);
   border: 1px solid var(--border-subtle);
@@ -2118,7 +2292,7 @@ button, .submit-btn, .cancel-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .theme-toggle {
@@ -2133,7 +2307,8 @@ button, .submit-btn, .cancel-btn {
   border-color: var(--primary-gold);
 }
 
-.lang-switcher button:hover:not(.active), .theme-toggle:hover {
+.lang-switcher button:hover:not(.active),
+.theme-toggle:hover {
   background: var(--primary-gold);
   color: black;
   border-color: var(--primary-gold);
@@ -2236,10 +2411,12 @@ button, .submit-btn, .cancel-btn {
   mask-position: center;
   -webkit-mask-size: contain;
   mask-size: contain;
-  
+
   /* 直接使用變數顏色作為背景 */
   background-color: var(--primary-gold);
-  transition: transform 0.2s, background-color 0.2s;
+  transition:
+    transform 0.2s,
+    background-color 0.2s;
 }
 
 .admin-time-input::-webkit-calendar-picker-indicator:hover {
@@ -2249,9 +2426,10 @@ button, .submit-btn, .cancel-btn {
 
 /* 移除舊有的濾鏡變數 */
 body.light-theme .admin-time-input::-webkit-calendar-picker-indicator {
-  background-color: var(--accent-orange); /* 淺色模式下使用深一點的橘金色，確保清晰 */
+  background-color: var(
+    --accent-orange
+  ); /* 淺色模式下使用深一點的橘金色，確保清晰 */
 }
-
 
 .generator-box {
   display: flex;
@@ -2275,12 +2453,12 @@ body.light-theme .admin-time-input::-webkit-calendar-picker-indicator {
   min-width: 0;
 }
 
-.generator-box input[type="time"] {
+.generator-box input[type='time'] {
   flex: 1.5;
   text-align: center;
 }
 
-.generator-box input[type="number"] {
+.generator-box input[type='number'] {
   flex: 1;
   text-align: center;
 }
@@ -2366,7 +2544,8 @@ body.light-theme .admin-time-input::-webkit-calendar-picker-indicator {
   .generator-box {
     flex-wrap: wrap; /* 手機版才允許換行 */
   }
-  .generator-box button, .manual-add button {
+  .generator-box button,
+  .manual-add button {
     width: 80px;
   }
 }
@@ -2525,7 +2704,7 @@ body.light-theme .admin-time-input::-webkit-calendar-picker-indicator {
 }
 .stats-card:hover {
   transform: translateY(-5px);
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* 全平台響應式最後微調 */

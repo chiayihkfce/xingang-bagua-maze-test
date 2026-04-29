@@ -1,8 +1,24 @@
-import { collection, addDoc, updateDoc, doc, deleteDoc, setDoc, writeBatch, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase";
-import { Session, TimeslotConfig, PaymentMethod, SealConfig, SealType, IdentityPricing } from "../types";
-import { cleanSessionTimeFormat } from "../utils/dateUtils";
-import { readExcelFile } from "../utils/excelUtils";
+import {
+  collection,
+  addDoc,
+  updateDoc,
+  doc,
+  deleteDoc,
+  setDoc,
+  writeBatch,
+  serverTimestamp
+} from 'firebase/firestore';
+import { db } from '../firebase';
+import {
+  Session,
+  TimeslotConfig,
+  PaymentMethod,
+  SealConfig,
+  SealType,
+  IdentityPricing
+} from '../types';
+import { cleanSessionTimeFormat } from '../utils/dateUtils';
+import { readExcelFile } from '../utils/excelUtils';
 
 interface UseSettingsActionsProps {
   sessions: Session[];
@@ -10,8 +26,22 @@ interface UseSettingsActionsProps {
   generalTimeSlots: string[];
   specialTimeSlots: string[];
   newManualTime: string;
-  newSession: { name: string, price: string, fixedDate: string, fixedTime: string, isSpecial: boolean };
-  editingSession: { id: string, oldName: string, newName: string, newPrice: string, fixedDate: string, fixedTime: string, isSpecial: boolean };
+  newSession: {
+    name: string;
+    price: string;
+    fixedDate: string;
+    fixedTime: string;
+    isSpecial: boolean;
+  };
+  editingSession: {
+    id: string;
+    oldName: string;
+    newName: string;
+    newPrice: string;
+    fixedDate: string;
+    fixedTime: string;
+    isSpecial: boolean;
+  };
   setNewSession: (data: any) => void;
   setNewManualTime: (time: string) => void;
   setIsSubmitting: (val: boolean) => void;
@@ -52,7 +82,6 @@ export const useSettingsActions = ({
   showAlert,
   showConfirm
 }: UseSettingsActionsProps) => {
-
   /**
    * 新增或更新身分金額設定
    */
@@ -60,10 +89,10 @@ export const useSettingsActions = ({
     setIsSubmitting(true);
     try {
       const { id, ...data } = config;
-      
+
       if (id) {
         // 更新現有
-        const docRef = doc(db, "identity_pricings", id);
+        const docRef = doc(db, 'identity_pricings', id);
         await updateDoc(docRef, {
           ...data,
           updatedAt: serverTimestamp()
@@ -71,7 +100,7 @@ export const useSettingsActions = ({
         await addLog('更新費率', `更新身分費率: ${data.name} ($${data.price})`);
       } else {
         // 新增
-        await addDoc(collection(db, "identity_pricings"), {
+        await addDoc(collection(db, 'identity_pricings'), {
           name: data.name || '',
           price: data.price || 0,
           enabled: data.enabled ?? true,
@@ -81,7 +110,7 @@ export const useSettingsActions = ({
       }
       showAlert('身分金額設定已儲存！');
     } catch (e) {
-      console.error("Save Identity Pricing Error:", e);
+      console.error('Save Identity Pricing Error:', e);
       showAlert('儲存失敗');
     } finally {
       setIsSubmitting(false);
@@ -95,11 +124,11 @@ export const useSettingsActions = ({
     showConfirm(`確定要刪除「${name}」的費率設定嗎？`, async () => {
       setIsSubmitting(true);
       try {
-        await deleteDoc(doc(db, "identity_pricings", id));
+        await deleteDoc(doc(db, 'identity_pricings', id));
         await addLog('刪除費率', `刪除了身分費率: ${name}`);
         showAlert('刪除成功');
       } catch (e) {
-        console.error("Delete Identity Pricing Error:", e);
+        console.error('Delete Identity Pricing Error:', e);
         showAlert('刪除失敗');
       } finally {
         setIsSubmitting(false);
@@ -113,12 +142,12 @@ export const useSettingsActions = ({
   const updateSealConfig = async (activeSeal: SealType) => {
     setIsSubmitting(true);
     try {
-      await setDoc(doc(db, "config", "seal_config"), { activeSeal });
+      await setDoc(doc(db, 'config', 'seal_config'), { activeSeal });
       setSealConfig({ activeSeal });
       await addLog('更新設定', `變更官印款式為: ${activeSeal}`);
       showAlert('官印設定已更新！');
     } catch (e) {
-      console.error("Update Seal Error:", e);
+      console.error('Update Seal Error:', e);
       showAlert('更新失敗');
     } finally {
       setIsSubmitting(false);
@@ -148,9 +177,9 @@ export const useSettingsActions = ({
    */
   const removeTimeSlot = (type: 'general' | 'special', slot: string) => {
     if (type === 'general') {
-      setGeneralTimeSlots(generalTimeSlots.filter(s => s !== slot));
+      setGeneralTimeSlots(generalTimeSlots.filter((s) => s !== slot));
     } else {
-      setSpecialTimeSlots(specialTimeSlots.filter(s => s !== slot));
+      setSpecialTimeSlots(specialTimeSlots.filter((s) => s !== slot));
     }
   };
 
@@ -160,8 +189,10 @@ export const useSettingsActions = ({
   const handleAddSession = async () => {
     if (!newSession.name || !newSession.price) return;
     setIsSubmitting(true);
-    
-    const collectionName = newSession.isSpecial ? "special_sessions" : "sessions";
+
+    const collectionName = newSession.isSpecial
+      ? 'special_sessions'
+      : 'sessions';
 
     try {
       await addDoc(collection(db, collectionName), {
@@ -169,8 +200,17 @@ export const useSettingsActions = ({
         price: Number(newSession.price),
         createdAt: serverTimestamp()
       });
-      setNewSession({ name: '', price: '', fixedDate: '', fixedTime: '', isSpecial: false });
-      await addLog('新增場次', `新增${newSession.isSpecial ? '特別' : '一般'}場次: ${newSession.name}`);
+      setNewSession({
+        name: '',
+        price: '',
+        fixedDate: '',
+        fixedTime: '',
+        isSpecial: false
+      });
+      await addLog(
+        '新增場次',
+        `新增${newSession.isSpecial ? '特別' : '一般'}場次: ${newSession.name}`
+      );
       showAlert('新增成功！');
     } catch (err: any) {
       console.error(err);
@@ -185,14 +225,17 @@ export const useSettingsActions = ({
    */
   const startEditSession = (session: Session) => {
     const cleanedTime = cleanSessionTimeFormat(session.fixedTime || '');
-    setEditingSession({ 
-      id: (session as any).id, 
-      oldName: session.name, 
-      newName: session.name, 
-      newPrice: String(session.price), 
-      fixedDate: session.fixedDate || '', 
-      fixedTime: cleanedTime, 
-      isSpecial: session.isSpecial !== undefined ? session.isSpecial : !!session.fixedDate 
+    setEditingSession({
+      id: (session as any).id,
+      oldName: session.name,
+      newName: session.name,
+      newPrice: String(session.price),
+      fixedDate: session.fixedDate || '',
+      fixedTime: cleanedTime,
+      isSpecial:
+        session.isSpecial !== undefined
+          ? session.isSpecial
+          : !!session.fixedDate
     });
     setIsEditingSession(true);
   };
@@ -204,7 +247,9 @@ export const useSettingsActions = ({
     e.preventDefault();
     if (!editingSession.id) return;
     setIsSubmitting(true);
-    const collectionName = editingSession.isSpecial ? "special_sessions" : "sessions";
+    const collectionName = editingSession.isSpecial
+      ? 'special_sessions'
+      : 'sessions';
     try {
       const docRef = doc(db, collectionName, editingSession.id);
       await updateDoc(docRef, {
@@ -215,7 +260,10 @@ export const useSettingsActions = ({
         isSpecial: editingSession.isSpecial
       });
       setIsEditingSession(false);
-      await addLog('修改場次', `將 ${editingSession.oldName} 修改為 ${editingSession.newName}`);
+      await addLog(
+        '修改場次',
+        `將 ${editingSession.oldName} 修改為 ${editingSession.newName}`
+      );
       showAlert('修改成功');
     } catch (err) {
       console.error(err);
@@ -232,9 +280,11 @@ export const useSettingsActions = ({
     showConfirm(`確定要刪除場次「${name}」嗎？`, async () => {
       if (!id) return;
       try {
-        const session = sessions.find(s => (s as any).id === id);
-        const collectionName = session?.isSpecial ? "special_sessions" : "sessions";
-        
+        const session = sessions.find((s) => (s as any).id === id);
+        const collectionName = session?.isSpecial
+          ? 'special_sessions'
+          : 'sessions';
+
         await deleteDoc(doc(db, collectionName, id));
         await addLog('刪除場次', `刪除了場次：${name}`);
         showAlert('刪除成功');
@@ -248,46 +298,57 @@ export const useSettingsActions = ({
   /**
    * 儲存預約時段配置
    */
-  const saveTimeSlotsConfig = async (type: 'general' | 'special', config: TimeslotConfig, slots: string[]) => {
+  const saveTimeSlotsConfig = async (
+    type: 'general' | 'special',
+    config: TimeslotConfig,
+    slots: string[]
+  ) => {
     setIsSubmitting(true);
     try {
-      const docPath = type === 'general' ? "general_timeslots" : "special_timeslots";
-      const docRef = doc(db, "config", docPath);
-      
-      const subConfig = type === 'general' ? {
-        start: config.generalStart,
-        end: config.generalEnd,
-        interval: config.generalInterval
-      } : {
-        start: config.specialStart,
-        end: config.specialEnd,
-        interval: config.specialInterval
-      };
+      const docPath =
+        type === 'general' ? 'general_timeslots' : 'special_timeslots';
+      const docRef = doc(db, 'config', docPath);
+
+      const subConfig =
+        type === 'general'
+          ? {
+              start: config.generalStart,
+              end: config.generalEnd,
+              interval: config.generalInterval
+            }
+          : {
+              start: config.specialStart,
+              end: config.specialEnd,
+              interval: config.specialInterval
+            };
 
       await setDoc(docRef, {
         config: subConfig,
         slots: slots,
         updatedAt: serverTimestamp()
       });
-      
+
       const batch = writeBatch(db);
       let cleanupCount = 0;
-      const relevantSessions = sessions.filter(s => s.isSpecial === (type === 'special'));
-      
+      const relevantSessions = sessions.filter(
+        (s) => s.isSpecial === (type === 'special')
+      );
+
       for (const session of relevantSessions) {
         if (session.fixedTime) {
           const originalTimes = session.fixedTime.split(',').filter(Boolean);
-          const filteredTimes = originalTimes.filter(t => slots.includes(t));
-          
+          const filteredTimes = originalTimes.filter((t) => slots.includes(t));
+
           if (originalTimes.length !== filteredTimes.length) {
-            const collectionName = type === 'general' ? "sessions" : "special_sessions";
+            const collectionName =
+              type === 'general' ? 'sessions' : 'special_sessions';
             const sessionRef = doc(db, collectionName, (session as any).id);
             batch.update(sessionRef, { fixedTime: filteredTimes.join(',') });
             cleanupCount++;
           }
         }
       }
-      
+
       if (cleanupCount > 0) {
         await batch.commit();
       }
@@ -309,9 +370,14 @@ export const useSettingsActions = ({
           specialInterval: config.specialInterval
         }));
       }
-      
-      await addLog('修改時段', `管理員更新了${type === 'general' ? '一般' : '特別'}預約時段設定，並同步清理了 ${cleanupCount} 個場次的無效時段`);
-      showAlert(`${type === 'general' ? '一般' : '特別'}預約時段已儲存${cleanupCount > 0 ? `，並同步清理了 ${cleanupCount} 個場次的失效時段` : ''}`);
+
+      await addLog(
+        '修改時段',
+        `管理員更新了${type === 'general' ? '一般' : '特別'}預約時段設定，並同步清理了 ${cleanupCount} 個場次的無效時段`
+      );
+      showAlert(
+        `${type === 'general' ? '一般' : '特別'}預約時段已儲存${cleanupCount > 0 ? `，並同步清理了 ${cleanupCount} 個場次的失效時段` : ''}`
+      );
     } catch (err) {
       console.error(err);
       showAlert('儲存失敗');
@@ -325,8 +391,10 @@ export const useSettingsActions = ({
    */
   const addPaymentMethod = async (methodData: any) => {
     if (!methodData.name) return;
-    
-    const existingIndex = paymentMethods.findIndex(m => m.id === methodData.id);
+
+    const existingIndex = paymentMethods.findIndex(
+      (m) => m.id === methodData.id
+    );
     let newMethods;
     if (existingIndex > -1) {
       newMethods = [...paymentMethods];
@@ -336,12 +404,15 @@ export const useSettingsActions = ({
     }
 
     try {
-      await setDoc(doc(db, "config", "payments"), { methods: newMethods });
-      await addLog('付款方式', `${existingIndex > -1 ? '修改' : '新增'}了付款方式: ${methodData.name}`);
+      await setDoc(doc(db, 'config', 'payments'), { methods: newMethods });
+      await addLog(
+        '付款方式',
+        `${existingIndex > -1 ? '修改' : '新增'}了付款方式: ${methodData.name}`
+      );
       showAlert('已儲存變更');
-    } catch (e) { 
+    } catch (e) {
       console.error(e);
-      showAlert('儲存失敗'); 
+      showAlert('儲存失敗');
     }
   };
 
@@ -350,13 +421,13 @@ export const useSettingsActions = ({
    */
   const deletePaymentMethod = async (method: PaymentMethod) => {
     showConfirm(`確定要刪除「${method.name}」嗎？`, async () => {
-      const newMethods = paymentMethods.filter(m => m.id !== method.id);
+      const newMethods = paymentMethods.filter((m) => m.id !== method.id);
       try {
-        await setDoc(doc(db, "config", "payments"), { methods: newMethods });
+        await setDoc(doc(db, 'config', 'payments'), { methods: newMethods });
         await addLog('付款方式', `刪除了付款方式: ${method.name}`);
-      } catch (e) { 
+      } catch (e) {
         console.error(e);
-        showAlert('刪除失敗'); 
+        showAlert('刪除失敗');
       }
     });
   };
@@ -364,7 +435,9 @@ export const useSettingsActions = ({
   /**
    * 批次從 Excel 匯入場次資料
    */
-  const handleImportSessionsExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImportSessionsExcel = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -382,10 +455,14 @@ export const useSettingsActions = ({
         let count = 0;
 
         for (const row of rows) {
-          if (!row[0]) continue; 
+          if (!row[0]) continue;
 
-          const isSpecial = row[2] === '是' || row[2] === 'special' || row[2] === true || !!row[3];
-          const collectionName = isSpecial ? "special_sessions" : "sessions";
+          const isSpecial =
+            row[2] === '是' ||
+            row[2] === 'special' ||
+            row[2] === true ||
+            !!row[3];
+          const collectionName = isSpecial ? 'special_sessions' : 'sessions';
 
           const sessionData = {
             name: String(row[0]),
@@ -428,9 +505,3 @@ export const useSettingsActions = ({
     deleteIdentityPricing
   };
 };
-
-
-
-
-
-

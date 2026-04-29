@@ -1,9 +1,9 @@
 import { useEffect, lazy, Suspense } from 'react';
-import "react-datepicker/dist/react-datepicker.css"
-import './App.css'
-import { registerLocale } from "react-datepicker";
-import { zhTW } from './utils/dateUtils'
-import { AppProvider, useAppContext } from './context/AppContext'
+import 'react-datepicker/dist/react-datepicker.css';
+import './App.css';
+import { registerLocale } from 'react-datepicker';
+import { zhTW } from './utils/dateUtils';
+import { AppProvider, useAppContext } from './context/AppContext';
 import AdminPage from './pages/AdminPage';
 import { useEasterEggs } from './hooks/useEasterEggs';
 import CustomCursor from './components/UI/CustomCursor';
@@ -19,10 +19,16 @@ const RegistrationPage = lazy(() => import('./pages/RegistrationPage'));
  * 載入中畫面
  */
 const LoadingFallback = () => (
-  <div style={{ 
-    display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', 
-    backgroundColor: '#0a0a0a', color: '#c1a57b' 
-  }}>
+  <div
+    style={{
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100vh',
+      backgroundColor: '#0a0a0a',
+      color: '#c1a57b'
+    }}
+  >
     <div className="loading-spinner">載入中...</div>
   </div>
 );
@@ -44,7 +50,11 @@ function AppContent() {
   return (
     <Suspense fallback={<LoadingFallback />}>
       {(() => {
-        if (SECRET_ADMIN_PATH && SECRET_ADMIN_PATH !== '/' && currentPath === SECRET_ADMIN_PATH) {
+        if (
+          SECRET_ADMIN_PATH &&
+          SECRET_ADMIN_PATH !== '/' &&
+          currentPath === SECRET_ADMIN_PATH
+        ) {
           return <AdminPage />;
         }
 
@@ -62,7 +72,7 @@ function AppContent() {
 function App() {
   useEffect(() => {
     // 0. 強制設定網頁標題
-    document.title = "新港八卦謎蹤";
+    document.title = '新港八卦謎蹤';
 
     // 2. SEO 結構化資料注入邏輯
     const scriptId = 'google-event-jsonld';
@@ -71,43 +81,44 @@ function App() {
       script.id = scriptId;
       script.type = 'application/ld+json';
       script.innerHTML = JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "Event",
-        "name": "新港八卦謎蹤 | 實境解謎活動",
-        "description": "昭和九年，一場神祕疫病肆虐新港... 穿梭時空，解開隱藏在古鎮巷弄間的八卦謎團。嘉義新港實境冒險，由新港文教基金會製作。",
-        "image": "https://chiayihkfce.github.io/xingang-bagua-maze/poster.jpg",
-        "startDate": "2026-01-01T09:00",
-        "endDate": "2026-12-31T17:00",
-        "eventAttendanceMode": "https://schema.org/OfflineEventAttendanceMode",
-        "eventStatus": "https://schema.org/EventScheduled",
-        "location": {
-          "@type": "Place",
-          "name": "培桂堂 (林懷民祖厝)",
-          "address": {
-            "@type": "PostalAddress",
-            "streetAddress": "新中路305號",
-            "addressLocality": "新港鄉",
-            "addressRegion": "嘉義縣",
-            "postalCode": "616",
-            "addressCountry": "TW"
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: '新港八卦謎蹤 | 實境解謎活動',
+        description:
+          '昭和九年，一場神祕疫病肆虐新港... 穿梭時空，解開隱藏在古鎮巷弄間的八卦謎團。嘉義新港實境冒險，由新港文教基金會製作。',
+        image: 'https://chiayihkfce.github.io/xingang-bagua-maze/poster.jpg',
+        startDate: '2026-01-01T09:00',
+        endDate: '2026-12-31T17:00',
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        eventStatus: 'https://schema.org/EventScheduled',
+        location: {
+          '@type': 'Place',
+          name: '培桂堂 (林懷民祖厝)',
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: '新中路305號',
+            addressLocality: '新港鄉',
+            addressRegion: '嘉義縣',
+            postalCode: '616',
+            addressCountry: 'TW'
           }
         },
-        "performer": {
-          "@type": "Organization",
-          "name": "新港文教基金會"
+        performer: {
+          '@type': 'Organization',
+          name: '新港文教基金會'
         },
-        "offers": {
-          "@type": "Offer",
-          "url": "https://chiayihkfce.github.io/xingang-bagua-maze/",
-          "price": "650",
-          "priceCurrency": "TWD",
-          "availability": "https://schema.org/InStock",
-          "validFrom": "2026-01-01T00:00:00"
+        offers: {
+          '@type': 'Offer',
+          url: 'https://chiayihkfce.github.io/xingang-bagua-maze/',
+          price: '650',
+          priceCurrency: 'TWD',
+          availability: 'https://schema.org/InStock',
+          validFrom: '2026-01-01T00:00:00'
         },
-        "organizer": {
-          "@type": "Organization",
-          "name": "新港文教基金會",
-          "url": "http://www.hkfce.org.tw/"
+        organizer: {
+          '@type': 'Organization',
+          name: '新港文教基金會',
+          url: 'http://www.hkfce.org.tw/'
         }
       });
       document.head.appendChild(script);
@@ -120,4 +131,4 @@ function App() {
     </AppProvider>
   );
 }
-export default App
+export default App;

@@ -49,14 +49,22 @@ const RegistrationOverlays: React.FC<RegistrationOverlaysProps> = ({
   return (
     <>
       <EntryAnimation {...{ t, isEntryAnimating, shouldRenderEntry }} />
-      <ConfirmationModal 
-        {...{ 
-          t, lang, showConfirmation, setShowConfirmation, formData, 
-          calculatedTotal, handleConfirmSubmit, isSubmitting, 
-          getSessionDisplayName, getPickupLocationDisplay, getPaymentMethodDisplay 
-        }} 
+      <ConfirmationModal
+        {...{
+          t,
+          lang,
+          showConfirmation,
+          setShowConfirmation,
+          formData,
+          calculatedTotal,
+          handleConfirmSubmit,
+          isSubmitting,
+          getSessionDisplayName,
+          getPickupLocationDisplay,
+          getPaymentMethodDisplay
+        }}
       />
-      <SystemModal 
+      <SystemModal
         show={sysModal.show}
         type={sysModal.type}
         title={sysModal.title}

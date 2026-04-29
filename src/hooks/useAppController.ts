@@ -12,12 +12,16 @@ import { useAdminActions } from './useAdminActions';
 import { useSettingsActions } from './useSettingsActions';
 import { useRegistrationActions } from './useRegistrationActions';
 import { useEasterEggs } from './useEasterEggs';
-import { formatFullDateTime, generateTimeSlots, toggleTimeInString } from '../utils/dateUtils';
+import {
+  formatFullDateTime,
+  generateTimeSlots,
+  toggleTimeInString
+} from '../utils/dateUtils';
 import { copyToClipboard, generatePrintContent } from '../utils/displayUtils';
 import { exportToExcel, readExcelFile } from '../utils/excelUtils';
 import { calculateDashboardStats, sortSubmissions } from '../utils/dataUtils';
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase";
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 
 import { useAppVersion } from './useAppVersion';
 import { logService } from '../services/logService';
@@ -25,13 +29,31 @@ import { logService } from '../services/logService';
 export const useAppController = () => {
   const APP_VERSION = '2.0.1';
   useAppVersion(APP_VERSION);
-  
+
   const state = useAppState();
   const routing = useAppRouting();
   const theme = useSystemTheme();
-  const firebase = useFirebaseListeners(state.formData, state.setFormData, state.setSubmitted, state.setLastSubmissionId, state.setCalculatedTotal);
-  const display = useDisplayLogic({ lang: theme.lang, sessions: firebase.sessions, t: theme.t });
-  const form = useRegistrationForm({ formData: state.formData, setFormData: state.setFormData, sessions: firebase.sessions, timeslotConfig: firebase.timeslotConfig, generalTimeSlots: firebase.generalTimeSlots, specialTimeSlots: firebase.specialTimeSlots, t: theme.t });
+  const firebase = useFirebaseListeners(
+    state.formData,
+    state.setFormData,
+    state.setSubmitted,
+    state.setLastSubmissionId,
+    state.setCalculatedTotal
+  );
+  const display = useDisplayLogic({
+    lang: theme.lang,
+    sessions: firebase.sessions,
+    t: theme.t
+  });
+  const form = useRegistrationForm({
+    formData: state.formData,
+    setFormData: state.setFormData,
+    sessions: firebase.sessions,
+    timeslotConfig: firebase.timeslotConfig,
+    generalTimeSlots: firebase.generalTimeSlots,
+    specialTimeSlots: firebase.specialTimeSlots,
+    t: theme.t
+  });
   const modal = useSystemModal();
   const easterEggs = useEasterEggs({
     isFlashlightOn: state.isFlashlightOn,
@@ -43,8 +65,16 @@ export const useAppController = () => {
     showAlert: modal.showAlert
   });
 
-  const addLog = async (type: string, details: string, operatorOverride?: string) => {
-    const operator = operatorOverride || (auth.currentAdmin ? (auth.currentAdmin.nickname || auth.currentAdmin.username) : '超級管理員');
+  const addLog = async (
+    type: string,
+    details: string,
+    operatorOverride?: string
+  ) => {
+    const operator =
+      operatorOverride ||
+      (auth.currentAdmin
+        ? auth.currentAdmin.nickname || auth.currentAdmin.username
+        : '超級管理員');
     await logService.addLog(type, details, operator);
   };
 
@@ -54,9 +84,14 @@ export const useAppController = () => {
     if (success) modal.showAlert(theme.t.accountCopied);
   };
 
-  const getDisplayStats = () => calculateDashboardStats(adminData.submissions, state.adminFilterDate, adminData.dashboardStats);
+  const getDisplayStats = () =>
+    calculateDashboardStats(
+      adminData.submissions,
+      state.adminFilterDate,
+      adminData.dashboardStats
+    );
   const handleDownloadExcel = () => exportToExcel(adminData.submissions);
-  
+
   const handleImportExcel = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -64,11 +99,14 @@ export const useAppController = () => {
       state.setIsDataLoading(true);
       try {
         const data = await readExcelFile(file);
-        if (data.length <= 1) { modal.showAlert('Excel 檔案似乎沒有資料。'); return; }
+        if (data.length <= 1) {
+          modal.showAlert('Excel 檔案似乎沒有資料。');
+          return;
+        }
         const rows = data.slice(1);
         let count = 0;
         for (const row of rows) {
-          if (!row[2] && !row[3]) continue; 
+          if (!row[2] && !row[3]) continue;
           const submissionData = {
             timestamp: row[0] ? String(row[0]) : formatFullDateTime(new Date()),
             status: row[1] || '待審核',
@@ -88,19 +126,29 @@ export const useAppController = () => {
             createdAt: serverTimestamp(),
             deleted: false
           };
-          await addDoc(collection(db, "registrations"), submissionData);
+          await addDoc(collection(db, 'registrations'), submissionData);
           count++;
         }
         modal.showAlert(`匯入結束！成功寫入 ${count} 筆。`);
-      } catch (err) { modal.showAlert('匯入失敗'); } finally { state.setIsDataLoading(false); e.target.value = ''; }
+      } catch (err) {
+        modal.showAlert('匯入失敗');
+      } finally {
+        state.setIsDataLoading(false);
+        e.target.value = '';
+      }
     });
   };
 
-  const handleDateFilter = (date: Date | null) => state.setAdminFilterDate(date);
-  
+  const handleDateFilter = (date: Date | null) =>
+    state.setAdminFilterDate(date);
+
   const handleSort = (index: number) => {
     let direction: 'asc' | 'desc' = 'asc';
-    if (state.sortConfig && state.sortConfig.key === index && state.sortConfig.direction === 'asc') {
+    if (
+      state.sortConfig &&
+      state.sortConfig.key === index &&
+      state.sortConfig.direction === 'asc'
+    ) {
       direction = 'desc';
     }
     state.setSortConfig({ key: index, direction });
@@ -120,71 +168,93 @@ export const useAppController = () => {
     }
   };
 
-  const auth = useAdminAuth({ showAlert: modal.showAlert, addLog, setIsDataLoading: state.setIsDataLoading });
-  const adminData = useAdminData({ isAdmin: auth.isAdmin, adminFilterDate: state.adminFilterDate, adminSearchKeyword: state.adminSearchKeyword, setIsDataLoading: state.setIsDataLoading });
-  const adminActions = useAdminActions({ 
-    submissions: adminData.submissions, 
-    deletedSubmissions: adminData.deletedSubmissions, 
-    editData: state.editData, 
-    showConfirm: modal.showConfirm, 
-    showAlert: modal.showAlert, 
-    setIsDataLoading: state.setIsDataLoading, 
-    setIsSubmitting: state.setIsSubmitting, 
-    setShowRecycleBin: state.setShowRecycleBin, 
-    setIsEditing: state.setIsEditing, 
-    setEditData: state.setEditData, 
+  const auth = useAdminAuth({
+    showAlert: modal.showAlert,
+    addLog,
+    setIsDataLoading: state.setIsDataLoading
+  });
+  const adminData = useAdminData({
+    isAdmin: auth.isAdmin,
+    adminFilterDate: state.adminFilterDate,
+    adminSearchKeyword: state.adminSearchKeyword,
+    setIsDataLoading: state.setIsDataLoading
+  });
+  const adminActions = useAdminActions({
+    submissions: adminData.submissions,
+    deletedSubmissions: adminData.deletedSubmissions,
+    editData: state.editData,
+    showConfirm: modal.showConfirm,
+    showAlert: modal.showAlert,
+    setIsDataLoading: state.setIsDataLoading,
+    setIsSubmitting: state.setIsSubmitting,
+    setShowRecycleBin: state.setShowRecycleBin,
+    setIsEditing: state.setIsEditing,
+    setEditData: state.setEditData,
     addLog,
     selectedIds: state.selectedIds,
     setSelectedIds: state.setSelectedIds
   });
-  const settingsActions = useSettingsActions({ 
-    sessions: firebase.sessions, 
-    paymentMethods: firebase.paymentMethods, 
+  const settingsActions = useSettingsActions({
+    sessions: firebase.sessions,
+    paymentMethods: firebase.paymentMethods,
     generalTimeSlots: firebase.generalTimeSlots,
     specialTimeSlots: firebase.specialTimeSlots,
-    newManualTime: state.newManualTime, 
-    newSession: state.newSession, 
-    editingSession: state.editingSession, 
-    setNewSession: state.setNewSession, 
-    setNewManualTime: state.setNewManualTime, 
-    setIsSubmitting: state.setIsSubmitting, 
-    setIsEditingSession: state.setIsEditingSession, 
-    setEditingSession: state.setEditingSession, 
-    setIsDataLoading: state.setIsDataLoading, 
-    setGeneralTimeSlots: firebase.setGeneralTimeSlots, 
-    setSpecialTimeSlots: firebase.setSpecialTimeSlots, 
-    setTimeslotConfig: firebase.setTimeslotConfig, 
+    newManualTime: state.newManualTime,
+    newSession: state.newSession,
+    editingSession: state.editingSession,
+    setNewSession: state.setNewSession,
+    setNewManualTime: state.setNewManualTime,
+    setIsSubmitting: state.setIsSubmitting,
+    setIsEditingSession: state.setIsEditingSession,
+    setEditingSession: state.setEditingSession,
+    setIsDataLoading: state.setIsDataLoading,
+    setGeneralTimeSlots: firebase.setGeneralTimeSlots,
+    setSpecialTimeSlots: firebase.setSpecialTimeSlots,
+    setTimeslotConfig: firebase.setTimeslotConfig,
     setSealConfig: firebase.setSealConfig,
-    addLog, 
-    showAlert: modal.showAlert, 
-    showConfirm: modal.showConfirm 
+    addLog,
+    showAlert: modal.showAlert,
+    showConfirm: modal.showConfirm
   });
 
-  const registrationActions = useRegistrationActions({ formData: state.formData, formErrors: form.formErrors, sessionType: form.sessionType, calculatedTotal: state.calculatedTotal, paymentMethods: firebase.paymentMethods, loadTime: state.loadTime, setIsSubmitting: state.setIsSubmitting, setLastSubmissionId: state.setLastSubmissionId, setSubmitted: state.setSubmitted, showAlert: modal.showAlert, setShowConfirmation: state.setShowConfirmation, addLog });
+  const registrationActions = useRegistrationActions({
+    formData: state.formData,
+    formErrors: form.formErrors,
+    sessionType: form.sessionType,
+    calculatedTotal: state.calculatedTotal,
+    paymentMethods: firebase.paymentMethods,
+    loadTime: state.loadTime,
+    setIsSubmitting: state.setIsSubmitting,
+    setLastSubmissionId: state.setLastSubmissionId,
+    setSubmitted: state.setSubmitted,
+    showAlert: modal.showAlert,
+    setShowConfirmation: state.setShowConfirmation,
+    addLog
+  });
 
-  useAppEffects({ 
-    formData: state.formData, 
-    setFormData: state.setFormData, 
-    sessions: firebase.sessions, 
-    sessionType: form.sessionType, 
-    setCalculatedTotal: state.setCalculatedTotal, 
+  useAppEffects({
+    formData: state.formData,
+    setFormData: state.setFormData,
+    sessions: firebase.sessions,
+    sessionType: form.sessionType,
+    setCalculatedTotal: state.setCalculatedTotal,
     identityPricings: firebase.identityPricings,
-    sysModalShow: modal.sysModal.show, 
-    showConfirmation: state.showConfirmation, 
-    isSubmitting: state.isSubmitting, 
-    isDataLoading: state.isDataLoading, 
-    showAuditModal: state.showAuditModal, 
-    isEditing: state.isEditing, 
-    isEditingSession: state.isEditingSession, 
-    showRecycleBin: state.showRecycleBin, 
-    shouldRenderEntry: firebase.shouldRenderEntry 
+    sysModalShow: modal.sysModal.show,
+    showConfirmation: state.showConfirmation,
+    isSubmitting: state.isSubmitting,
+    isDataLoading: state.isDataLoading,
+    showAuditModal: state.showAuditModal,
+    isEditing: state.isEditing,
+    isEditingSession: state.isEditingSession,
+    showRecycleBin: state.showRecycleBin,
+    shouldRenderEntry: firebase.shouldRenderEntry
   });
 
   const loadPage = (page: number) => state.setCurrentPage(page);
 
   const handlePrintCheckInSheet = () => {
     const todayStr = new Date().toISOString().split('T')[0];
-    const todayData = adminData.submissions.slice(1).filter(row => {
+    const todayData = adminData.submissions.slice(1).filter((row) => {
       const pickupTime = row[11] || '';
       const status = row[1] || '';
       return pickupTime.startsWith(todayStr) && status === '通過';
@@ -208,21 +278,38 @@ export const useAppController = () => {
   };
 
   return {
-    ...state, 
-    ...routing, 
-    ...theme, 
-    ...firebase, 
-    ...display, 
-    ...form, 
-    ...modal, 
-    ...auth, 
-    ...adminData, 
-    ...adminActions, 
-    ...settingsActions, 
+    ...state,
+    ...routing,
+    ...theme,
+    ...firebase,
+    ...display,
+    ...form,
+    ...modal,
+    ...auth,
+    ...adminData,
+    ...adminActions,
+    ...settingsActions,
     ...registrationActions,
     ...easterEggs,
-    dashboardStats: adminData.dashboardStats || { pendingCount: 0, totalRevenue: 0, todayKits: 0, todayPlayers: 0 },
-    handleCopyAccount, getDisplayStats, handleDownloadExcel, handleImportExcel, handleDateFilter, handleSort, toggleFixedTime, formatFullDateTime, generateTimeSlots, loadPage, addLog,
+    isLookupOpen: state.isLookupOpen,
+    setIsLookupOpen: state.setIsLookupOpen,
+    dashboardStats: adminData.dashboardStats || {
+      pendingCount: 0,
+      totalRevenue: 0,
+      todayKits: 0,
+      todayPlayers: 0
+    },
+    handleCopyAccount,
+    getDisplayStats,
+    handleDownloadExcel,
+    handleImportExcel,
+    handleDateFilter,
+    handleSort,
+    toggleFixedTime,
+    formatFullDateTime,
+    generateTimeSlots,
+    loadPage,
+    addLog,
     handlePrintCheckInSheet,
     handleBatchVerifyPayment: adminActions.handleBatchVerifyPayment,
     handleBatchDelete: adminActions.handleBatchDelete,

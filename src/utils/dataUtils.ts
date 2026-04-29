@@ -4,7 +4,11 @@
  * @param index 要排序的欄位索引
  * @param direction 排序方向 'asc' | 'desc'
  */
-export const sortSubmissions = (data: any[][], index: number, direction: 'asc' | 'desc'): any[][] => {
+export const sortSubmissions = (
+  data: any[][],
+  index: number,
+  direction: 'asc' | 'desc'
+): any[][] => {
   return [...data].sort((a, b) => {
     let valA = a[index];
     let valB = b[index];
@@ -19,7 +23,12 @@ export const sortSubmissions = (data: any[][], index: number, direction: 'asc' |
     // 2. 數值排序
     const numA = Number(valA);
     const numB = Number(valB);
-    if (!isNaN(numA) && !isNaN(numB) && typeof valA !== 'boolean' && typeof valB !== 'boolean') {
+    if (
+      !isNaN(numA) &&
+      !isNaN(numB) &&
+      typeof valA !== 'boolean' &&
+      typeof valB !== 'boolean'
+    ) {
       return direction === 'asc' ? numA - numB : numB - numA;
     }
 
@@ -40,8 +49,13 @@ export const calculateDashboardStats = (
   adminFilterDate: Date | null,
   dashboardStats: any
 ) => {
-  const baseStats = dashboardStats || { pendingCount: 0, totalRevenue: 0, todayKits: 0, todayPlayers: 0 };
-  
+  const baseStats = dashboardStats || {
+    pendingCount: 0,
+    totalRevenue: 0,
+    todayKits: 0,
+    todayPlayers: 0
+  };
+
   // 如果沒有選日期，直接顯示從 Firebase 監聽到的全域統計 (包含今日數據)
   if (!adminFilterDate) {
     return baseStats;
@@ -50,9 +64,9 @@ export const calculateDashboardStats = (
   // 當有選特定日期時，必須「精確計算」該日清單
   let kits = 0;
   let players = 0;
-  
+
   const formattedFilterDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
-  
+
   // 從索引 1 開始 (跳過標題列)
   for (let i = 1; i < submissions.length; i++) {
     const rowPickupTime = String(submissions[i][11] || '');
@@ -77,10 +91,15 @@ export const filterSubmissions = (data: any[][], keyword: string): any[][] => {
   const kw = keyword.trim().toLowerCase();
   if (!kw) return data;
 
-  return data.filter(row => 
-    String(row[2] || '').toLowerCase().includes(kw) || 
-    String(row[3] || '').includes(kw) || 
-    String(row[4] || '').toLowerCase().includes(kw)
+  return data.filter(
+    (row) =>
+      String(row[2] || '')
+        .toLowerCase()
+        .includes(kw) ||
+      String(row[3] || '').includes(kw) ||
+      String(row[4] || '')
+        .toLowerCase()
+        .includes(kw)
   );
 };
 
@@ -95,11 +114,13 @@ export const getAnalyticsData = (submissions: any[][]) => {
   const quantityMap: Record<string, number> = {};
   const paymentMap: Record<string, number> = {};
 
-  data.forEach(row => {
+  data.forEach((row) => {
     // 1. 得知管道分析 (索引 13)
     const referralRaw = row[13] || '其他';
-    const referrals = String(referralRaw).split(/[,,、\s]/).filter(Boolean);
-    referrals.forEach(ref => {
+    const referrals = String(referralRaw)
+      .split(/[,,、\s]/)
+      .filter(Boolean);
+    referrals.forEach((ref) => {
       referralMap[ref] = (referralMap[ref] || 0) + 1;
     });
 
@@ -143,7 +164,3 @@ export const getAnalyticsData = (submissions: any[][]) => {
 
   return { referralData, sessionData, trendData, quantityData, paymentData };
 };
-
-
-
-

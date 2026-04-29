@@ -14,25 +14,60 @@ import { useAppContext } from '../context/AppContext';
 const RegistrationPage: React.FC = () => {
   const [showGames, setShowGames] = React.useState(false);
   const {
-    t, lang, setLang, theme, toggleTheme, formData, formErrors, sessionType, 
-    setSessionType, sessions, timeslotConfig, generalTimeSlots, specialTimeSlots, 
-    handleInputChange, handlePlayerInfoChange, handleCheckboxChange, handleDateChange, handleCopyAccount, 
-    handleSubmit, isSubmitting, calculatedTotal, getSessionDisplayName, 
-    getPickupLocationDisplay, getPaymentMethodDisplay, paymentMethods, identityPricings,
-    isEntryAnimating, shouldRenderEntry, showConfirmation, setShowConfirmation, 
-    handleConfirmSubmit, sysModal, showAlert
-    } = useAppContext();
+    t,
+    lang,
+    setLang,
+    theme,
+    toggleTheme,
+    formData,
+    formErrors,
+    sessionType,
+    setSessionType,
+    sessions,
+    timeslotConfig,
+    generalTimeSlots,
+    specialTimeSlots,
+    handleInputChange,
+    handlePlayerInfoChange,
+    handleCheckboxChange,
+    handleDateChange,
+    handleCopyAccount,
+    handleSubmit,
+    isSubmitting,
+    calculatedTotal,
+    getSessionDisplayName,
+    getPickupLocationDisplay,
+    getPaymentMethodDisplay,
+    paymentMethods,
+    identityPricings,
+    isEntryAnimating,
+    shouldRenderEntry,
+    showConfirmation,
+    setShowConfirmation,
+    handleConfirmSubmit,
+    sysModal,
+    showAlert
+  } = useAppContext();
   return (
     <div className="container">
       <BaguaParticles />
-      <MiniGames show={showGames} onClose={() => setShowGames(false)} />
-      <RegistrationOverlays 
-        {...{ 
-          t, lang, isEntryAnimating, shouldRenderEntry, showConfirmation, 
-          setShowConfirmation, formData, calculatedTotal, handleConfirmSubmit, 
-          isSubmitting, getSessionDisplayName, getPickupLocationDisplay, 
-          getPaymentMethodDisplay, sysModal 
-        }} 
+      <RegistrationOverlays
+        {...{
+          t,
+          lang,
+          isEntryAnimating,
+          shouldRenderEntry,
+          showConfirmation,
+          setShowConfirmation,
+          formData,
+          calculatedTotal,
+          handleConfirmSubmit,
+          isSubmitting,
+          getSessionDisplayName,
+          getPickupLocationDisplay,
+          getPaymentMethodDisplay,
+          sysModal
+        }}
       />
       <Header {...{ lang, setLang, theme, toggleTheme, t }} />
       <main className="main-content">
@@ -42,19 +77,37 @@ const RegistrationPage: React.FC = () => {
         <StorySection t={t} />
 
         <EventInfo t={t} />
-        <RegistrationForm 
-          {...{ 
-            t, lang, formData, formErrors, sessionType, setSessionType, 
-            sessions, timeslotConfig, generalTimeSlots, specialTimeSlots, 
-            handleInputChange, handlePlayerInfoChange, handleCheckboxChange, handleDateChange, 
-            handleCopyAccount, handleSubmit, isSubmitting, calculatedTotal, 
-            getSessionDisplayName, paymentMethods, identityPricings, showAlert,
+        <RegistrationForm
+          {...{
+            t,
+            lang,
+            formData,
+            formErrors,
+            sessionType,
+            setSessionType,
+            sessions,
+            timeslotConfig,
+            generalTimeSlots,
+            specialTimeSlots,
+            handleInputChange,
+            handlePlayerInfoChange,
+            handleCheckboxChange,
+            handleDateChange,
+            handleCopyAccount,
+            handleSubmit,
+            isSubmitting,
+            calculatedTotal,
+            getSessionDisplayName,
+            paymentMethods,
+            identityPricings,
+            showAlert,
             setShowGames // 新增此 Prop
-          }} 
+          }}
         />
       </main>
       <SocialButtons t={t} />
       <Footer t={t} />
+      {showGames && <MiniGames onClose={() => setShowGames(false)} />}
     </div>
   );
 };

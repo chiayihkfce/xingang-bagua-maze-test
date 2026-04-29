@@ -31,35 +31,61 @@ const AdminLogin: React.FC<AdminLoginProps> = ({
         <h2 className="form-section-title admin-login-title">{t.adminLogin}</h2>
         <form onSubmit={handleAdminLogin}>
           <div className="form-group">
-            <label style={{ textAlign: 'left', display: 'block', marginBottom: '0.5rem' }}>帳號</label>
-            <input 
-              type="text" 
-              placeholder="請輸入管理帳號" 
-              value={adminUser} 
-              onChange={e => setAdminUser(e.target.value)} 
-              autoFocus 
+            <label
+              style={{
+                textAlign: 'left',
+                display: 'block',
+                marginBottom: '0.5rem'
+              }}
+            >
+              帳號
+            </label>
+            <input
+              type="text"
+              placeholder="請輸入管理帳號"
+              value={adminUser}
+              onChange={(e) => setAdminUser(e.target.value)}
+              autoFocus
               autoComplete="username"
               style={{ marginBottom: '1.5rem' }}
             />
           </div>
           <div className="form-group">
-            <label style={{ textAlign: 'left', display: 'block', marginBottom: '0.5rem' }}>密碼</label>
-            <input 
-              type="password" 
-              placeholder={t.passwordPlaceholder} 
-              value={adminPassword} 
-              onChange={e => setAdminPassword(e.target.value)} 
+            <label
+              style={{
+                textAlign: 'left',
+                display: 'block',
+                marginBottom: '0.5rem'
+              }}
+            >
+              密碼
+            </label>
+            <input
+              type="password"
+              placeholder={t.passwordPlaceholder}
+              value={adminPassword}
+              onChange={(e) => setAdminPassword(e.target.value)}
               autoComplete="current-password"
             />
           </div>
-          
-          {isDataLoading && <div className="loading-overlay">{t.loadingData}</div>}
-          
+
+          {isDataLoading && (
+            <div className="loading-overlay">{t.loadingData}</div>
+          )}
+
           <div className="modal-actions admin-login-actions">
-            <button type="button" onClick={() => setShowAdminLogin(false)} className="cancel-btn">
+            <button
+              type="button"
+              onClick={() => setShowAdminLogin(false)}
+              className="cancel-btn"
+            >
               {t.cancel}
             </button>
-            <button type="submit" className="submit-btn" disabled={isDataLoading}>
+            <button
+              type="submit"
+              className="submit-btn"
+              disabled={isDataLoading}
+            >
               {isDataLoading ? t.verifying : t.login}
             </button>
           </div>

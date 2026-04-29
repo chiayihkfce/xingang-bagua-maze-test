@@ -11,7 +11,7 @@ export const generateGoogleCalendarUrl = (data: {
   // 處理 Safari 相容性，將 '-' 換成 '/'
   const start = new Date(data.startTime.replace(/-/g, '/'));
   if (isNaN(start.getTime())) return '';
-  
+
   const end = new Date(start.getTime() + 180 * 60 * 1000); // 延長至 3 小時
 
   // 格式化為 Google 要求的本地時間格式 (YYYYMMDDTHHMMSS)
@@ -24,14 +24,14 @@ export const generateGoogleCalendarUrl = (data: {
     const s = String(date.getSeconds()).padStart(2, '0');
     return `${y}${m}${d}T${h}${min}${s}`;
   };
-  
+
   const url = new URL('https://www.google.com/calendar/render');
   url.searchParams.append('action', 'TEMPLATE');
   url.searchParams.append('text', data.title);
   url.searchParams.append('dates', `${format(start)}/${format(end)}`);
   url.searchParams.append('details', data.details);
   url.searchParams.append('location', data.location);
-  
+
   return url.toString();
 };
 
@@ -46,7 +46,7 @@ export const downloadIcalFile = (data: {
 }) => {
   const start = new Date(data.startTime.replace(/-/g, '/'));
   if (isNaN(start.getTime())) return;
-  
+
   const end = new Date(start.getTime() + 180 * 60 * 1000);
 
   // iCal 本地時間格式 (YYYYMMDDTHHMMSS)

@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
-import { 
-  collection, 
-  onSnapshot, 
-  query, 
-  orderBy, 
-  where, 
-  limit 
-} from "firebase/firestore";
-import { db } from "../firebase";
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
+  where,
+  limit
+} from 'firebase/firestore';
+import { db } from '../firebase';
 import { DashboardStats } from '../types';
 import { filterSubmissions } from '../utils/dataUtils';
 
@@ -21,16 +21,18 @@ interface UseAdminDataProps {
 /**
  * 處理管理員後台資料的即時監聽 (報名、回收桶、日誌、統計)
  */
-export const useAdminData = ({ 
-  isAdmin, 
-  adminFilterDate, 
-  adminSearchKeyword, 
-  setIsDataLoading 
+export const useAdminData = ({
+  isAdmin,
+  adminFilterDate,
+  adminSearchKeyword,
+  setIsDataLoading
 }: UseAdminDataProps) => {
   const [submissions, setSubmissions] = useState<any[][]>([]);
   const [deletedSubmissions, setDeletedSubmissions] = useState<any[][]>([]);
   const [logs, setLogs] = useState<any[][]>([]);
-  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(
+    null
+  );
   const [totalRows, setTotalRows] = useState(0);
 
   const [visibleColumns, setVisibleColumns] = useState<number[]>(() => {
@@ -42,8 +44,10 @@ export const useAdminData = ({
    * 欄位切換邏輯 (加入持久化)
    */
   const toggleColumn = (index: number) => {
-    setVisibleColumns(prev => {
-      const newList = prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index].sort((a, b) => a - b);
+    setVisibleColumns((prev) => {
+      const newList = prev.includes(index)
+        ? prev.filter((i) => i !== index)
+        : [...prev, index].sort((a, b) => a - b);
       localStorage.setItem('visibleColumns', JSON.stringify(newList));
       return newList;
     });
@@ -53,8 +57,25 @@ export const useAdminData = ({
     if (!isAdmin) return;
 
     setIsDataLoading(true);
-    const header = ["報名時間", "狀態", "姓名", "電話", "Email", "場次名稱", "購買份數", "遊玩人數", "總金額", "付款方式", "末五碼", "預約日期時間", "取件地點", "得知管道", "備註", "隊員名單"];
-    
+    const header = [
+      '報名時間',
+      '狀態',
+      '姓名',
+      '電話',
+      'Email',
+      '場次名稱',
+      '購買份數',
+      '遊玩人數',
+      '總金額',
+      '付款方式',
+      '末五碼',
+      '預約日期時間',
+      '取件地點',
+      '得知管道',
+      '備註',
+      '隊員名單'
+    ];
+
     setSubmissions([header]);
     setTotalRows(0);
 
@@ -63,37 +84,58 @@ export const useAdminData = ({
     if (adminFilterDate) {
       const formattedDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
       qSub = query(
-        collection(db, "registrations"), 
-        where("pickupTime", ">=", formattedDate),
-        where("pickupTime", "<=", formattedDate + "\uf8ff"),
-        orderBy("pickupTime", "desc")
+        collection(db, 'registrations'),
+        where('pickupTime', '>=', formattedDate),
+        where('pickupTime', '<=', formattedDate + '\uf8ff'),
+        orderBy('pickupTime', 'desc')
       );
     } else {
       qSub = query(
-        collection(db, "registrations"), 
-        orderBy("createdAt", "desc"),
+        collection(db, 'registrations'),
+        orderBy('createdAt', 'desc'),
         limit(300)
       );
     }
 
     const unsubSubmissions = onSnapshot(qSub, (snapshot) => {
-      let data = snapshot.docs.map(doc => {
+      let data = snapshot.docs.map((doc) => {
         const d = doc.data();
         // 格式化隊員名單為字串
-        const playerNamesStr = (d.playerList || []).map((p: any, i: number) => `${i+1}.${p.name}(${p.email})`).join(', ');
-        
+        const playerNamesStr = (d.playerList || [])
+          .map((p: any, i: number) => `${i + 1}.${p.name}(${p.email})`)
+          .join(', ');
+
         return [
-          d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, 
-          d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, 
-          d.pickupLocation, d.referral, d.notes, playerNamesStr, doc.id, d.createdAt, d.certSent, d.playerList // 19: playerList raw
+          d.timestamp,
+          d.status,
+          d.name,
+          d.phone,
+          d.email,
+          d.session,
+          d.quantity,
+          d.players,
+          d.totalAmount,
+          d.paymentMethod,
+          d.bankLast5,
+          d.pickupTime,
+          d.pickupLocation,
+          d.referral,
+          d.notes,
+          playerNamesStr,
+          doc.id,
+          d.createdAt,
+          d.certSent,
+          d.playerList // 19: playerList raw
         ];
       });
 
       // 移除原本錯誤的 row[18] 過濾，確保資料全數顯示
-      
+
       if (adminFilterDate) {
         const formattedDate = `${adminFilterDate.getFullYear()}-${String(adminFilterDate.getMonth() + 1).padStart(2, '0')}-${String(adminFilterDate.getDate()).padStart(2, '0')}`;
-        data = data.filter(row => String(row[11] || '').startsWith(formattedDate));
+        data = data.filter((row) =>
+          String(row[11] || '').startsWith(formattedDate)
+        );
       }
 
       if (adminSearchKeyword.trim()) {
@@ -106,33 +148,64 @@ export const useAdminData = ({
     });
 
     // 2. 監聽回收桶 (使用 registrations_deleted 集合)
-    const qBin = query(collection(db, "registrations_deleted"), orderBy("timestamp", "desc"), limit(100));
+    const qBin = query(
+      collection(db, 'registrations_deleted'),
+      orderBy('timestamp', 'desc'),
+      limit(100)
+    );
     const unsubBin = onSnapshot(qBin, (snapshot) => {
-      const data = snapshot.docs.map(doc => {
+      const data = snapshot.docs.map((doc) => {
         const d = doc.data();
-        const playerNamesStr = (d.playerList || []).map((p: any, i: number) => `${i+1}.${p.name}(${p.email})`).join(', ');
+        const playerNamesStr = (d.playerList || [])
+          .map((p: any, i: number) => `${i + 1}.${p.name}(${p.email})`)
+          .join(', ');
         return [
-          d.timestamp, d.status, d.name, d.phone, d.email, d.session, d.quantity, 
-          d.players, d.totalAmount, d.paymentMethod, d.bankLast5, d.pickupTime, 
-          d.pickupLocation, d.referral, d.notes, playerNamesStr, doc.id, d.createdAt, d.certSent, d.playerList
+          d.timestamp,
+          d.status,
+          d.name,
+          d.phone,
+          d.email,
+          d.session,
+          d.quantity,
+          d.players,
+          d.totalAmount,
+          d.paymentMethod,
+          d.bankLast5,
+          d.pickupTime,
+          d.pickupLocation,
+          d.referral,
+          d.notes,
+          playerNamesStr,
+          doc.id,
+          d.createdAt,
+          d.certSent,
+          d.playerList
         ];
       });
       setDeletedSubmissions(data);
     });
 
     // 3. 監聽操作日誌 (提升至 1000 筆，支援前端分頁與強制排序)
-    const qLogs = query(collection(db, "logs"), orderBy("timestamp", "desc"), limit(1000));
+    const qLogs = query(
+      collection(db, 'logs'),
+      orderBy('timestamp', 'desc'),
+      limit(1000)
+    );
     const unsubLogs = onSnapshot(qLogs, (snapshot) => {
-      const logHeader = ["時間", "操作類型", "操作者", "詳細內容"];
-      const data = snapshot.docs.map(doc => {
+      const logHeader = ['時間', '操作類型', '操作者', '詳細內容'];
+      const data = snapshot.docs.map((doc) => {
         const d = doc.data();
         return [d.timestamp, d.type, d.operator || '系統', d.details];
       });
 
       // 強制前端二次排序：確保絕對的時間倒序 (由新到舊)
       data.sort((a, b) => {
-        const dateA = new Date(String(a[0] || '').replace(/\//g, '-')).getTime();
-        const dateB = new Date(String(b[0] || '').replace(/\//g, '-')).getTime();
+        const dateA = new Date(
+          String(a[0] || '').replace(/\//g, '-')
+        ).getTime();
+        const dateB = new Date(
+          String(b[0] || '').replace(/\//g, '-')
+        ).getTime();
         return dateB - dateA;
       });
 
@@ -140,11 +213,14 @@ export const useAdminData = ({
     });
 
     // 4. 監聽統計數據 (統計數據依然從活躍報名中計算)
-    const qStats = query(collection(db, "registrations"));
+    const qStats = query(collection(db, 'registrations'));
     const unsubStats = onSnapshot(qStats, (snapshot) => {
-      let kits = 0, players = 0, revenue = 0, pending = 0;
+      let kits = 0,
+        players = 0,
+        revenue = 0,
+        pending = 0;
       const todayStr = new Date().toISOString().split('T')[0];
-      snapshot.docs.forEach(doc => {
+      snapshot.docs.forEach((doc) => {
         const d = doc.data();
         if (d.status === '待審核') pending++;
         if (d.status === '通過') revenue += Number(d.totalAmount) || 0;
@@ -153,11 +229,19 @@ export const useAdminData = ({
           players += Number(d.players) || 0;
         }
       });
-      setDashboardStats({ pendingCount: pending, totalRevenue: revenue, todayKits: kits, todayPlayers: players });
+      setDashboardStats({
+        pendingCount: pending,
+        totalRevenue: revenue,
+        todayKits: kits,
+        todayPlayers: players
+      });
     });
 
     return () => {
-      unsubSubmissions(); unsubBin(); unsubLogs(); unsubStats();
+      unsubSubmissions();
+      unsubBin();
+      unsubLogs();
+      unsubStats();
     };
   }, [isAdmin, adminFilterDate, adminSearchKeyword, setIsDataLoading]);
 

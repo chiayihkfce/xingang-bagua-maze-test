@@ -34,7 +34,8 @@ const BaguaParticles: React.FC = () => {
       constructor(w: number, h: number) {
         this.speedX = Math.random() * 0.08 + 0.02;
         this.offscreenCanvas = document.createElement('canvas');
-        this.x = 0; this.y = 0;
+        this.x = 0;
+        this.y = 0;
         this.preRender();
         this.resetPosition(w, h);
       }
@@ -53,7 +54,8 @@ const BaguaParticles: React.FC = () => {
         Array.from({ length: 10 }).forEach(() => {
           const r = baseRadius * (Math.random() * 0.8 + 0.5);
           const ox = centerX + (Math.random() * baseRadius - baseRadius / 2);
-          const oy = centerY + (Math.random() * baseRadius / 3 - baseRadius / 6);
+          const oy =
+            centerY + ((Math.random() * baseRadius) / 3 - baseRadius / 6);
           const o = Math.random() * 0.04 + 0.02;
 
           const gradient = octx.createRadialGradient(ox, oy, 0, ox, oy, r);
@@ -88,12 +90,16 @@ const BaguaParticles: React.FC = () => {
         const centerX = w / 2;
         const centerY = h / 2;
         const dist = Math.hypot(this.x - centerX, this.y - centerY);
-        if (dist < 300) this.y += (this.y > centerY ? 1 : -1);
+        if (dist < 300) this.y += this.y > centerY ? 1 : -1;
       }
 
       draw() {
         if (!ctx || !this.offscreenCanvas) return;
-        ctx.drawImage(this.offscreenCanvas, this.x - this.offscreenCanvas.width / 2, this.y - this.offscreenCanvas.height / 2);
+        ctx.drawImage(
+          this.offscreenCanvas,
+          this.x - this.offscreenCanvas.width / 2,
+          this.y - this.offscreenCanvas.height / 2
+        );
       }
     }
 
@@ -110,7 +116,10 @@ const BaguaParticles: React.FC = () => {
       const w = canvas.width;
       const h = canvas.height;
       ctx.clearRect(0, 0, w, h);
-      clouds.forEach(c => { c.update(w, h); c.draw(); });
+      clouds.forEach((c) => {
+        c.update(w, h);
+        c.draw();
+      });
       requestAnimationFrame(animate);
     };
 
@@ -157,62 +166,100 @@ const BaguaParticles: React.FC = () => {
             pointerEvents: 'none',
             zIndex: -2,
             opacity: isAwakened ? 0.9 : 0.6,
-            filter: isAwakened ? 'sepia(1) saturate(5) hue-rotate(10deg)' : 'none'
+            filter: isAwakened
+              ? 'sepia(1) saturate(5) hue-rotate(10deg)'
+              : 'none'
           }}
         />
       )}
       {/* 背景中央太極基座 */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: -3,
-        pointerEvents: 'none'
-      }}>
-        <div style={{
-          width: 'min(80vw, 80vh)',
-          height: 'min(80vw, 80vh)',
-          opacity: isAwakened ? 0.08 : 0.03,
-          borderRadius: '50%',
-          overflow: 'hidden',
-          border: isAwakened ? '4px solid #ffeb3b' : '2px solid var(--primary-gold)',
-          animation: `taijiRotate ${isAwakened ? '3s' : '60s'} linear infinite`,
-          position: 'relative',
-          pointerEvents: 'auto', // 允許點擊中央太極
-          boxShadow: isAwakened ? '0 0 100px rgba(255, 235, 59, 0.4)' : 'none'
-        }}>
-          <div style={{
-            width: '100%',
-            height: '100%',
-            background: 'linear-gradient(to right, #fff 50%, #000 50%)',
-            position: 'relative'
-          }}>
-            <div 
+      <div
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: -3,
+          pointerEvents: 'none'
+        }}
+      >
+        <div
+          style={{
+            width: 'min(80vw, 80vh)',
+            height: 'min(80vw, 80vh)',
+            opacity: isAwakened ? 0.08 : 0.03,
+            borderRadius: '50%',
+            overflow: 'hidden',
+            border: isAwakened
+              ? '4px solid #ffeb3b'
+              : '2px solid var(--primary-gold)',
+            animation: `taijiRotate ${isAwakened ? '3s' : '60s'} linear infinite`,
+            position: 'relative',
+            pointerEvents: 'auto', // 允許點擊中央太極
+            boxShadow: isAwakened ? '0 0 100px rgba(255, 235, 59, 0.4)' : 'none'
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(to right, #fff 50%, #000 50%)',
+              position: 'relative'
+            }}
+          >
+            <div
               onClick={() => handleTaijiClick('yin')}
               style={{
-                position: 'absolute', top: 0, left: '25%', width: '50%', height: '50%',
-                background: '#fff', borderRadius: '50%',
-                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                position: 'absolute',
+                top: 0,
+                left: '25%',
+                width: '50%',
+                height: '50%',
+                background: '#fff',
+                borderRadius: '50%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
                 cursor: 'pointer'
               }}
             >
-              <div style={{ width: '20%', height: '20%', background: '#000', borderRadius: '50%' }}></div>
+              <div
+                style={{
+                  width: '20%',
+                  height: '20%',
+                  background: '#000',
+                  borderRadius: '50%'
+                }}
+              ></div>
             </div>
-            <div 
+            <div
               onClick={() => handleTaijiClick('yang')}
               style={{
-                position: 'absolute', bottom: 0, left: '25%', width: '50%', height: '50%',
-                background: '#000', borderRadius: '50%',
-                display: 'flex', justifyContent: 'center', alignItems: 'center',
+                position: 'absolute',
+                bottom: 0,
+                left: '25%',
+                width: '50%',
+                height: '50%',
+                background: '#000',
+                borderRadius: '50%',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
                 cursor: 'pointer'
               }}
             >
-              <div style={{ width: '20%', height: '20%', background: '#fff', borderRadius: '50%' }}></div>
+              <div
+                style={{
+                  width: '20%',
+                  height: '20%',
+                  background: '#fff',
+                  borderRadius: '50%'
+                }}
+              ></div>
             </div>
           </div>
         </div>

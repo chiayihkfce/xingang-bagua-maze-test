@@ -1,6 +1,14 @@
-import { doc, updateDoc, writeBatch, query, collection, getDocs, serverTimestamp } from "firebase/firestore";
-import { db } from "../firebase";
-import { sendPaymentSuccessEmail } from "../utils/emailUtils";
+import {
+  doc,
+  updateDoc,
+  writeBatch,
+  query,
+  collection,
+  getDocs,
+  serverTimestamp
+} from 'firebase/firestore';
+import { db } from '../firebase';
+import { sendPaymentSuccessEmail } from '../utils/emailUtils';
 
 interface UseAdminActionsProps {
   submissions: any[][];
@@ -36,40 +44,42 @@ export const useAdminActions = ({
   selectedIds,
   setSelectedIds
 }: UseAdminActionsProps) => {
-
   /**
    * 批次審核付款 (通過)
    */
   const handleBatchVerifyPayment = async () => {
     if (selectedIds.length === 0) return;
 
-    showConfirm(`確定要將選取的 ${selectedIds.length} 筆報名標記為「通過」並發送成功信嗎？`, async () => {
-      setIsSubmitting(true);
-      try {
-        const batch = writeBatch(db);
-        let count = 0;
+    showConfirm(
+      `確定要將選取的 ${selectedIds.length} 筆報名標記為「通過」並發送成功信嗎？`,
+      async () => {
+        setIsSubmitting(true);
+        try {
+          const batch = writeBatch(db);
+          let count = 0;
 
-        for (const docId of selectedIds) {
-          const target = submissions.find(row => row[16] === docId);
-          if (target && target[1] !== '通過') {
-            const docRef = doc(db, "registrations", docId);
-            batch.update(docRef, { status: '通過' });
-            await sendPaymentSuccessEmail(target);
-            count++;
+          for (const docId of selectedIds) {
+            const target = submissions.find((row) => row[16] === docId);
+            if (target && target[1] !== '通過') {
+              const docRef = doc(db, 'registrations', docId);
+              batch.update(docRef, { status: '通過' });
+              await sendPaymentSuccessEmail(target);
+              count++;
+            }
           }
-        }
 
-        await batch.commit();
-        await addLog('批次審核', `批次通過了 ${count} 筆報名資料`);
-        showAlert(`成功批次處理 ${count} 筆資料`);
-        setSelectedIds([]);
-      } catch (err) {
-        console.error(err);
-        showAlert('批次處理失敗');
-      } finally {
-        setIsSubmitting(false);
+          await batch.commit();
+          await addLog('批次審核', `批次通過了 ${count} 筆報名資料`);
+          showAlert(`成功批次處理 ${count} 筆資料`);
+          setSelectedIds([]);
+        } catch (err) {
+          console.error(err);
+          showAlert('批次處理失敗');
+        } finally {
+          setIsSubmitting(false);
+        }
       }
-    });
+    );
   };
 
   /**
@@ -78,45 +88,59 @@ export const useAdminActions = ({
   const handleBatchDelete = async () => {
     if (selectedIds.length === 0) return;
 
-    showConfirm(`確定要將選取的 ${selectedIds.length} 筆報名資料移至回收桶嗎？`, async () => {
-      setIsSubmitting(true);
-      try {
-        const batch = writeBatch(db);
-        let count = 0;
+    showConfirm(
+      `確定要將選取的 ${selectedIds.length} 筆報名資料移至回收桶嗎？`,
+      async () => {
+        setIsSubmitting(true);
+        try {
+          const batch = writeBatch(db);
+          let count = 0;
 
-        for (const docId of selectedIds) {
-          const target = submissions.find(row => row[16] === docId);
-          if (target) {
-            const sourceRef = doc(db, "registrations", docId);
-            const targetRef = doc(db, "registrations_deleted", docId);
-            
-            const dataToMove = {
-              timestamp: target[0], status: target[1], name: target[2], phone: target[3], email: target[4],
-              session: target[5], quantity: target[6], players: target[7], totalAmount: target[8],
-              paymentMethod: target[9], bankLast5: target[10], pickupTime: target[11],
-              pickupLocation: target[12], referral: target[13], notes: target[14],
-              playerList: target[19] || [],
-              createdAt: target[17] || serverTimestamp(),
-              certSent: target[18] || false 
-            };
+          for (const docId of selectedIds) {
+            const target = submissions.find((row) => row[16] === docId);
+            if (target) {
+              const sourceRef = doc(db, 'registrations', docId);
+              const targetRef = doc(db, 'registrations_deleted', docId);
 
-            batch.set(targetRef, dataToMove);
-            batch.delete(sourceRef);
-            count++;
+              const dataToMove = {
+                timestamp: target[0],
+                status: target[1],
+                name: target[2],
+                phone: target[3],
+                email: target[4],
+                session: target[5],
+                quantity: target[6],
+                players: target[7],
+                totalAmount: target[8],
+                paymentMethod: target[9],
+                bankLast5: target[10],
+                pickupTime: target[11],
+                pickupLocation: target[12],
+                referral: target[13],
+                notes: target[14],
+                playerList: target[19] || [],
+                createdAt: target[17] || serverTimestamp(),
+                certSent: target[18] || false
+              };
+
+              batch.set(targetRef, dataToMove);
+              batch.delete(sourceRef);
+              count++;
+            }
           }
-        }
 
-        await batch.commit();
-        await addLog('批次刪除', `將 ${count} 筆報名移至回收桶`);
-        showAlert(`已批次移至回收桶 ${count} 筆資料`);
-        setSelectedIds([]);
-      } catch (err) {
-        console.error(err);
-        showAlert('批次刪除失敗');
-      } finally {
-        setIsSubmitting(false);
+          await batch.commit();
+          await addLog('批次刪除', `將 ${count} 筆報名移至回收桶`);
+          showAlert(`已批次移至回收桶 ${count} 筆資料`);
+          setSelectedIds([]);
+        } catch (err) {
+          console.error(err);
+          showAlert('批次刪除失敗');
+        } finally {
+          setIsSubmitting(false);
+        }
       }
-    });
+    );
   };
 
   /**
@@ -126,20 +150,23 @@ export const useAdminActions = ({
     const target = submissions[rowIndex];
     const docId = target[16];
     const currentStatus = target[1];
-    
+
     if (!docId) return;
 
     showConfirm(`確定要將此筆報名標記為「${status}」嗎？`, async () => {
       setIsDataLoading(true);
       try {
-        const docRef = doc(db, "registrations", docId);
+        const docRef = doc(db, 'registrations', docId);
         await updateDoc(docRef, { status });
-        await addLog('審核付款', `將「${target[2]}」的狀態由 [${currentStatus}] 變更為 [${status}]`);
-        
+        await addLog(
+          '審核付款',
+          `將「${target[2]}」的狀態由 [${currentStatus}] 變更為 [${status}]`
+        );
+
         if (status === '通過' && currentStatus !== '通過') {
           await sendPaymentSuccessEmail(target);
         }
-        
+
         showAlert('審核狀態已更新');
       } catch (err) {
         console.error(err);
@@ -157,19 +184,30 @@ export const useAdminActions = ({
     const target = submissions[rowIndex];
     const docId = target[16];
     if (!docId) return;
-    
+
     showConfirm('確定要將這筆報名資料移至回收桶嗎？', async () => {
       setIsDataLoading(true);
       try {
-        const sourceRef = doc(db, "registrations", docId);
-        const targetRef = doc(db, "registrations_deleted", docId);
-        
+        const sourceRef = doc(db, 'registrations', docId);
+        const targetRef = doc(db, 'registrations_deleted', docId);
+
         // 構建原始對象
         const dataToMove = {
-          timestamp: target[0], status: target[1], name: target[2], phone: target[3], email: target[4],
-          session: target[5], quantity: target[6], players: target[7], totalAmount: target[8],
-          paymentMethod: target[9], bankLast5: target[10], pickupTime: target[11],
-          pickupLocation: target[12], referral: target[13], notes: target[14],
+          timestamp: target[0],
+          status: target[1],
+          name: target[2],
+          phone: target[3],
+          email: target[4],
+          session: target[5],
+          quantity: target[6],
+          players: target[7],
+          totalAmount: target[8],
+          paymentMethod: target[9],
+          bankLast5: target[10],
+          pickupTime: target[11],
+          pickupLocation: target[12],
+          referral: target[13],
+          notes: target[14],
           playerList: target[19] || [],
           createdAt: target[17] || serverTimestamp(),
           certSent: target[18] || false
@@ -198,17 +236,28 @@ export const useAdminActions = ({
     const target = deletedSubmissions[rowIndex];
     const docId = target[16];
     if (!docId) return;
-    
+
     setIsSubmitting(true);
     try {
-      const sourceRef = doc(db, "registrations_deleted", docId);
-      const targetRef = doc(db, "registrations", docId);
-      
+      const sourceRef = doc(db, 'registrations_deleted', docId);
+      const targetRef = doc(db, 'registrations', docId);
+
       const dataToMove = {
-        timestamp: target[0], status: target[1], name: target[2], phone: target[3], email: target[4],
-        session: target[5], quantity: target[6], players: target[7], totalAmount: target[8],
-        paymentMethod: target[9], bankLast5: target[10], pickupTime: target[11],
-        pickupLocation: target[12], referral: target[13], notes: target[14],
+        timestamp: target[0],
+        status: target[1],
+        name: target[2],
+        phone: target[3],
+        email: target[4],
+        session: target[5],
+        quantity: target[6],
+        players: target[7],
+        totalAmount: target[8],
+        paymentMethod: target[9],
+        bankLast5: target[10],
+        pickupTime: target[11],
+        pickupLocation: target[12],
+        referral: target[13],
+        notes: target[14],
         playerList: target[19] || [],
         createdAt: target[17] || serverTimestamp(),
         certSent: target[18] || false,
@@ -235,26 +284,29 @@ export const useAdminActions = ({
    * 清空回收桶 (徹底刪除 registrations_deleted 集合內容)
    */
   const handleClearRecycleBin = async () => {
-    showConfirm('確定要徹底刪除回收桶中的所有資料嗎？此動作無法復原。', async () => {
-      setIsDataLoading(true);
-      try {
-        const q = query(collection(db, "registrations_deleted"));
-        const snapshot = await getDocs(q);
-        const batch = writeBatch(db);
-        snapshot.docs.forEach((doc) => {
-          batch.delete(doc.ref);
-        });
-        await batch.commit();
-        await addLog('清空回收桶', '超級管理員清空了回收桶');
-        showAlert('回收桶已清空');
-        setShowRecycleBin(false);
-      } catch (err) {
-        console.error(err);
-        showAlert('清空失敗');
-      } finally {
-        setIsDataLoading(false);
+    showConfirm(
+      '確定要徹底刪除回收桶中的所有資料嗎？此動作無法復原。',
+      async () => {
+        setIsDataLoading(true);
+        try {
+          const q = query(collection(db, 'registrations_deleted'));
+          const snapshot = await getDocs(q);
+          const batch = writeBatch(db);
+          snapshot.docs.forEach((doc) => {
+            batch.delete(doc.ref);
+          });
+          await batch.commit();
+          await addLog('清空回收桶', '超級管理員清空了回收桶');
+          showAlert('回收桶已清空');
+          setShowRecycleBin(false);
+        } catch (err) {
+          console.error(err);
+          showAlert('清空失敗');
+        } finally {
+          setIsDataLoading(false);
+        }
       }
-    });
+    );
   };
 
   /**
@@ -264,7 +316,7 @@ export const useAdminActions = ({
     showConfirm('確定要清除所有操作日誌嗎？此動作無法復原。', async () => {
       setIsDataLoading(true);
       try {
-        const q = query(collection(db, "logs"));
+        const q = query(collection(db, 'logs'));
         const snapshot = await getDocs(q);
         const batch = writeBatch(db);
         snapshot.docs.forEach((doc) => {
@@ -286,17 +338,30 @@ export const useAdminActions = ({
    * 開始編輯報名資料 (準備編輯資料並開啟 Modal)
    */
   const startEditSubmission = (row: any[], _index: number) => {
-    let rawTime = row[11] || ''; 
+    let rawTime = row[11] || '';
     if (typeof rawTime === 'string' && rawTime.includes('T')) {
-      rawTime = new Date(rawTime).toLocaleString('zh-TW', { hour12: false }).replace(/\//g, '-');
+      rawTime = new Date(rawTime)
+        .toLocaleString('zh-TW', { hour12: false })
+        .replace(/\//g, '-');
     }
     setEditData({
-      timestamp: row[0], status: row[1], name: row[2], phone: row[3], email: row[4], 
-      session: row[5], quantity: row[6], players: row[7], totalAmount: row[8], 
-      paymentMethod: row[9], bankLast5: row[10], pickupTime: rawTime, 
-      pickupLocation: row[12], referral: row[13], notes: row[14],
+      timestamp: row[0],
+      status: row[1],
+      name: row[2],
+      phone: row[3],
+      email: row[4],
+      session: row[5],
+      quantity: row[6],
+      players: row[7],
+      totalAmount: row[8],
+      paymentMethod: row[9],
+      bankLast5: row[10],
+      pickupTime: rawTime,
+      pickupLocation: row[12],
+      referral: row[13],
+      notes: row[14],
       playerList: row[19] || [], // 載入原始隊員清單供編輯
-      id: row[16] 
+      id: row[16]
     });
     setIsEditing(true);
   };
@@ -309,30 +374,58 @@ export const useAdminActions = ({
     if (!editData?.id) return;
     setIsSubmitting(true);
     try {
-      const docRef = doc(db, "registrations", editData.id);
-      
+      const docRef = doc(db, 'registrations', editData.id);
+
       // 找出原始資料
-      const original = submissions.find(row => row[16] === editData.id);
+      const original = submissions.find((row) => row[16] === editData.id);
       const diffLogs = [];
-      
+
       if (original) {
-        const fieldNames = ["報名時間", "狀態", "姓名", "電話", "Email", "場次", "份數", "人數", "金額", "支付方式", "末五碼", "預約時間", "地點", "得知管道", "備註"];
+        const fieldNames = [
+          '報名時間',
+          '狀態',
+          '姓名',
+          '電話',
+          'Email',
+          '場次',
+          '份數',
+          '人數',
+          '金額',
+          '支付方式',
+          '末五碼',
+          '預約時間',
+          '地點',
+          '得知管道',
+          '備註'
+        ];
         // 對比前 15 個欄位
         for (let i = 1; i <= 14; i++) {
           // 這裡由於 editData 的 key 順序不一定對等，改用明確欄位對比
           const fieldMap: any = {
-            1: 'status', 2: 'name', 3: 'phone', 4: 'email', 5: 'session', 
-            6: 'quantity', 7: 'players', 8: 'totalAmount', 9: 'paymentMethod', 
-            10: 'bankLast5', 11: 'pickupTime', 12: 'pickupLocation', 
-            13: 'referral', 14: 'notes'
+            1: 'status',
+            2: 'name',
+            3: 'phone',
+            4: 'email',
+            5: 'session',
+            6: 'quantity',
+            7: 'players',
+            8: 'totalAmount',
+            9: 'paymentMethod',
+            10: 'bankLast5',
+            11: 'pickupTime',
+            12: 'pickupLocation',
+            13: 'referral',
+            14: 'notes'
           };
-          
+
           const key = fieldMap[i];
-          const currentOld = String(original[i] || "");
-          const currentNew = String((editData as any)[key] || "");
-          
+          const currentOld = String(original[i] || '');
+          const currentNew = String((editData as any)[key] || '');
+
           if (currentOld !== currentNew) {
-            diffLogs.push(`${fieldNames[i]}: [${currentOld}] -> [${currentNew}]`);
+            diffLogs.push(
+              `${fieldNames[i]}: [${currentOld}] -> [${currentNew}]`
+            );
           }
         }
       }
@@ -340,10 +433,16 @@ export const useAdminActions = ({
       const updateData = { ...editData };
       delete updateData.id;
       await updateDoc(docRef, updateData);
-      
-      const detailStr = diffLogs.length > 0 ? `變更內容: ${diffLogs.join(', ')}` : "未偵測到內容變更";
-      await addLog('修改報名', `修改了「${editData.name}」的資訊。${detailStr}`);
-      
+
+      const detailStr =
+        diffLogs.length > 0
+          ? `變更內容: ${diffLogs.join(', ')}`
+          : '未偵測到內容變更';
+      await addLog(
+        '修改報名',
+        `修改了「${editData.name}」的資訊。${detailStr}`
+      );
+
       setIsEditing(false);
       showAlert('修改成功');
     } catch (err) {
@@ -366,10 +465,3 @@ export const useAdminActions = ({
     handleBatchDelete
   };
 };
-
-
-
-
-
-
-

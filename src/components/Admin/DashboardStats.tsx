@@ -15,13 +15,16 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
   };
 
   return (
-    <div className="dashboard-stats-grid" style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-      gap: '1.5rem',
-      marginBottom: '2rem',
-      width: '100%'
-    }}>
+    <div
+      className="dashboard-stats-grid"
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+        gap: '1.5rem',
+        marginBottom: '2rem',
+        width: '100%'
+      }}
+    >
       <div className="stats-card" style={cardStyle('#f39c12')}>
         <div className="stats-icon">⏳</div>
         <div className="stats-info">
@@ -34,7 +37,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
         <div className="stats-icon">💰</div>
         <div className="stats-info">
           <span className="stats-label">總成交金額</span>
-          <span className="stats-value">NT$ {displayStats.totalRevenue.toLocaleString()}</span>
+          <span className="stats-value">
+            NT$ {displayStats.totalRevenue.toLocaleString()}
+          </span>
         </div>
       </div>
 
@@ -42,7 +47,9 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
         <div className="stats-icon">📦</div>
         <div className="stats-info">
           <span className="stats-label">今日領取份數</span>
-          <span className="stats-value">{displayStats.todayKits} <small>份</small></span>
+          <span className="stats-value">
+            {displayStats.todayKits} <small>份</small>
+          </span>
         </div>
       </div>
 
@@ -50,23 +57,26 @@ const DashboardStats: React.FC<DashboardStatsProps> = ({ stats }) => {
         <div className="stats-icon">👥</div>
         <div className="stats-info">
           <span className="stats-label">今日遊玩人數</span>
-          <span className="stats-value">{displayStats.todayPlayers} <small>人</small></span>
+          <span className="stats-value">
+            {displayStats.todayPlayers} <small>人</small>
+          </span>
         </div>
       </div>
     </div>
   );
 };
 
-const cardStyle = (color: string) => ({
-  background: 'var(--card-bg)',
-  borderLeft: `6px solid ${color}`,
-  padding: '1.5rem',
-  borderRadius: '12px',
-  display: 'flex',
-  alignItems: 'center',
-  gap: '1.2rem',
-  boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
-  transition: 'transform 0.3s ease'
-} as React.CSSProperties);
+const cardStyle = (color: string) =>
+  ({
+    background: 'var(--card-bg)',
+    borderLeft: `6px solid ${color}`,
+    padding: '1.5rem',
+    borderRadius: '12px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '1.2rem',
+    boxShadow: '0 8px 25px rgba(0,0,0,0.2)',
+    transition: 'transform 0.3s ease'
+  }) as React.CSSProperties;
 
 export default DashboardStats;

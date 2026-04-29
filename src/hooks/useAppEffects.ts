@@ -39,7 +39,6 @@ export const useAppEffects = ({
   showRecycleBin,
   shouldRenderEntry
 }: UseAppEffectsProps) => {
-
   /**
    * 副作用 1：當購買份數改變時，自動校正遊玩人數
    */
@@ -49,7 +48,7 @@ export const useAppEffects = ({
     const maxPlayers = qty * 4;
 
     if (players > maxPlayers || players === 0) {
-      setFormData(prev => ({ ...prev, players: '1' }));
+      setFormData((prev) => ({ ...prev, players: '1' }));
     }
   }, [formData.quantity, formData.players, setFormData]);
 
@@ -59,10 +58,10 @@ export const useAppEffects = ({
   useEffect(() => {
     const qty = parseInt(formData.quantity) || 0;
     let price = 0;
-    
+
     if (sessionType !== '') {
       // 1. 先從場次清單找出目前選擇場次的物件
-      const sessionObj = sessions.find(s => s.name === formData.session);
+      const sessionObj = sessions.find((s) => s.name === formData.session);
       const basePrice = sessionObj ? sessionObj.price : 650;
 
       // 2. 判斷是否選中了特殊身分優待價
@@ -70,28 +69,38 @@ export const useAppEffects = ({
       if (formData.identityType === '一般民眾') {
         price = basePrice;
       } else {
-        const matchedIdentity = identityPricings.find(ip => ip.enabled && ip.name === formData.identityType);
+        const matchedIdentity = identityPricings.find(
+          (ip) => ip.enabled && ip.name === formData.identityType
+        );
         // 如果選了特殊身分但找不到對應費率（例如剛新增），則回退到場次原價，確保不為 0
         price = matchedIdentity ? matchedIdentity.price : basePrice;
       }
     }
-    
+
     setCalculatedTotal(qty * price);
-  }, [formData.quantity, formData.session, formData.identityType, sessions, sessionType, identityPricings, setCalculatedTotal]);
+  }, [
+    formData.quantity,
+    formData.session,
+    formData.identityType,
+    sessions,
+    sessionType,
+    identityPricings,
+    setCalculatedTotal
+  ]);
 
   /**
    * 副作用 3：當彈窗或載入畫面顯示時，禁止背景滑動
    */
   useEffect(() => {
-    const isAnyModalOpen = 
-      sysModalShow || 
-      showConfirmation || 
-      isSubmitting || 
-      isDataLoading || 
-      showAuditModal || 
-      isEditing || 
-      isEditingSession || 
-      showRecycleBin || 
+    const isAnyModalOpen =
+      sysModalShow ||
+      showConfirmation ||
+      isSubmitting ||
+      isDataLoading ||
+      showAuditModal ||
+      isEditing ||
+      isEditingSession ||
+      showRecycleBin ||
       shouldRenderEntry;
 
     if (isAnyModalOpen) {
@@ -101,17 +110,14 @@ export const useAppEffects = ({
     }
     return () => document.body.classList.remove('modal-open');
   }, [
-    sysModalShow, 
-    showConfirmation, 
-    isSubmitting, 
-    isDataLoading, 
-    showAuditModal, 
-    isEditing, 
-    isEditingSession, 
-    showRecycleBin, 
+    sysModalShow,
+    showConfirmation,
+    isSubmitting,
+    isDataLoading,
+    showAuditModal,
+    isEditing,
+    isEditingSession,
+    showRecycleBin,
     shouldRenderEntry
   ]);
-
 };
-
-

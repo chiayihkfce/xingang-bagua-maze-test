@@ -8,10 +8,11 @@
   z-index: 99999;
   opacity: 0;
   /* 移除原本的 left/top transition，改用 JS 控制 transform */
-  transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1), 
-              height 0.3s cubic-bezier(0.23, 1, 0.32, 1), 
-              background-color 0.3s ease,
-              opacity 0.3s ease;
+  transition:
+    width 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    height 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    background-color 0.3s ease,
+    opacity 0.3s ease;
   box-shadow: 0 0 10px var(--primary-gold);
   will-change: transform, opacity;
 }
@@ -34,9 +35,10 @@
   pointer-events: none;
   z-index: 99998;
   opacity: 0;
-  transition: width 0.3s cubic-bezier(0.23, 1, 0.32, 1), 
-              height 0.3s cubic-bezier(0.23, 1, 0.32, 1), 
-              opacity 0.3s ease;
+  transition:
+    width 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    height 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    opacity 0.3s ease;
   will-change: transform, opacity;
 }
 
@@ -61,13 +63,17 @@
 }
 
 @keyframes rotate-bagua-inner {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 在觸控裝置（手機、平板）上徹底隱藏客製鼠標 */
 @media (pointer: coarse) {
-  .custom-cursor-dot, 
+  .custom-cursor-dot,
   .custom-cursor-ring {
     display: none !important;
     visibility: hidden !important;
@@ -77,7 +83,7 @@
 
 /* 額外的隱藏邏輯，針對不支援 Hover 的裝置 */
 @media (any-hover: none) {
-  .custom-cursor-dot, 
+  .custom-cursor-dot,
   .custom-cursor-ring {
     display: none !important;
     visibility: hidden !important;
@@ -87,8 +93,8 @@
 
 /* 隱藏原生鼠標 (只要裝置支援任何形式的滑鼠 hover 即生效) */
 @media (any-hover: hover) {
-  body.custom-cursor-active *, 
-  body.custom-cursor-active *::before, 
+  body.custom-cursor-active *,
+  body.custom-cursor-active *::before,
   body.custom-cursor-active *::after {
     cursor: none !important;
   }

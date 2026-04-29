@@ -11,14 +11,12 @@ const AppContext = createContext<AppContextType | null>(null);
 /**
  * AppProvider 組件：封裝全域狀態提供者
  */
-export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AppProvider: React.FC<{ children: ReactNode }> = ({
+  children
+}) => {
   const app = useAppController();
 
-  return (
-    <AppContext.Provider value={app}>
-      {children}
-    </AppContext.Provider>
-  );
+  return <AppContext.Provider value={app}>{children}</AppContext.Provider>;
 };
 
 /**

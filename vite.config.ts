@@ -1,11 +1,11 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import javascriptObfuscator from 'vite-plugin-javascript-obfuscator'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import javascriptObfuscator from 'vite-plugin-javascript-obfuscator';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react(),
+    react()
     /*
     javascriptObfuscator({
       options: {
@@ -23,9 +23,9 @@ export default defineConfig({
       },
     })
     */
-    ],
-    base: './', 
-    build: {
+  ],
+  base: './',
+  build: {
     sourcemap: false,
     cssCodeSplit: true,
     rollupOptions: {
@@ -33,9 +33,13 @@ export default defineConfig({
         manualChunks: {
           'vendor-react': ['react', 'react-dom'],
           'vendor-utils': ['xlsx', 'gsap', 'recharts'],
-          'vendor-firebase': ['firebase/app', 'firebase/firestore', 'firebase/auth'],
-        },
-      },
-    },
+          'vendor-firebase': [
+            'firebase/app',
+            'firebase/firestore',
+            'firebase/auth'
+          ]
+        }
+      }
+    }
   }
-})
+});

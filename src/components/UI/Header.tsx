@@ -9,23 +9,33 @@ interface HeaderProps {
   t: any;
 }
 
-const Header: React.FC<HeaderProps> = ({ lang, setLang, theme, toggleTheme, t }) => {
+const Header: React.FC<HeaderProps> = ({
+  lang,
+  setLang,
+  theme,
+  toggleTheme,
+  t
+}) => {
   return (
     <header className="header">
       <div className="lang-switcher">
-        <button 
-          className={lang === 'zh' ? 'active' : ''} 
+        <button
+          className={lang === 'zh' ? 'active' : ''}
           onClick={() => setLang('zh')}
         >
           中
         </button>
-        <button 
-          className={lang === 'en' ? 'active' : ''} 
+        <button
+          className={lang === 'en' ? 'active' : ''}
           onClick={() => setLang('en')}
         >
           EN
         </button>
-        <button className="theme-toggle" onClick={toggleTheme} title={t.themeToggle}>
+        <button
+          className="theme-toggle"
+          onClick={toggleTheme}
+          title={t.themeToggle}
+        >
           {theme === 'dark' ? '🌙' : '☀️'}
         </button>
       </div>

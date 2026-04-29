@@ -3,6 +3,7 @@
 This reference contains minimal, reproducible examples (MREs) for common Genkit patterns.
 
 > **Disclaimer**: These examples use **Google AI** models (`googleAI`, `gemini-*`) for demonstration. The patterns apply to **any provider**. To use a different provider:
+>
 > 1. Search the docs for the correct plugin: `genkit docs:search "plugins"`.
 > 2. Install and configure the plugin.
 > 3. Swap the model reference in the code.
@@ -10,16 +11,16 @@ This reference contains minimal, reproducible examples (MREs) for common Genkit 
 ## Basic Text Generation
 
 ```ts
-import { genkit } from "genkit";
-import { googleAI } from "@genkit-ai/google-genai";
+import { genkit } from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const ai = genkit({
-  plugins: [googleAI()],
+  plugins: [googleAI()]
 });
 
 const { text } = await ai.generate({
   model: googleAI.model('gemini-2.5-flash'),
-  prompt: 'Tell me a story in a pirate accent',
+  prompt: 'Tell me a story in a pirate accent'
 });
 ```
 
@@ -30,17 +31,17 @@ import { z } from 'genkit';
 
 const JokeSchema = z.object({
   setup: z.string().describe('The setup of the joke'),
-  punchline: z.string().describe('The punchline'),
+  punchline: z.string().describe('The punchline')
 });
 
 const response = await ai.generate({
   model: googleAI.model('gemini-2.5-flash'),
   prompt: 'Tell me a joke about developers.',
-  output: { schema: JokeSchema },
+  output: { schema: JokeSchema }
 });
 
 // response.output is strongly typed
-const joke = response.output; 
+const joke = response.output;
 if (joke) {
   console.log(`${joke.setup} ... ${joke.punchline}`);
 }
@@ -51,7 +52,7 @@ if (joke) {
 ```ts
 const { stream, response } = ai.generateStream({
   model: googleAI.model('gemini-2.5-flash'),
-  prompt: 'Tell a long story about a developer using Genkit.',
+  prompt: 'Tell a long story about a developer using Genkit.'
 });
 
 for await (const chunk of stream) {
@@ -76,9 +77,9 @@ const response = await ai.generate({
   config: {
     thinkingConfig: {
       thinkingLevel: 'HIGH', // or 'LOW'
-      includeThoughts: true, // Returns thought process in response
-    },
-  },
+      includeThoughts: true // Returns thought process in response
+    }
+  }
 });
 ```
 
@@ -91,12 +92,13 @@ const response = await ai.generate({
   model: googleAI.model('gemini-2.5-flash'),
   prompt: 'What are the top tech news stories this week?',
   config: {
-    googleSearchRetrieval: true,
-  },
+    googleSearchRetrieval: true
+  }
 });
 
 // Access grounding metadata (sources)
-const groundingMetadata = (response.custom as any)?.candidates?.[0]?.groundingMetadata;
+const groundingMetadata = (response.custom as any)?.candidates?.[0]
+  ?.groundingMetadata;
 if (groundingMetadata) {
   console.log('Sources:', groundingMetadata.groundingChunks);
 }
@@ -113,7 +115,7 @@ if (groundingMetadata) {
 const { media } = await ai.generate({
   model: googleAI.model('gemini-2.5-flash-image'),
   config: { responseModalities: ['TEXT', 'IMAGE'] },
-  prompt: "generate a picture of a unicorn wearing a space suit on the moon",
+  prompt: 'generate a picture of a unicorn wearing a space suit on the moon'
 });
 // media.url contains the data URI
 ```
@@ -125,8 +127,8 @@ const { media } = await ai.generate({
   config: { responseModalities: ['TEXT', 'IMAGE'] },
   prompt: [
     { text: "change the person's outfit to a banana costume" },
-    { media: { url: "https://example.com/photo.jpg" } },
-  ],
+    { media: { url: 'https://example.com/photo.jpg' } }
+  ]
 });
 ```
 
@@ -143,11 +145,11 @@ const { media } = await ai.generate({
     responseModalities: ['AUDIO'],
     speechConfig: {
       voiceConfig: {
-        prebuiltVoiceConfig: { voiceName: 'Algenib' }, // Options: 'Puck', 'Charon', 'Fenrir', etc.
-      },
-    },
+        prebuiltVoiceConfig: { voiceName: 'Algenib' } // Options: 'Puck', 'Charon', 'Fenrir', etc.
+      }
+    }
   },
-  prompt: 'Genkit is an amazing library',
+  prompt: 'Genkit is an amazing library'
 });
 
 // The response contains raw PCM data in media.url (base64 encoded).

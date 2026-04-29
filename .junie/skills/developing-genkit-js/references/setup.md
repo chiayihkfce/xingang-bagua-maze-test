@@ -20,9 +20,9 @@ import { googleAI } from '@genkit-ai/google-genai';
 
 export const ai = genkit({
   plugins: [
-    googleAI(), // Add your provider plugin here
+    googleAI() // Add your provider plugin here
   ],
-  model: googleAI.model('gemini-2.5-flash'), // Set your provider's model here
+  model: googleAI.model('gemini-2.5-flash') // Set your provider's model here
 });
 
 export { z };

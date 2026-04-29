@@ -3,7 +3,10 @@ import * as XLSX from 'xlsx';
 /**
  * 將報名資料匯出為 Excel 檔案
  */
-export const exportToExcel = (data: any[][], fileNamePrefix: string = '報名清單') => {
+export const exportToExcel = (
+  data: any[][],
+  fileNamePrefix: string = '報名清單'
+) => {
   if (data.length <= 1) return;
 
   // 1. 分離標題列與資料列
@@ -14,15 +17,15 @@ export const exportToExcel = (data: any[][], fileNamePrefix: string = '報名清
   const reversedRows = [...rows].reverse();
 
   // 3. 重新組合並過濾掉隱藏欄位 (Firebase ID 等)
-  const exportData = [header, ...reversedRows].map(row => row.slice(0, 16));
+  const exportData = [header, ...reversedRows].map((row) => row.slice(0, 16));
 
   const ws = XLSX.utils.aoa_to_sheet(exportData);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "報名清單");
-  
+  XLSX.utils.book_append_sheet(wb, ws, '報名清單');
+
   const dateStr = new Date().toISOString().split('T')[0];
   const fileName = `${fileNamePrefix}_${dateStr}.xlsx`;
-  
+
   XLSX.writeFile(wb, fileName);
 };
 
@@ -48,4 +51,3 @@ export const readExcelFile = (file: File): Promise<any[][]> => {
     reader.readAsBinaryString(file);
   });
 };
-

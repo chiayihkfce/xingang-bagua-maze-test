@@ -1,14 +1,21 @@
-import React, { useState, useEffect } from 'react'
-import { 
-  collection, 
-  onSnapshot, 
-  query, 
-  orderBy, 
+import React, { useState, useEffect } from 'react';
+import {
+  collection,
+  onSnapshot,
+  query,
+  orderBy,
   doc,
   getDoc
-} from "firebase/firestore";
-import { db } from "../firebase";
-import { Session, TimeslotConfig, PaymentMethod, FormData, SealConfig, IdentityPricing } from '../types'
+} from 'firebase/firestore';
+import { db } from '../firebase';
+import {
+  Session,
+  TimeslotConfig,
+  PaymentMethod,
+  FormData,
+  SealConfig,
+  IdentityPricing
+} from '../types';
 
 export const useFirebaseListeners = (
   formData: FormData,
@@ -18,19 +25,57 @@ export const useFirebaseListeners = (
   setCalculatedTotal?: (val: number) => void
 ) => {
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [dbStatus, setDbStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
-  
-  const [generalTimeSlots, setGeneralTimeSlots] = useState<string[]>(['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00']);
-  const [specialTimeSlots, setSpecialTimeSlots] = useState<string[]>(['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00']);
+  const [dbStatus, setDbStatus] = useState<
+    'connecting' | 'connected' | 'error'
+  >('connecting');
+
+  const [generalTimeSlots, setGeneralTimeSlots] = useState<string[]>([
+    '09:00',
+    '09:30',
+    '10:00',
+    '10:30',
+    '11:00',
+    '11:30',
+    '12:00',
+    '12:30',
+    '13:00',
+    '13:30',
+    '14:00',
+    '14:30',
+    '15:00'
+  ]);
+  const [specialTimeSlots, setSpecialTimeSlots] = useState<string[]>([
+    '09:00',
+    '09:30',
+    '10:00',
+    '10:30',
+    '11:00',
+    '11:30',
+    '12:00',
+    '12:30',
+    '13:00',
+    '13:30',
+    '14:00',
+    '14:30',
+    '15:00'
+  ]);
   const [timeslotConfig, setTimeslotConfig] = useState<TimeslotConfig>({
-    generalStart: '09:00', generalEnd: '15:00', generalInterval: 30,
-    specialStart: '09:00', specialEnd: '15:00', specialInterval: 30
+    generalStart: '09:00',
+    generalEnd: '15:00',
+    generalInterval: 30,
+    specialStart: '09:00',
+    specialEnd: '15:00',
+    specialInterval: 30
   });
-  
+
   const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
-  const [sealConfig, setSealConfig] = useState<SealConfig>({ activeSeal: 'full-yang' });
-  const [identityPricings, setIdentityPricings] = useState<IdentityPricing[]>([]);
-  const [isEntryAnimating, setIsEntryAnimating] = useState(true); 
+  const [sealConfig, setSealConfig] = useState<SealConfig>({
+    activeSeal: 'full-yang'
+  });
+  const [identityPricings, setIdentityPricings] = useState<IdentityPricing[]>(
+    []
+  );
+  const [isEntryAnimating, setIsEntryAnimating] = useState(true);
   const [shouldRenderEntry, setShouldRenderEntry] = useState(true);
 
   // 新增：偵測 certId 領取證書
@@ -38,19 +83,30 @@ export const useFirebaseListeners = (
     const urlParams = new URLSearchParams(window.location.search);
     const certId = urlParams.get('certId');
     const playerIndex = urlParams.get('playerIndex');
-    
+
     // 關鍵修正：加入 !formData.name 判斷，若已有資料則不再重複抓取
-    if (certId && !formData.name && setFormData && setSubmitted && setLastSubmissionId && setCalculatedTotal) {
+    if (
+      certId &&
+      !formData.name &&
+      setFormData &&
+      setSubmitted &&
+      setLastSubmissionId &&
+      setCalculatedTotal
+    ) {
       const fetchCertData = async () => {
         try {
-          const docRef = doc(db, "registrations", certId);
+          const docRef = doc(db, 'registrations', certId);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
             const data = docSnap.data();
-            
+
             // 決定顯示姓名：如果有 playerIndex，則從名單中抓取
             let displayName = data.name || '';
-            if (playerIndex !== null && data.playerList && data.playerList[Number(playerIndex)]) {
+            if (
+              playerIndex !== null &&
+              data.playerList &&
+              data.playerList[Number(playerIndex)]
+            ) {
               displayName = data.playerList[Number(playerIndex)].name;
             }
 
@@ -63,7 +119,9 @@ export const useFirebaseListeners = (
               session: data.session || '',
               quantity: String(data.quantity || '1'),
               players: String(data.players || '1'),
-              playerList: data.playerList || [{ name: data.name || '', email: data.email || '' }], // 恢復隊員名單
+              playerList: data.playerList || [
+                { name: data.name || '', email: data.email || '' }
+              ], // 恢復隊員名單
               totalAmount: String(data.totalAmount || '0'),
               paymentMethod: data.paymentMethod || '',
               bankLast5: data.bankLast5 || '',
@@ -73,24 +131,30 @@ export const useFirebaseListeners = (
               notes: data.notes || '',
               hp_field: '',
               identityType: data.identityType || '一般民眾'
-              });
+            });
 
             setCalculatedTotal(data.totalAmount || 0);
             setLastSubmissionId(certId);
             setSubmitted(true);
           }
         } catch (err) {
-          console.error("Fetch Cert Error:", err);
+          console.error('Fetch Cert Error:', err);
         }
       };
       fetchCertData();
     }
-  }, [setFormData, setSubmitted, setLastSubmissionId, setCalculatedTotal, formData.name]);
+  }, [
+    setFormData,
+    setSubmitted,
+    setLastSubmissionId,
+    setCalculatedTotal,
+    formData.name
+  ]);
 
   useEffect(() => {
-    const minEntryTime = 2500; 
+    const minEntryTime = 2500;
     const startTime = Date.now();
-    let isTransitionStarted = false; 
+    let isTransitionStarted = false;
 
     const triggerExitAnimation = () => {
       if (isTransitionStarted) return;
@@ -110,37 +174,58 @@ export const useFirebaseListeners = (
         }, remainingTime);
       }
     };
-    
+
     const fetchSessions = () => {
       console.log('🚀 啟動 Firebase 監聽器...');
-      
-      const qGeneral = query(collection(db, "sessions"), orderBy("name"));
-      const qSpecial = query(collection(db, "special_sessions"), orderBy("name"));
-      
+
+      const qGeneral = query(collection(db, 'sessions'), orderBy('name'));
+      const qSpecial = query(
+        collection(db, 'special_sessions'),
+        orderBy('name')
+      );
+
       let generalSessions: Session[] = [];
       let specialSessions: Session[] = [];
 
       const updateAllSessions = () => {
-        const merged = [...generalSessions, ...specialSessions].sort((a, b) => a.name.localeCompare(b.name));
+        const merged = [...generalSessions, ...specialSessions].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        );
         setSessions(merged);
         localStorage.setItem('bagua_maze_sessions', JSON.stringify(merged));
       };
 
-      const unsubGeneral = onSnapshot(qGeneral, (snapshot) => {
-        generalSessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isSpecial: false })) as Session[];
-        updateAllSessions();
-        setDbStatus('connected');
-      }, (err) => {
-        console.error('❌ 一般場次連線錯誤:', err);
-        setDbStatus('error');
-      });
+      const unsubGeneral = onSnapshot(
+        qGeneral,
+        (snapshot) => {
+          generalSessions = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            isSpecial: false
+          })) as Session[];
+          updateAllSessions();
+          setDbStatus('connected');
+        },
+        (err) => {
+          console.error('❌ 一般場次連線錯誤:', err);
+          setDbStatus('error');
+        }
+      );
 
-      const unsubSpecial = onSnapshot(qSpecial, (snapshot) => {
-        specialSessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), isSpecial: true })) as Session[];
-        updateAllSessions();
-      }, (err) => {
-        console.error('❌ 特別場次連線錯誤:', err);
-      });
+      const unsubSpecial = onSnapshot(
+        qSpecial,
+        (snapshot) => {
+          specialSessions = snapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+            isSpecial: true
+          })) as Session[];
+          updateAllSessions();
+        },
+        (err) => {
+          console.error('❌ 特別場次連線錯誤:', err);
+        }
+      );
 
       return () => {
         unsubGeneral();
@@ -149,35 +234,41 @@ export const useFirebaseListeners = (
     };
 
     const fetchTimeSlots = () => {
-      const unsubGeneral = onSnapshot(doc(db, "config", "general_timeslots"), (doc) => {
-        if (doc.exists()) {
-          const data = doc.data();
-          if (data.slots) setGeneralTimeSlots(data.slots);
-          if (data.config) {
-            setTimeslotConfig(prev => ({
-              ...prev,
-              generalStart: data.config.start,
-              generalEnd: data.config.end,
-              generalInterval: data.config.interval
-            }));
+      const unsubGeneral = onSnapshot(
+        doc(db, 'config', 'general_timeslots'),
+        (doc) => {
+          if (doc.exists()) {
+            const data = doc.data();
+            if (data.slots) setGeneralTimeSlots(data.slots);
+            if (data.config) {
+              setTimeslotConfig((prev) => ({
+                ...prev,
+                generalStart: data.config.start,
+                generalEnd: data.config.end,
+                generalInterval: data.config.interval
+              }));
+            }
           }
         }
-      });
+      );
 
-      const unsubSpecial = onSnapshot(doc(db, "config", "special_timeslots"), (doc) => {
-        if (doc.exists()) {
-          const data = doc.data();
-          if (data.slots) setSpecialTimeSlots(data.slots);
-          if (data.config) {
-            setTimeslotConfig(prev => ({
-              ...prev,
-              specialStart: data.config.start,
-              specialEnd: data.config.end,
-              specialInterval: data.config.interval
-            }));
+      const unsubSpecial = onSnapshot(
+        doc(db, 'config', 'special_timeslots'),
+        (doc) => {
+          if (doc.exists()) {
+            const data = doc.data();
+            if (data.slots) setSpecialTimeSlots(data.slots);
+            if (data.config) {
+              setTimeslotConfig((prev) => ({
+                ...prev,
+                specialStart: data.config.start,
+                specialEnd: data.config.end,
+                specialInterval: data.config.interval
+              }));
+            }
           }
         }
-      });
+      );
 
       return () => {
         unsubGeneral();
@@ -186,38 +277,49 @@ export const useFirebaseListeners = (
     };
 
     const fetchPaymentMethods = () => {
-      const unsubscribe = onSnapshot(doc(db, "config", "payments"), (docSnap) => {
-        if (docSnap.exists()) {
-          const methods = docSnap.data().methods || [];
-          setPaymentMethods(methods);
-          
-          setFormData(prev => {
-            if (methods.length > 0 && !methods.find((m: any) => m.name === prev.paymentMethod)) {
-              return { ...prev, paymentMethod: methods[0].name };
-            }
-            return prev;
-          });
+      const unsubscribe = onSnapshot(
+        doc(db, 'config', 'payments'),
+        (docSnap) => {
+          if (docSnap.exists()) {
+            const methods = docSnap.data().methods || [];
+            setPaymentMethods(methods);
+
+            setFormData((prev) => {
+              if (
+                methods.length > 0 &&
+                !methods.find((m: any) => m.name === prev.paymentMethod)
+              ) {
+                return { ...prev, paymentMethod: methods[0].name };
+              }
+              return prev;
+            });
+          }
         }
-      });
+      );
       return unsubscribe;
     };
 
     const fetchSealConfig = () => {
-      const unsubscribe = onSnapshot(doc(db, "config", "seal_config"), (docSnap) => {
-        if (docSnap.exists()) {
-          setSealConfig(docSnap.data() as SealConfig);
-        } else {
-          // 若不存在則建立預設值
-          setSealConfig({ activeSeal: 'full-yang' });
+      const unsubscribe = onSnapshot(
+        doc(db, 'config', 'seal_config'),
+        (docSnap) => {
+          if (docSnap.exists()) {
+            setSealConfig(docSnap.data() as SealConfig);
+          } else {
+            // 若不存在則建立預設值
+            setSealConfig({ activeSeal: 'full-yang' });
+          }
         }
-      });
+      );
       return unsubscribe;
     };
 
     const fetchIdentityPricings = () => {
-      const q = query(collection(db, "identity_pricings"), orderBy("name"));
+      const q = query(collection(db, 'identity_pricings'), orderBy('name'));
       const unsubscribe = onSnapshot(q, (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as IdentityPricing));
+        const data = snapshot.docs.map(
+          (doc) => ({ id: doc.id, ...doc.data() }) as IdentityPricing
+        );
         setIdentityPricings(data);
       });
       return unsubscribe;

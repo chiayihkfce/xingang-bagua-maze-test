@@ -14,6 +14,7 @@ export const useAppState = () => {
   const [loadTime] = useState(() => Date.now());
   const [isDataLoading, setIsDataLoading] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isLookupOpen, setIsLookupOpen] = useState(false);
 
   // 2. 表單資料狀態
   const [formData, setFormData] = useState<FormData>({
@@ -34,26 +35,44 @@ export const useAppState = () => {
     referral: ['基金會FB'] as string[],
     notes: '',
     hp_field: '',
-    identityType: '一般民眾' 
+    identityType: '一般民眾'
   });
 
   // 3. 管理員相關狀態
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState<any>(null);
   const [isEditingSession, setIsEditingSession] = useState(false);
-  const [editingSession, setEditingSession] = useState({ 
-    id: '', oldName: '', newName: '', newPrice: '', fixedDate: '', fixedTime: '', isSpecial: false 
+  const [editingSession, setEditingSession] = useState({
+    id: '',
+    oldName: '',
+    newName: '',
+    newPrice: '',
+    fixedDate: '',
+    fixedTime: '',
+    isSpecial: false
   });
-  const [adminTab, setAdminTab] = useState<'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments' | 'analytics'>('sessions');
-  const [newSession, setNewSession] = useState({ 
-    name: '', price: '', fixedDate: '', fixedTime: '', isSpecial: false 
+  const [adminTab, setAdminTab] = useState<
+    'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments' | 'analytics'
+  >('sessions');
+  const [newSession, setNewSession] = useState({
+    name: '',
+    price: '',
+    fixedDate: '',
+    fixedTime: '',
+    isSpecial: false
   });
   const [adminFilterDate, setAdminFilterDate] = useState<Date | null>(null);
   const [adminSearchKeyword, setAdminSearchKeyword] = useState('');
   const [showRecycleBin, setShowRecycleBin] = useState(false);
   const [showAuditModal, setShowAuditModal] = useState(false);
-  const [auditTarget, setAuditTarget] = useState<{index: number, row: any[]} | null>(null);
-  const [sortConfig, setSortConfig] = useState<{ key: number, direction: 'asc' | 'desc' } | null>(null);
+  const [auditTarget, setAuditTarget] = useState<{
+    index: number;
+    row: any[];
+  } | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    key: number;
+    direction: 'asc' | 'desc';
+  } | null>(null);
   const [visibleColumns, setVisibleColumns] = useState<number[]>(() => {
     const saved = localStorage.getItem('visibleColumns');
     return saved ? JSON.parse(saved) : [];
@@ -72,37 +91,70 @@ export const useAppState = () => {
   const [hasCandy, setHasCandy] = useState(false);
 
   return {
-    submitted, setSubmitted,
-    lastSubmissionId, setLastSubmissionId,
-    isSubmitting, setIsSubmitting,
-    calculatedTotal, setCalculatedTotal,
-    currentPage, setCurrentPage,
+    submitted,
+    setSubmitted,
+    lastSubmissionId,
+    setLastSubmissionId,
+    isSubmitting,
+    setIsSubmitting,
+    calculatedTotal,
+    setCalculatedTotal,
+    currentPage,
+    setCurrentPage,
     loadTime,
-    isDataLoading, setIsDataLoading,
-    showConfirmation, setShowConfirmation,
-    formData, setFormData,
-    isEditing, setIsEditing,
-    editData, setEditData,
-    isEditingSession, setIsEditingSession,
-    editingSession, setEditingSession,
-    adminTab, setAdminTab,
-    newSession, setNewSession,
-    adminFilterDate, setAdminFilterDate,
-    adminSearchKeyword, setAdminSearchKeyword,
-    showRecycleBin, setShowRecycleBin,
-    showAuditModal, setShowAuditModal,
-    auditTarget, setAuditTarget,
-    sortConfig, setSortConfig,
-    visibleColumns, setVisibleColumns,
-    showColumnFilter, setShowShowColumnFilter,
-    newManualTime, setNewManualTime,
-    selectedIds, setSelectedIds,
-    hasFlashlight, setHasFlashlight,
-    hasPoetrySlip, setHasPoetrySlip,
-    hasTigerSeal, setHasTigerSeal,
-    isFlashlightOn, setIsFlashlightOn,
-    isBagOpen, setIsBagOpen,
-    hasDuckSoup, setHasDuckSoup,
-    hasCandy, setHasCandy
+    isDataLoading,
+    setIsDataLoading,
+    showConfirmation,
+    setShowConfirmation,
+    isLookupOpen,
+    setIsLookupOpen,
+    formData,
+    setFormData,
+    isEditing,
+    setIsEditing,
+    editData,
+    setEditData,
+    isEditingSession,
+    setIsEditingSession,
+    editingSession,
+    setEditingSession,
+    adminTab,
+    setAdminTab,
+    newSession,
+    setNewSession,
+    adminFilterDate,
+    setAdminFilterDate,
+    adminSearchKeyword,
+    setAdminSearchKeyword,
+    showRecycleBin,
+    setShowRecycleBin,
+    showAuditModal,
+    setShowAuditModal,
+    auditTarget,
+    setAuditTarget,
+    sortConfig,
+    setSortConfig,
+    visibleColumns,
+    setVisibleColumns,
+    showColumnFilter,
+    setShowShowColumnFilter,
+    newManualTime,
+    setNewManualTime,
+    selectedIds,
+    setSelectedIds,
+    hasFlashlight,
+    setHasFlashlight,
+    hasPoetrySlip,
+    setHasPoetrySlip,
+    hasTigerSeal,
+    setHasTigerSeal,
+    isFlashlightOn,
+    setIsFlashlightOn,
+    isBagOpen,
+    setIsBagOpen,
+    hasDuckSoup,
+    setHasDuckSoup,
+    hasCandy,
+    setHasCandy
   };
 };

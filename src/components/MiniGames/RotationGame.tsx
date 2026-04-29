@@ -15,17 +15,17 @@ const RotationGame: React.FC<{ onWin: () => void }> = ({ onWin }) => {
         if (idx === 1) a[2] = (a[2] + 45) % 360;
         if (idx === 2) a[0] = (a[0] + 45) % 360;
       }
-      return a.every(val => val === 0) ? generate() : a;
+      return a.every((val) => val === 0) ? generate() : a;
     };
     return generate();
   });
-  
+
   const isReady = useRef(true);
   const trigrams = ['☰', '☱', '☲', '☳', '☴', '☵', '☶', '☷'];
 
   const handleLinkedRotate = (index: number) => {
     if (!isReady.current) return;
-    setAngles(prev => {
+    setAngles((prev) => {
       const next = [...prev];
       next[index] = (next[index] + 45) % 360;
       if (index === 0) next[1] = (next[1] + 45) % 360;
@@ -36,7 +36,7 @@ const RotationGame: React.FC<{ onWin: () => void }> = ({ onWin }) => {
   };
 
   useEffect(() => {
-    if (isReady.current && angles.every(a => a === 0)) {
+    if (isReady.current && angles.every((a) => a === 0)) {
       isReady.current = false; // 防止重複觸發
       setTimeout(() => onWin(), 600);
     }
@@ -45,16 +45,30 @@ const RotationGame: React.FC<{ onWin: () => void }> = ({ onWin }) => {
   return (
     <div className="rotation-game">
       <div className="game-instructions" style={{ textAlign: 'center' }}>
-        <h3 style={{ margin: 0, color: 'var(--primary-gold)' }}>八卦聯動機關</h3>
-        <p style={{ fontSize: '0.75rem', margin: '6px 0', opacity: 0.8 }}>點擊撥動圓環，使三圈「☰」對齊正上方</p>
+        <h3 style={{ margin: 0, color: 'var(--primary-gold)' }}>
+          八卦聯動機關
+        </h3>
+        <p style={{ fontSize: '0.75rem', margin: '6px 0', opacity: 0.8 }}>
+          點擊撥動圓環，使三圈「☰」對齊正上方
+        </p>
       </div>
 
-      <div className="bagua-layers" style={{ position: 'relative', width: '280px', height: '280px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div
+        className="bagua-layers"
+        style={{
+          position: 'relative',
+          width: '280px',
+          height: '280px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
         {angles.map((angle, i) => (
-          <div 
-            key={i} 
-            className={`layer layer-${i} ${angle === 0 ? 'aligned' : ''}`} 
-            style={{ 
+          <div
+            key={i}
+            className={`layer layer-${i} ${angle === 0 ? 'aligned' : ''}`}
+            style={{
               position: 'absolute',
               width: `${280 - i * 80}px`,
               height: `${280 - i * 80}px`,
@@ -70,44 +84,70 @@ const RotationGame: React.FC<{ onWin: () => void }> = ({ onWin }) => {
             onClick={() => handleLinkedRotate(i)}
           >
             {trigrams.map((symbol, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`symbol-item ${idx === 0 ? 'target-symbol' : ''}`}
-                style={{ 
+                style={{
                   position: 'absolute',
                   transform: `rotate(${idx * 45}deg) translateY(-${[130, 90, 50][i]}px)`,
                   color: 'var(--primary-gold)',
                   fontSize: '1.1rem',
-                  opacity: (angle === 0 && idx === 0) ? 1 : 0.6
+                  opacity: angle === 0 && idx === 0 ? 1 : 0.6
                 }}
               >
                 {symbol}
               </div>
             ))}
-            <div className="marker" style={{ position: 'absolute', top: '-6px', width: '10px', height: '10px', background: 'var(--primary-gold)', borderRadius: '50%' }}></div>
+            <div
+              className="marker"
+              style={{
+                position: 'absolute',
+                top: '-6px',
+                width: '10px',
+                height: '10px',
+                background: 'var(--primary-gold)',
+                borderRadius: '50%'
+              }}
+            ></div>
           </div>
         ))}
         {/* 中心太極 */}
-        <div className="center-core" style={{ 
-          width: '60px', 
-          height: '60px', 
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          zIndex: 10,
-          pointerEvents: 'none',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))'
-        }}>
-          <div className="taiji" style={{ width: '100%', height: '100%', animationDuration: '10s' }}></div>
+        <div
+          className="center-core"
+          style={{
+            width: '60px',
+            height: '60px',
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 10,
+            pointerEvents: 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.3))'
+          }}
+        >
+          <div
+            className="taiji"
+            style={{ width: '100%', height: '100%', animationDuration: '10s' }}
+          ></div>
         </div>
       </div>
-      
-      <div className="control-hint" style={{ color: 'var(--primary-gold)', fontSize: '0.7rem', marginTop: '10px', textAlign: 'center' }}>
-        {angles.every(a => a === 0) ? "陣法已破！" : "觀察環與環之間的連動規律"}
+
+      <div
+        className="control-hint"
+        style={{
+          color: 'var(--primary-gold)',
+          fontSize: '0.7rem',
+          marginTop: '10px',
+          textAlign: 'center'
+        }}
+      >
+        {angles.every((a) => a === 0)
+          ? '陣法已破！'
+          : '觀察環與環之間的連動規律'}
       </div>
     </div>
   );
