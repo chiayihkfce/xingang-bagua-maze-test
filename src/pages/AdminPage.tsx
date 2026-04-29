@@ -1,5 +1,5 @@
 import React from 'react';
-import CustomCursor from '../components/UI/CustomCursor';
+// import CustomCursor from '../components/UI/CustomCursor';
 import AdminDashboard from '../components/Admin/AdminDashboard';
 import AdminLogin from '../components/Admin/AdminLogin';
 import SystemModal from '../components/UI/SystemModal';

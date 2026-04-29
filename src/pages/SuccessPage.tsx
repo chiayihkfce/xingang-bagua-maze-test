@@ -1,5 +1,5 @@
 import React from 'react';
-import CustomCursor from '../components/UI/CustomCursor';
+// import CustomCursor from '../components/UI/CustomCursor';
 import SuccessScreen from '../components/Registration/SuccessScreen';
 import SystemModal from '../components/UI/SystemModal';
 

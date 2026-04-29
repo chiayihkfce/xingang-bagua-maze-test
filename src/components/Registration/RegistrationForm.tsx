@@ -72,7 +72,7 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
   setShowGames
 }) => {
   const { 
-    hasFlashlight, hasPoetrySlip, hasTigerSeal,
+    hasFlashlight, hasPoetrySlip, hasTigerSeal, hasDuckSoup, hasCandy,
     isFlashlightOn, setIsFlashlightOn, 
     isBagOpen, setIsBagOpen,
     triggerBaguaBox
@@ -169,7 +169,8 @@ const RegistrationForm: React.FC<RegistrationFormProps> = ({
           hasFlashlight={hasFlashlight}
           hasPoetrySlip={hasPoetrySlip}
           hasTigerSeal={hasTigerSeal}
-          isFlashlightOn={isFlashlightOn}
+          hasDuckSoup={hasDuckSoup}
+          hasCandy={hasCandy}
           onToggleFlashlight={() => {
             const nextState = !isFlashlightOn;
             setIsFlashlightOn(nextState);
@@ -891,136 +892,70 @@ const BagModal: React.FC<{
   hasFlashlight: boolean;
   hasPoetrySlip: boolean;
   hasTigerSeal: boolean;
-  isFlashlightOn: boolean;
+  hasDuckSoup: boolean;
+  hasCandy: boolean;
   onToggleFlashlight: () => void;
   showMysticScroll: () => void;
   triggerBaguaBox: () => void;
-}> = ({ isOpen, onClose, hasFlashlight, hasPoetrySlip, hasTigerSeal, isFlashlightOn, onToggleFlashlight, showMysticScroll, triggerBaguaBox }) => {
+}> = ({ isOpen, onClose, hasFlashlight, hasPoetrySlip, hasTigerSeal, hasDuckSoup, hasCandy, onToggleFlashlight, showMysticScroll, triggerBaguaBox }) => {
   if (!isOpen) return null;
 
   return (
     <div className="modal-overlay" onClick={onClose} style={{ zIndex: 10000 }}>
-      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+      <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '450px', width: '90%' }}>
         <div className="modal-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', borderBottom: '1px solid rgba(212, 175, 55, 0.2)', paddingBottom: '15px' }}>
           <ChestIcon size={30} />
-          <h2 style={{ color: 'var(--primary-gold)', margin: 0 }}>我的道具箱</h2>
+          <h2 style={{ color: 'var(--primary-gold)', margin: 0 }}>我的最終神祕道具箱</h2>
         </div>
 
-        <div className="modal-body" style={{ padding: '30px 20px', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '25px' }}>
+        <div className="modal-body" style={{ padding: '20px 10px', textAlign: 'center', maxHeight: '70vh', overflowY: 'auto' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '25px' }}>
             點擊道具以使用或查看
           </p>
 
-          <div style={{ display: 'flex', gap: '25px', justifyContent: 'center', flexWrap: 'wrap' }}>
-            {/* 手電筒道具 */}
-            <div
-              onClick={hasFlashlight ? onToggleFlashlight : undefined}
-              style={{
-                width: '90px',
-                height: '90px',
-                background: hasFlashlight
-                  ? (isFlashlightOn ? 'var(--primary-gold)' : 'rgba(212, 175, 55, 0.1)')
-                  : 'rgba(255,255,255,0.05)',
-                border: `2px solid ${hasFlashlight ? (isFlashlightOn ? '#fff' : 'var(--primary-gold)') : '#444'}`,
-                borderRadius: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: hasFlashlight ? 'pointer' : 'not-allowed',
-                transition: 'all 0.3s ease',
-                boxShadow: isFlashlightOn ? '0 0 35px var(--primary-gold), inset 0 0 15px rgba(255,255,255,0.5)' : 'none',
-                opacity: hasFlashlight ? 1 : 0.4,
-                position: 'relative'
-              }}
-            >
-              <span style={{
-                fontSize: '2.8rem',
-                filter: isFlashlightOn ? 'drop-shadow(0 0 15px #fff) brightness(1.2)' : 'grayscale(1) opacity(0.7)'
-              }}>
-                {hasFlashlight ? '🔦' : '🔒'}
-              </span>
-              {isFlashlightOn && (
-                <div style={{ 
-                  position: 'absolute', top: '-10px', right: '-10px', 
-                  background: '#ff4d4d', color: '#fff', fontSize: '0.65rem',
-                  padding: '2px 6px', borderRadius: '10px', fontWeight: 'bold',
-                  boxShadow: '0 2px 5px rgba(0,0,0,0.3)'
-                }}>ON</div>
-              )}
-              <span style={{ 
-                position: 'absolute', bottom: '-28px', fontSize: '0.8rem', 
-                color: hasFlashlight ? 'var(--primary-gold)' : '#666',
-                whiteSpace: 'nowrap', fontWeight: 'bold',
-                textShadow: isFlashlightOn ? '0 0 10px var(--primary-gold)' : 'none'
-              }}>
-                {hasFlashlight ? '八卦手電筒' : '未獲得'}
-              </span>
-            </div>
-
-            {/* 神祕詩籤道具 */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: '30px 10px',
+            justifyItems: 'center',
+            paddingBottom: '20px'
+          }}>
+            {/* 1. 手電筒 */}
             <div 
-              onClick={hasPoetrySlip ? showMysticScroll : undefined}
-              style={{
-                width: '90px',
-                height: '90px',
-                background: hasPoetrySlip ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255,255,255,0.05)',
-                border: `2px solid ${hasPoetrySlip ? 'var(--primary-gold)' : '#444'}`,
-                borderRadius: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: hasPoetrySlip ? 'pointer' : 'not-allowed',
-                transition: 'all 0.3s ease',
-                opacity: hasPoetrySlip ? 1 : 0.4,
-                position: 'relative'
-              }}
-            >
-              <span style={{ fontSize: '2.8rem' }}>
-                {hasPoetrySlip ? '📜' : '🔒'}
-              </span>
-              <span style={{ 
-                position: 'absolute', bottom: '-28px', fontSize: '0.8rem', 
-                color: hasPoetrySlip ? 'var(--primary-gold)' : '#666',
-                whiteSpace: 'nowrap', fontWeight: 'bold'
+              onClick={hasFlashlight ? onToggleFlashlight : undefined} 
+              style={{ 
+                width: '80px', height: '80px', 
+                background: hasFlashlight ? (isFlashlightOn ? 'var(--primary-gold)' : 'rgba(212, 175, 55, 0.1)') : 'rgba(255,255,255,0.05)', 
+                border: `2px solid ${hasFlashlight ? (isFlashlightOn ? '#fff' : 'var(--primary-gold)') : '#444'}`, 
+                borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', 
+                opacity: hasFlashlight ? 1 : 0.5,
+                boxShadow: (hasFlashlight && isFlashlightOn) ? '0 0 20px var(--primary-gold)' : 'none',
+                transition: 'all 0.3s ease'
               }}>
-                {hasPoetrySlip ? '神祕詩籤' : '未獲得'}
-              </span>
+              <span style={{ fontSize: '2.2rem' }}>{hasFlashlight ? '🔦' : '🔒'}</span>
+              <span style={{ position: 'absolute', bottom: '-22px', fontSize: '0.7rem', color: hasFlashlight ? 'var(--primary-gold)' : '#888', whiteSpace: 'nowrap', fontWeight: 'bold' }}>{hasFlashlight ? '手電筒' : '未獲得'}</span>
             </div>
-
-            {/* 虎爺符令道具 */}
-            <div 
-              onClick={hasTigerSeal ? () => { onClose(); triggerBaguaBox(); } : undefined}
-              style={{
-                width: '90px',
-                height: '90px',
-                background: hasTigerSeal ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255,255,255,0.05)',
-                border: `2px solid ${hasTigerSeal ? 'var(--primary-gold)' : '#444'}`,
-                borderRadius: '16px',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: hasTigerSeal ? 'pointer' : 'not-allowed',
-                transition: 'all 0.3s ease',
-                opacity: hasTigerSeal ? 1 : 0.4,
-                position: 'relative'
-              }}
-            >
-              <span style={{ fontSize: '2.8rem' }}>
-                {hasTigerSeal ? '🐯' : '🔒'}
-              </span>
-              <span style={{ 
-                position: 'absolute', bottom: '-28px', fontSize: '0.8rem', 
-                color: hasTigerSeal ? 'var(--primary-gold)' : '#666',
-                whiteSpace: 'nowrap', fontWeight: 'bold'
-              }}>
-                {hasTigerSeal ? '虎爺符令' : '未獲得'}
-              </span>
+            {/* 2. 詩籤 */}
+            <div onClick={hasPoetrySlip ? showMysticScroll : undefined} style={{ width: '80px', height: '80px', background: hasPoetrySlip ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255,255,255,0.05)', border: `2px solid ${hasPoetrySlip ? 'var(--primary-gold)' : '#444'}`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', opacity: hasPoetrySlip ? 1 : 0.5 }}>
+              <span style={{ fontSize: '2.2rem' }}>{hasPoetrySlip ? '📜' : '🔒'}</span>
+              <span style={{ position: 'absolute', bottom: '-22px', fontSize: '0.7rem', color: hasPoetrySlip ? 'var(--primary-gold)' : '#888', whiteSpace: 'nowrap', fontWeight: 'bold' }}>{hasPoetrySlip ? '神祕詩籤' : '未獲得'}</span>
             </div>
-          </div>
-          {/* 祕令輸入區 (手機玩家救星) */}
+            {/* 3. 虎爺 */}
+            <div onClick={hasTigerSeal ? () => { onClose(); triggerBaguaBox(); } : undefined} style={{ width: '80px', height: '80px', background: hasTigerSeal ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255,255,255,0.05)', border: `2px solid ${hasTigerSeal ? 'var(--primary-gold)' : '#444'}`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', opacity: hasTigerSeal ? 1 : 0.5 }}>
+              <span style={{ fontSize: '2.2rem' }}>{hasTigerSeal ? '🐯' : '🔒'}</span>
+              <span style={{ position: 'absolute', bottom: '-22px', fontSize: '0.7rem', color: hasTigerSeal ? 'var(--primary-gold)' : '#888', whiteSpace: 'nowrap', fontWeight: 'bold' }}>{hasTigerSeal ? '虎爺符令' : '未獲得'}</span>
+            </div>
+            {/* 4. 鴨肉羹 */}
+            <div style={{ width: '80px', height: '80px', background: hasDuckSoup ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255,255,255,0.05)', border: `2px solid ${hasDuckSoup ? 'var(--primary-gold)' : '#444'}`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', opacity: hasDuckSoup ? 1 : 0.5 }}>
+              <span style={{ fontSize: '2.2rem' }}>{hasDuckSoup ? '🍜' : '🔒'}</span>
+              <span style={{ position: 'absolute', bottom: '-22px', fontSize: '0.7rem', color: hasDuckSoup ? 'var(--primary-gold)' : '#888', whiteSpace: 'nowrap', fontWeight: 'bold' }}>{hasDuckSoup ? '鴨肉羹' : '未獲得'}</span>
+            </div>
+            {/* 5. 新港飴 */}
+            <div style={{ width: '80px', height: '80px', background: hasCandy ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255,255,255,0.05)', border: `2px solid ${hasCandy ? 'var(--primary-gold)' : '#444'}`, borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', opacity: hasCandy ? 1 : 0.5 }}>
+              <span style={{ fontSize: '2.2rem' }}>{hasCandy ? '🍬' : '🔒'}</span>
+              <span style={{ position: 'absolute', bottom: '-22px', fontSize: '0.7rem', color: hasCandy ? 'var(--primary-gold)' : '#888', whiteSpace: 'nowrap', fontWeight: 'bold' }}>{hasCandy ? '新港飴' : '未獲得'}</span>
+            </div>
+          </div>          {/* 祕令輸入區 (手機玩家救星) */}
           <div style={{ marginTop: '50px', borderTop: '1px dashed rgba(212, 175, 55, 0.3)', paddingTop: '20px' }}>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '10px' }}>—— 輸入感應到的密令 ——</p>
             <div style={{ display: 'flex', gap: '10px' }}>

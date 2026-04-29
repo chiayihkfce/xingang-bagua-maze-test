@@ -65,8 +65,11 @@ export const useAppState = () => {
   // 4. 隱藏道具狀態
   const [hasFlashlight, setHasFlashlight] = useState(false);
   const [hasPoetrySlip, setHasPoetrySlip] = useState(false);
+  const [hasTigerSeal, setHasTigerSeal] = useState(false); // 新增虎印狀態
   const [isFlashlightOn, setIsFlashlightOn] = useState(false);
   const [isBagOpen, setIsBagOpen] = useState(false);
+  const [hasDuckSoup, setHasDuckSoup] = useState(false);
+  const [hasCandy, setHasCandy] = useState(false);
 
   return {
     submitted, setSubmitted,
@@ -96,7 +99,10 @@ export const useAppState = () => {
     selectedIds, setSelectedIds,
     hasFlashlight, setHasFlashlight,
     hasPoetrySlip, setHasPoetrySlip,
+    hasTigerSeal, setHasTigerSeal,
     isFlashlightOn, setIsFlashlightOn,
-    isBagOpen, setIsBagOpen
+    isBagOpen, setIsBagOpen,
+    hasDuckSoup, setHasDuckSoup,
+    hasCandy, setHasCandy
   };
 };

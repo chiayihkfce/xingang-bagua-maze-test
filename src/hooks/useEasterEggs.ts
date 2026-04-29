@@ -7,6 +7,8 @@ export const useEasterEggs = (props?: {
   setIsFlashlightOn: (val: boolean) => void;
   setHasPoetrySlip: (val: boolean) => void;
   setHasTigerSeal: (val: boolean) => void;
+  setHasDuckSoup: (val: boolean) => void;
+  setHasCandy: (val: boolean) => void;
   showAlert: (message: string, title?: string) => void;
 }) => {
   const [isAwakened, setIsAwakened] = useState(false);
@@ -16,6 +18,8 @@ export const useEasterEggs = (props?: {
   const setIsFlashlightOn = props?.setIsFlashlightOn ?? (() => {});
   const setHasPoetrySlip = props?.setHasPoetrySlip ?? (() => {});
   const setHasTigerSeal = props?.setHasTigerSeal ?? (() => {});
+  const setHasDuckSoup = props?.setHasDuckSoup ?? (() => {});
+  const setHasCandy = props?.setHasCandy ?? (() => {});
   const showAlert = props?.showAlert ?? (() => {});
 
   // 1. 顯示神祕詩籤
@@ -146,23 +150,50 @@ export const useEasterEggs = (props?: {
     console.log(`%c【 新港八卦謎蹤 - 每日一卦 】\n卦名：${randomHex.name}\n指引：${randomHex.tip}`, 'color: #d4af37; font-weight: bold;');
 
     const konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+    
+    // 英文備用密令
     const clueCode = ['c', 'l', 'u', 'e'];
     const baguaCode = ['b', 'a', 'g', 'u', 'a'];
-    const buguaCode = ['b', 'u', 'g', 'u', 'a'];
-    let kIdx = 0, cIdx = 0, bIdx = 0, buIdx = 0;
+    let kIdx = 0, cIdx = 0, bIdx = 0;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       if (e.key === 'Escape' && isFlashlightOn) setIsFlashlightOn(false);
+      
+      // 上上下下左右左右BA (無敵模式)
       if (e.key === konamiCode[kIdx]) { kIdx++; if (kIdx === konamiCode.length) { kIdx = 0; setIsAwakened(true); } } else kIdx = 0;
+      
+      // 英文密令保留作為後門
       if (key === clueCode[cIdx]) { cIdx++; if (cIdx === clueCode.length) { cIdx = 0; setHasPoetrySlip(true); showAlert('獲得了【神祕詩籤】！已放入道具箱。', '📜 獲得道具'); } } else cIdx = 0;
       if (key === baguaCode[bIdx]) { bIdx++; if (bIdx === baguaCode.length) { bIdx = 0; triggerBaguaBox(); } } else bIdx = 0;
-      if (key === buguaCode[buIdx]) { buIdx++; if (buIdx === buguaCode.length) { buIdx = 0; triggerBaguaBox(); } } else buIdx = 0;
+    };
+
+    // 處理自定義密令事件 (支援中文)
+    const handleSecretCommand = (e: any) => {
+      const command = (e.detail || '').trim();
+      if (command === '培桂堂') {
+        setHasPoetrySlip(true);
+        showAlert('感應到培桂堂的氣息...獲得了【神祕詩籤】！', '📜 獲得道具');
+      } else if (command === '乾坤') {
+        triggerBaguaBox();
+      } else if (command === '鴨肉羹') {
+        setHasDuckSoup(true);
+        showAlert('聞到了大火爆香的鴨肉與筍絲香味...獲得了【新港鴨肉羹】！', '🍜 獲得美食');
+      } else if (command === '老鼠糖' || command === '新港飴') {
+        setHasCandy(true);
+        showAlert('嚼著香 Q 帶勁的花生麥芽糖...獲得了【新港飴(老鼠糖)】！', '🍬 獲得美食');
+      } else if (command === '太平') {
+        showAlert('萬象歸宗，天下太平。', '☯ 啟示');
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFlashlightOn, setIsFlashlightOn, setHasPoetrySlip, setHasTigerSeal]);
+    window.addEventListener('secret-command' as any, handleSecretCommand);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('secret-command' as any, handleSecretCommand);
+    };
+  }, [isFlashlightOn, setIsFlashlightOn, setHasPoetrySlip, setHasTigerSeal, showAlert]);
 
   return { isAwakened, triggerBaguaBox, showMysticScroll };
 };

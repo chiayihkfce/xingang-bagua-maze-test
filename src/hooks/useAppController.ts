@@ -37,6 +37,8 @@ export const useAppController = () => {
     setIsFlashlightOn: state.setIsFlashlightOn,
     setHasPoetrySlip: state.setHasPoetrySlip,
     setHasTigerSeal: state.setHasTigerSeal,
+    setHasDuckSoup: state.setHasDuckSoup,
+    setHasCandy: state.setHasCandy,
     showAlert: modal.showAlert
   });
 
