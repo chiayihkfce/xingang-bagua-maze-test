@@ -1,8 +1,49 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // 1. 報名資料：允許任何人建立，若知曉 ID 則允許讀取（領證書），更新僅限末五碼
+    match /registrations/{registrationId} {
+      allow create: if true;
+      allow get: if true;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bankLast5']);
+      allow list: if false; // 禁止掃描全表
+    }
+    
+    // 2. 公共配置：允許任何人讀取，禁止寫入
+    match /sessions/{sessionId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /special_sessions/{sessionId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /identity_pricings/{pricingId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    match /config/{configId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    
+    // 3. 系統日誌：僅限寫入，禁止讀取
+    match /logs/{logId} {
+      allow create: if true;
+      allow read: if false;
+    }
+    
+    // 4. 管理員帳號：極度危險！目前架構為客戶端查詢登入，僅允許帶條件的查詢
+    match /admins/{adminId} {
+      // 為了支援現有的客戶端登入邏輯，必須允許讀取，但強烈建議改用 Firebase Auth
+      allow read, list: if true; 
+      allow write: if false;
+    }
+
+    // 預設拒絕其餘所有操作
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if false;
     }
   }
 }
