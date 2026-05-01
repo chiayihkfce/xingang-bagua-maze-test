@@ -298,6 +298,8 @@ export const useAppController = () => {
     ...settingsActions,
     ...registrationActions,
     ...easterEggs,
+    isEasterEggActive: state.isEasterEggActive,
+    setIsEasterEggActive: state.setIsEasterEggActive,
     isLookupOpen: state.isLookupOpen,
     setIsLookupOpen: state.setIsLookupOpen,
     dashboardStats: adminData.dashboardStats || {

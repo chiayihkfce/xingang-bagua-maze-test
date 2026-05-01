@@ -114,6 +114,7 @@ export const useAppState = () => {
   const [isBagOpen, setIsBagOpen] = useState(false);
   const [hasDuckSoup, setHasDuckSoup] = useState(false);
   const [hasCandy, setHasCandy] = useState(false);
+  const [isEasterEggActive, setIsEasterEggActive] = useState(false); // 新增彩蛋啟動狀態
 
   return {
     submitted,
@@ -181,6 +182,8 @@ export const useAppState = () => {
     setHasDuckSoup,
     hasCandy,
     setHasCandy,
+    isEasterEggActive,
+    setIsEasterEggActive,
     closedDaysConfig,
     setClosedDaysConfig
   };
