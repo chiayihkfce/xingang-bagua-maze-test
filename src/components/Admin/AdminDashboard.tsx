@@ -21,7 +21,8 @@ import {
   AdminAccount,
   SealConfig,
   SealType,
-  IdentityPricing
+  IdentityPricing,
+  ClosedDaysConfig
 } from '../../types';
 import DatePicker from 'react-datepicker';
 
@@ -53,6 +54,8 @@ interface AdminDashboardProps {
   identityPricings: IdentityPricing[];
   saveIdentityPricing: (config: Partial<IdentityPricing>) => Promise<void>;
   deleteIdentityPricing: (id: string, name: string) => Promise<void>;
+  closedDaysConfig: ClosedDaysConfig;
+  saveClosedDaysConfig: (config: ClosedDaysConfig) => Promise<void>;
   dashboardStats: IStats | null;
   logs: any[][];
   deletedSubmissions: any[][];
@@ -209,6 +212,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
         identityPricings={props.identityPricings}
         saveIdentityPricing={props.saveIdentityPricing}
         deleteIdentityPricing={props.deleteIdentityPricing}
+        closedDaysConfig={props.closedDaysConfig}
+        saveClosedDaysConfig={props.saveClosedDaysConfig}
         showAlert={showAlert}
         showConfirm={showConfirm}
       />

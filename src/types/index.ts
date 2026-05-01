@@ -100,3 +100,13 @@ export type SealType =
 export interface SealConfig {
   activeSeal: SealType;
 }
+
+export type ClosedDaysMode = 'preset-all' | 'preset-holidays' | 'custom';
+
+export interface ClosedDaysConfig {
+  mode: ClosedDaysMode;
+  excludeWeekends: boolean;
+  excludeHolidays: boolean;
+  manualClosedDates: string[]; // 格式: YYYY-MM-DD
+  holidayDates: string[]; // 系統預設或手動維護的國定假日列表
+}

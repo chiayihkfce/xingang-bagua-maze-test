@@ -39,7 +39,8 @@ export const useAppController = () => {
     state.setFormData,
     state.setSubmitted,
     state.setLastSubmissionId,
-    state.setCalculatedTotal
+    state.setCalculatedTotal,
+    state.setClosedDaysConfig
   );
   const display = useDisplayLogic({
     lang: theme.lang,
@@ -53,6 +54,7 @@ export const useAppController = () => {
     timeslotConfig: firebase.timeslotConfig,
     generalTimeSlots: firebase.generalTimeSlots,
     specialTimeSlots: firebase.specialTimeSlots,
+    closedDaysConfig: firebase.closedDaysConfig,
     t: theme.t
   });
   const modal = useSystemModal();

@@ -1,4 +1,42 @@
-import { Session, TimeslotConfig } from '../types';
+import { Session, TimeslotConfig, ClosedDaysConfig } from '../types';
+
+// ... (zhTW, pad, parseDateSafely 保持不變)
+
+/**
+ * 判斷特定日期是否為不開放日
+ */
+export const isDateClosed = (date: Date, config: ClosedDaysConfig): boolean => {
+  const day = date.getDay();
+  // 1. 每週一(1)、二(2)固定不開放 (不可更改的基礎規則)
+  if (day === 1 || day === 2) return true;
+
+  const p = (n: number) => String(n).padStart(2, '0');
+  const dateStr = `${date.getFullYear()}-${p(date.getMonth() + 1)}-${p(date.getDate())}`;
+
+  // 2. 依據模式判斷
+  if (config.mode === 'preset-all') {
+    // 排除週末 (0:日, 6:六)
+    if (day === 0 || day === 6) return true;
+    // 排除國定假日
+    if ((config.holidayDates || []).includes(dateStr)) return true;
+  } else if (config.mode === 'preset-holidays') {
+    // 僅排除國定假日，週末照常
+    if ((config.holidayDates || []).includes(dateStr)) return true;
+  } else if (config.mode === 'custom') {
+    if (config.excludeWeekends && (day === 0 || day === 6)) return true;
+    if (
+      config.excludeHolidays &&
+      (config.holidayDates || []).includes(dateStr)
+    ) {
+      return true;
+    }
+  }
+
+  // 3. 手動排除日期 (適用於所有模式，作為額外的活動衝突排除)
+  if ((config.manualClosedDates || []).includes(dateStr)) return true;
+
+  return false;
+};
 
 // 手動定義繁體中文語系資料 (避免依賴外部未安裝的庫)
 export const zhTW = {
@@ -103,6 +141,7 @@ export const findEarliestSlot = (
   timeslotConfig: TimeslotConfig,
   generalTimeSlots: string[],
   specialTimeSlots: string[],
+  closedDaysConfig: ClosedDaysConfig,
   targetSessionName?: string,
   currentSessionName?: string,
   sessionType?: '一般預約' | '特別預約' | ''
@@ -112,7 +151,6 @@ export const findEarliestSlot = (
     (s) => s.name === (targetSessionName || currentSessionName)
   );
 
-  // 修正：優先從時段陣列抓取第一個值，而非全域設定的開始時間
   const fallbackSlots =
     selectedSession?.isSpecial || sessionType === '特別預約'
       ? specialTimeSlots
@@ -140,8 +178,8 @@ export const findEarliestSlot = (
     (checkDate.getHours() === endH && checkDate.getMinutes() > endM)
   ) {
     checkDate.setDate(checkDate.getDate() + 1);
-    // 跳過週一(1)與週二(2)
-    while (checkDate.getDay() === 1 || checkDate.getDay() === 2) {
+    // 跳過不開放日
+    while (isDateClosed(checkDate, closedDaysConfig)) {
       checkDate.setDate(checkDate.getDate() + 1);
     }
     checkDate.setHours(startH, startM, 0, 0);
@@ -160,9 +198,8 @@ export const findEarliestSlot = (
   }
 
   for (let i = 0; i < 1440; i++) {
-    const day = checkDate.getDay();
-    if (day === 1 || day === 2) {
-      checkDate.setDate(checkDate.getDate() + (day === 1 ? 2 : 1));
+    if (isDateClosed(checkDate, closedDaysConfig)) {
+      checkDate.setDate(checkDate.getDate() + 1);
       checkDate.setHours(startH, startM, 0, 0);
       continue;
     }
@@ -237,7 +274,8 @@ export const adjustSelectedDate = (
   sessionType: string,
   timeslotConfig: TimeslotConfig,
   generalTimeSlots: string[],
-  specialTimeSlots: string[]
+  specialTimeSlots: string[],
+  closedDaysConfig: ClosedDaysConfig
 ): Date => {
   const adjusted = new Date(date);
   const now = new Date();
@@ -246,7 +284,6 @@ export const adjustSelectedDate = (
     adjusted.getMonth() === now.getMonth() &&
     adjusted.getDate() === now.getDate();
 
-  // 1. 決定開放時間的起點
   const fallbackSlots =
     selectedSession?.isSpecial || sessionType === '特別預約'
       ? specialTimeSlots
@@ -305,7 +342,7 @@ export const adjustSelectedDate = (
         (currentHour === endH && currentMin >= endM)
       ) {
         adjusted.setDate(adjusted.getDate() + 1);
-        while (adjusted.getDay() === 1 || adjusted.getDay() === 2) {
+        while (isDateClosed(adjusted, closedDaysConfig)) {
           adjusted.setDate(adjusted.getDate() + 1);
         }
         adjusted.setHours(startH, startM, 0, 0);

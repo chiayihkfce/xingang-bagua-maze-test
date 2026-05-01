@@ -1,11 +1,18 @@
 import React, { useState } from 'react';
-import { FormData, FormErrors, Session, TimeslotConfig } from '../types';
+import {
+  FormData,
+  FormErrors,
+  Session,
+  TimeslotConfig,
+  ClosedDaysConfig
+} from '../types';
 import { validateFieldLogic } from '../utils/validationUtils';
 import { formatName, formatBankLast5, formatPhone } from '../utils/formatUtils';
 import {
   formatDateTimeMinute,
   findEarliestSlot,
-  adjustSelectedDate
+  adjustSelectedDate,
+  isDateClosed
 } from '../utils/dateUtils';
 
 interface UseRegistrationFormProps {
@@ -15,6 +22,7 @@ interface UseRegistrationFormProps {
   timeslotConfig: TimeslotConfig;
   generalTimeSlots: string[];
   specialTimeSlots: string[];
+  closedDaysConfig: ClosedDaysConfig;
   t: any;
 }
 
@@ -25,6 +33,7 @@ export const useRegistrationForm = ({
   timeslotConfig,
   generalTimeSlots,
   specialTimeSlots,
+  closedDaysConfig,
   t
 }: UseRegistrationFormProps) => {
   const [sessionType, setSessionType] = useState<'一般預約' | '特別預約' | ''>(
@@ -165,6 +174,7 @@ export const useRegistrationForm = ({
           timeslotConfig,
           generalTimeSlots,
           specialTimeSlots,
+          closedDaysConfig,
           value
         );
       }
@@ -212,8 +222,7 @@ export const useRegistrationForm = ({
 
   const handleDateChange = (date: Date | null) => {
     if (date) {
-      const day = date.getDay();
-      if (day === 1 || day === 2) return;
+      if (isDateClosed(date, closedDaysConfig)) return;
 
       const selectedSession = sessions.find((s) => s.name === formData.session);
       const adjustedDate = adjustSelectedDate(
@@ -222,7 +231,8 @@ export const useRegistrationForm = ({
         sessionType,
         timeslotConfig,
         generalTimeSlots,
-        specialTimeSlots
+        specialTimeSlots,
+        closedDaysConfig
       );
 
       setFormData((prev) => ({

@@ -1,7 +1,14 @@
 import React from 'react';
 import DatePicker from 'react-datepicker';
-import { Session, FormData, PaymentMethod, TimeslotConfig } from '../../types';
+import {
+  Session,
+  FormData,
+  PaymentMethod,
+  TimeslotConfig
+} from '../../types';
 import { translateOption } from '../../utils/translateOptions';
+import { useAppContext } from '../../context/AppContext';
+import { isDateClosed } from '../../utils/dateUtils';
 
 interface RegistrationPaymentFieldsProps {
   t: any;
@@ -34,6 +41,8 @@ const RegistrationPaymentFields: React.FC<RegistrationPaymentFieldsProps> = ({
     (m) => m.name === formData.paymentMethod
   );
   const pad = (n: number) => String(n).padStart(2, '0');
+
+  const { closedDaysConfig } = useAppContext();
 
   return (
     <div className="form-card">
@@ -290,7 +299,8 @@ const RegistrationPaymentFields: React.FC<RegistrationPaymentFieldsProps> = ({
                 date.getDate() === fixedDate.getDate()
               );
             }
-            return date.getDay() !== 1 && date.getDay() !== 2;
+            // 使用動態配置：一、二固定不開，其餘依據管理者設定
+            return !isDateClosed(date, closedDaysConfig);
           }}
           minTime={(() => {
             const d = formData.pickupTime

@@ -1,10 +1,35 @@
 import { useState } from 'react';
-import { FormData } from '../types';
+import { FormData, ClosedDaysConfig } from '../types';
 
 /**
  * 集中管理應用程式的所有基礎資料狀態
  */
 export const useAppState = () => {
+  // ... (其他狀態)
+  const [closedDaysConfig, setClosedDaysConfig] = useState<ClosedDaysConfig>({
+    mode: 'custom',
+    excludeWeekends: false,
+    excludeHolidays: true,
+    manualClosedDates: [],
+    holidayDates: [
+      '2026-01-01',
+      '2026-02-16',
+      '2026-02-17',
+      '2026-02-18',
+      '2026-02-19',
+      '2026-02-20',
+      '2026-02-21',
+      '2026-02-28',
+      '2026-04-03',
+      '2026-04-04',
+      '2026-05-01',
+      '2026-06-19',
+      '2026-09-25',
+      '2026-10-09',
+      '2026-10-10'
+    ]
+  });
+
   // 1. 報名相關狀態
   const [submitted, setSubmitted] = useState(false);
   const [lastSubmissionId, setLastSubmissionId] = useState<string | null>(null);
@@ -155,6 +180,8 @@ export const useAppState = () => {
     hasDuckSoup,
     setHasDuckSoup,
     hasCandy,
-    setHasCandy
+    setHasCandy,
+    closedDaysConfig,
+    setClosedDaysConfig
   };
 };

@@ -14,7 +14,8 @@ import {
   PaymentMethod,
   FormData,
   SealConfig,
-  IdentityPricing
+  IdentityPricing,
+  ClosedDaysConfig
 } from '../types';
 
 export const useFirebaseListeners = (
@@ -22,7 +23,8 @@ export const useFirebaseListeners = (
   setFormData: React.Dispatch<React.SetStateAction<FormData>>,
   setSubmitted?: (val: boolean) => void,
   setLastSubmissionId?: (id: string | null) => void,
-  setCalculatedTotal?: (val: number) => void
+  setCalculatedTotal?: (val: number) => void,
+  setClosedDaysConfig?: (config: ClosedDaysConfig) => void
 ) => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [dbStatus, setDbStatus] = useState<
@@ -75,6 +77,31 @@ export const useFirebaseListeners = (
   const [identityPricings, setIdentityPricings] = useState<IdentityPricing[]>(
     []
   );
+  const [closedDaysConfig, setClosedDaysConfigLocal] = useState<ClosedDaysConfig>(
+    {
+      mode: 'custom',
+      excludeWeekends: false,
+      excludeHolidays: true,
+      manualClosedDates: [],
+      holidayDates: [
+        '2026-01-01',
+        '2026-02-16',
+        '2026-02-17',
+        '2026-02-18',
+        '2026-02-19',
+        '2026-02-20',
+        '2026-02-21',
+        '2026-02-28',
+        '2026-04-03',
+        '2026-04-04',
+        '2026-05-01',
+        '2026-06-19',
+        '2026-09-25',
+        '2026-10-09',
+        '2026-10-10'
+      ]
+    }
+  );
   const [isEntryAnimating, setIsEntryAnimating] = useState(true);
   const [shouldRenderEntry, setShouldRenderEntry] = useState(true);
 
@@ -84,7 +111,6 @@ export const useFirebaseListeners = (
     const certId = urlParams.get('certId');
     const playerIndex = urlParams.get('playerIndex');
 
-    // 關鍵修正：加入 !formData.name 判斷，若已有資料則不再重複抓取
     if (
       certId &&
       !formData.name &&
@@ -100,7 +126,6 @@ export const useFirebaseListeners = (
           if (docSnap.exists()) {
             const data = docSnap.data();
 
-            // 決定顯示姓名：如果有 playerIndex，則從名單中抓取
             let displayName = data.name || '';
             if (
               playerIndex !== null &&
@@ -112,16 +137,16 @@ export const useFirebaseListeners = (
 
             setFormData({
               email: data.email || '',
-              name: displayName, // 使用決定後的姓名
+              name: displayName,
               countryCode: data.countryCode || '+886',
               phone: data.phone || '',
-              contactEmail: data.email || '', // 預設使用同一個 email
+              contactEmail: data.email || '',
               session: data.session || '',
               quantity: String(data.quantity || '1'),
               players: String(data.players || '1'),
               playerList: data.playerList || [
                 { name: data.name || '', email: data.email || '' }
-              ], // 恢復隊員名單
+              ],
               totalAmount: String(data.totalAmount || '0'),
               paymentMethod: data.paymentMethod || '',
               bankLast5: data.bankLast5 || '',
@@ -306,7 +331,6 @@ export const useFirebaseListeners = (
           if (docSnap.exists()) {
             setSealConfig(docSnap.data() as SealConfig);
           } else {
-            // 若不存在則建立預設值
             setSealConfig({ activeSeal: 'full-yang' });
           }
         }
@@ -325,11 +349,26 @@ export const useFirebaseListeners = (
       return unsubscribe;
     };
 
+    const fetchClosedDaysConfig = () => {
+      const unsubscribe = onSnapshot(
+        doc(db, 'config', 'closed_days'),
+        (docSnap) => {
+          if (docSnap.exists()) {
+            const data = docSnap.data() as ClosedDaysConfig;
+            setClosedDaysConfigLocal(data);
+            if (setClosedDaysConfig) setClosedDaysConfig(data);
+          }
+        }
+      );
+      return unsubscribe;
+    };
+
     const unsubSessions = fetchSessions();
     const unsubSlots = fetchTimeSlots();
     const unsubPayments = fetchPaymentMethods();
     const unsubSeal = fetchSealConfig();
     const unsubIdentity = fetchIdentityPricings();
+    const unsubClosedDays = fetchClosedDaysConfig();
     triggerExitAnimation();
 
     return () => {
@@ -338,8 +377,9 @@ export const useFirebaseListeners = (
       unsubPayments();
       unsubSeal();
       unsubIdentity();
+      unsubClosedDays();
     };
-  }, [setFormData]);
+  }, [setFormData, setClosedDaysConfig]);
 
   return {
     sessions,
@@ -358,6 +398,8 @@ export const useFirebaseListeners = (
     setSealConfig,
     identityPricings,
     setIdentityPricings,
+    closedDaysConfig,
+    setClosedDaysConfig: setClosedDaysConfigLocal,
     isEntryAnimating,
     shouldRenderEntry
   };

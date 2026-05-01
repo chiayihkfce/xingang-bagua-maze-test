@@ -16,7 +16,8 @@ import {
   PaymentMethod,
   SealConfig,
   SealType,
-  IdentityPricing
+  IdentityPricing,
+  ClosedDaysConfig
 } from '../types';
 import { cleanSessionTimeFormat } from '../utils/dateUtils';
 import { readExcelFile } from '../utils/excelUtils';
@@ -490,6 +491,23 @@ export const useSettingsActions = ({
     });
   };
 
+  /**
+   * 儲存不開放日期配置
+   */
+  const saveClosedDaysConfig = async (config: ClosedDaysConfig) => {
+    setIsSubmitting(true);
+    try {
+      await setDoc(doc(db, 'config', 'closed_days'), config);
+      await addLog('更新設定', `更新了不開放日期配置 (模式: ${config.mode})`);
+      showAlert('不開放日期設定已儲存！');
+    } catch (e) {
+      console.error('Save Closed Days Error:', e);
+      showAlert('儲存失敗');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return {
     handleAddSession,
     startEditSession,
@@ -503,6 +521,7 @@ export const useSettingsActions = ({
     removeTimeSlot,
     updateSealConfig,
     saveIdentityPricing,
-    deleteIdentityPricing
+    deleteIdentityPricing,
+    saveClosedDaysConfig
   };
 };

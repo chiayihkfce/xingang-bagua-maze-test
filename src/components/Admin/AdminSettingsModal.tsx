@@ -3,7 +3,8 @@ import {
   AdminAccount,
   SealConfig,
   SealType,
-  IdentityPricing
+  IdentityPricing,
+  ClosedDaysConfig
 } from '../../types';
 import { db } from '../../firebase';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
@@ -11,6 +12,7 @@ import SettingsProfileTab from './Settings/SettingsProfileTab';
 import SettingsPricingTab from './Settings/SettingsPricingTab';
 import SettingsSealTab from './Settings/SettingsSealTab';
 import SettingsAdminListTab from './Settings/SettingsAdminListTab';
+import SettingsClosedDaysTab from './Settings/SettingsClosedDaysTab';
 
 interface AdminSettingsModalProps {
   show: boolean;
@@ -22,6 +24,8 @@ interface AdminSettingsModalProps {
   identityPricings: IdentityPricing[];
   saveIdentityPricing: (config: Partial<IdentityPricing>) => Promise<void>;
   deleteIdentityPricing: (id: string, name: string) => Promise<void>;
+  closedDaysConfig: ClosedDaysConfig;
+  saveClosedDaysConfig: (config: ClosedDaysConfig) => Promise<void>;
   showAlert: (message: string, title?: string) => void;
   showConfirm: (
     message: string,
@@ -41,12 +45,14 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
   identityPricings,
   saveIdentityPricing,
   deleteIdentityPricing,
+  closedDaysConfig,
+  saveClosedDaysConfig,
   showAlert,
   showConfirm
 }) => {
   const [admins, setAdmins] = useState<AdminAccount[]>([]);
   const [activeTab, setActiveTab] = useState<
-    'profile' | 'list' | 'seal' | 'pricing'
+    'profile' | 'list' | 'seal' | 'pricing' | 'calendar'
   >('profile');
 
   const fetchAdmins = async () => {
@@ -240,7 +246,31 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
               transition: 'all 0.3s'
             }}
           >
-            💰 活動費率
+            💰 費率
+          </button>
+          <button
+            className={`tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
+            onClick={() => setActiveTab('calendar')}
+            style={{
+              flex: 1,
+              padding: '1rem',
+              background:
+                activeTab === 'calendar' ? 'rgba(241, 196, 15, 0.1)' : 'none',
+              border: 'none',
+              borderBottom:
+                activeTab === 'calendar'
+                  ? '3px solid var(--primary-gold)'
+                  : '3px solid transparent',
+              color:
+                activeTab === 'calendar'
+                  ? 'var(--primary-gold)'
+                  : 'var(--text-muted)',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              transition: 'all 0.3s'
+            }}
+          >
+            📅 日期
           </button>
         </div>
 
@@ -256,20 +286,6 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
               fetchAdmins={fetchAdmins}
             />
           )}
-          {activeTab === 'pricing' && (
-            <SettingsPricingTab
-              identityPricings={identityPricings}
-              saveIdentityPricing={saveIdentityPricing}
-              deleteIdentityPricing={deleteIdentityPricing}
-              showAlert={showAlert}
-            />
-          )}
-          {activeTab === 'seal' && (
-            <SettingsSealTab
-              sealConfig={sealConfig}
-              updateSealConfig={updateSealConfig}
-            />
-          )}
           {activeTab === 'list' && (
             <SettingsAdminListTab
               currentAdmin={currentAdmin}
@@ -279,7 +295,27 @@ const AdminSettingsModal: React.FC<AdminSettingsModalProps> = ({
               showConfirm={showConfirm}
             />
           )}
-          </div>
+          {activeTab === 'seal' && (
+            <SettingsSealTab
+              sealConfig={sealConfig}
+              updateSealConfig={updateSealConfig}
+            />
+          )}
+          {activeTab === 'pricing' && (
+            <SettingsPricingTab
+              identityPricings={identityPricings}
+              saveIdentityPricing={saveIdentityPricing}
+              deleteIdentityPricing={deleteIdentityPricing}
+              showAlert={showAlert}
+            />
+          )}
+          {activeTab === 'calendar' && (
+            <SettingsClosedDaysTab
+              closedDaysConfig={closedDaysConfig}
+              saveClosedDaysConfig={saveClosedDaysConfig}
+            />
+          )}
+        </div>
       </div>
     </div>
   );
