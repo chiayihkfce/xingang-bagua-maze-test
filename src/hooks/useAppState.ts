@@ -106,15 +106,48 @@ export const useAppState = () => {
   const [newManualTime, setNewManualTime] = useState('');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
 
-  // 4. 隱藏道具狀態
-  const [hasFlashlight, setHasFlashlight] = useState(false);
-  const [hasPoetrySlip, setHasPoetrySlip] = useState(false);
-  const [hasTigerSeal, setHasTigerSeal] = useState(false); // 新增虎印狀態
+  // 4. 隱藏道具狀態 (實作 localStorage 持久化)
+  const [hasFlashlight, setHasFlashlight] = useState(() => 
+    localStorage.getItem('hasFlashlight') === 'true'
+  );
+  const [hasPoetrySlip, setHasPoetrySlip] = useState(() => 
+    localStorage.getItem('hasPoetrySlip') === 'true'
+  );
+  const [hasTigerSeal, setHasTigerSeal] = useState(() => 
+    localStorage.getItem('hasTigerSeal') === 'true'
+  );
+  const [hasDuckSoup, setHasDuckSoup] = useState(() => 
+    localStorage.getItem('hasDuckSoup') === 'true'
+  );
+  const [hasCandy, setHasCandy] = useState(() => 
+    localStorage.getItem('hasCandy') === 'true'
+  );
+  
   const [isFlashlightOn, setIsFlashlightOn] = useState(false);
   const [isBagOpen, setIsBagOpen] = useState(false);
-  const [hasDuckSoup, setHasDuckSoup] = useState(false);
-  const [hasCandy, setHasCandy] = useState(false);
-  const [isEasterEggActive, setIsEasterEggActive] = useState(false); // 新增彩蛋啟動狀態
+  const [isEasterEggActive, setIsEasterEggActive] = useState(false);
+
+  // 封裝帶有持久化邏輯的 Setter
+  const updateHasFlashlight = (val: boolean) => {
+    setHasFlashlight(val);
+    localStorage.setItem('hasFlashlight', String(val));
+  };
+  const updateHasPoetrySlip = (val: boolean) => {
+    setHasPoetrySlip(val);
+    localStorage.setItem('hasPoetrySlip', String(val));
+  };
+  const updateHasTigerSeal = (val: boolean) => {
+    setHasTigerSeal(val);
+    localStorage.setItem('hasTigerSeal', String(val));
+  };
+  const updateHasDuckSoup = (val: boolean) => {
+    setHasDuckSoup(val);
+    localStorage.setItem('hasDuckSoup', String(val));
+  };
+  const updateHasCandy = (val: boolean) => {
+    setHasCandy(val);
+    localStorage.setItem('hasCandy', String(val));
+  };
 
   return {
     submitted,
@@ -169,19 +202,19 @@ export const useAppState = () => {
     selectedIds,
     setSelectedIds,
     hasFlashlight,
-    setHasFlashlight,
+    setHasFlashlight: updateHasFlashlight,
     hasPoetrySlip,
-    setHasPoetrySlip,
+    setHasPoetrySlip: updateHasPoetrySlip,
     hasTigerSeal,
-    setHasTigerSeal,
+    setHasTigerSeal: updateHasTigerSeal,
     isFlashlightOn,
     setIsFlashlightOn,
     isBagOpen,
     setIsBagOpen,
     hasDuckSoup,
-    setHasDuckSoup,
+    setHasDuckSoup: updateHasDuckSoup,
     hasCandy,
-    setHasCandy,
+    setHasCandy: updateHasCandy,
     isEasterEggActive,
     setIsEasterEggActive,
     closedDaysConfig,
