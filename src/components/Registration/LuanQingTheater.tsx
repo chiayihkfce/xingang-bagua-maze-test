@@ -131,35 +131,21 @@ const LuanQingTheater: React.FC<LuanQingTheaterProps> = ({ onClose }) => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: 'rgba(15, 15, 15, 0.6)',
+          backgroundColor: 'rgba(15, 15, 15, 0.4)',
           borderRadius: '12px',
           overflow: 'hidden',
           backdropFilter: 'blur(3px)'
         }}>
-          {/* 未來替換為 <img src="/luanqing.png" ... /> */}
-          <div style={{
-            textAlign: 'center',
-            color: 'var(--primary-gold)',
-            opacity: 0.8
-          }}>
-            <div style={{ 
-              fontSize: '5rem', 
-              marginBottom: '1.5rem',
-              filter: 'drop-shadow(0 0 10px rgba(212, 175, 55, 0.4))'
-            }}>🦋</div>
-            <div style={{ 
-              fontSize: '1.8rem', 
-              letterSpacing: '8px',
-              fontWeight: 'bold',
-              textShadow: '0 0 15px rgba(212, 175, 55, 0.5)'
-            }}>白鸞卿</div>
-            <div style={{ 
-              fontSize: '0.9rem', 
-              marginTop: '1rem', 
-              opacity: 0.5,
-              letterSpacing: '2px'
-            }}>[ 空間頻率連結中 ]</div>
-          </div>
+          <img 
+            src="./luanqing.png" 
+            alt="白鸞卿" 
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              filter: 'drop-shadow(0 0 15px rgba(212, 175, 55, 0.3)) brightness(0.9)'
+            }} 
+          />
         </div>
       </div>
 
