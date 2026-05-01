@@ -1,5 +1,16 @@
 import React, { useEffect } from 'react';
-import { FormData, Session, IdentityPricing } from '../types';
+import {
+  FormData,
+  Session,
+  IdentityPricing,
+  ClosedDaysConfig,
+  TimeslotConfig
+} from '../types';
+import {
+  isDateClosed,
+  adjustSelectedDate,
+  formatDateTimeMinute
+} from '../utils/dateUtils';
 
 interface UseAppEffectsProps {
   formData: FormData;
@@ -8,6 +19,10 @@ interface UseAppEffectsProps {
   sessionType: string;
   setCalculatedTotal: (total: number) => void;
   identityPricings: IdentityPricing[];
+  closedDaysConfig: ClosedDaysConfig;
+  timeslotConfig: TimeslotConfig;
+  generalTimeSlots: string[];
+  specialTimeSlots: string[];
   sysModalShow: boolean;
   showConfirmation: boolean;
   isSubmitting: boolean;
@@ -29,6 +44,10 @@ export const useAppEffects = ({
   sessionType,
   setCalculatedTotal,
   identityPricings,
+  closedDaysConfig,
+  timeslotConfig,
+  generalTimeSlots,
+  specialTimeSlots,
   sysModalShow,
   showConfirmation,
   isSubmitting,
@@ -89,7 +108,46 @@ export const useAppEffects = ({
   ]);
 
   /**
-   * 副作用 3：當彈窗或載入畫面顯示時，禁止背景滑動
+   * 副作用 3：即時校正因設定變更而變為「不開放」的日期
+   * 確保使用者在管理員儲存設定的瞬間，若已選取該日，會自動跳轉至下一天，防止預約衝突。
+   */
+  useEffect(() => {
+    if (!formData.pickupTime) return;
+
+    const currentSelected = new Date(formData.pickupTime.replace(/-/g, '/'));
+    if (isNaN(currentSelected.getTime())) return;
+
+    // 檢查目前選取的日期是否已被管理員關閉
+    if (isDateClosed(currentSelected, closedDaysConfig)) {
+      console.log('⚠️ 偵測到目前選取日期已關閉，正在自動校正...');
+      const selectedSession = sessions.find((s) => s.name === formData.session);
+      const nextAvailable = adjustSelectedDate(
+        currentSelected,
+        selectedSession,
+        sessionType,
+        timeslotConfig,
+        generalTimeSlots,
+        specialTimeSlots,
+        closedDaysConfig
+      );
+
+      setFormData((prev) => ({
+        ...prev,
+        pickupTime: formatDateTimeMinute(nextAvailable)
+      }));
+    }
+  }, [
+    closedDaysConfig,
+    formData.session,
+    sessionType,
+    timeslotConfig,
+    generalTimeSlots,
+    specialTimeSlots,
+    setFormData
+  ]);
+
+  /**
+   * 副作用 4：當彈窗或載入畫面顯示時，禁止背景滑動
    */
   useEffect(() => {
     const isAnyModalOpen =
