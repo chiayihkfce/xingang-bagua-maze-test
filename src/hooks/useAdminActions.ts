@@ -411,7 +411,7 @@ export const useAdminActions = ({
 
       // 找出原始資料
       const original = submissions.find((row) => row[17] === editData.id);
-      const diffLogs = [];
+      const diffLogs: string[] = [];
 
       if (original) {
         const fieldNames = [
