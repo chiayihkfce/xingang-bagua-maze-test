@@ -60,7 +60,7 @@ export const useAdminActions = ({
           let count = 0;
 
           for (const docId of selectedIds) {
-            const target = submissions.find((row) => row[16] === docId);
+            const target = submissions.find((row) => row[17] === docId);
             if (target && target[1] !== '通過') {
               const docRef = doc(db, 'registrations', docId);
               batch.update(docRef, { status: '通過' });
@@ -98,7 +98,7 @@ export const useAdminActions = ({
           let count = 0;
 
           for (const docId of selectedIds) {
-            const target = submissions.find((row) => row[16] === docId);
+            const target = submissions.find((row) => row[17] === docId);
             if (target) {
               const sourceRef = doc(db, 'registrations', docId);
               const targetRef = doc(db, 'registrations_deleted', docId);
@@ -119,9 +119,10 @@ export const useAdminActions = ({
                 pickupLocation: target[12],
                 referral: target[13],
                 notes: target[14],
-                playerList: target[19] || [],
-                createdAt: target[17] || serverTimestamp(),
-                certSent: target[18] || false
+                playerList: target[20] || [],
+                createdAt: target[18] || serverTimestamp(),
+                certSent: target[19] || false,
+                checkedIn: target[16] || false
               };
 
               batch.set(targetRef, dataToMove);
@@ -149,7 +150,7 @@ export const useAdminActions = ({
    */
   const handleVerifyPayment = async (rowIndex: number, status: string) => {
     const target = submissions[rowIndex];
-    const docId = target[16];
+    const docId = target[17];
     const currentStatus = target[1];
 
     if (!docId) return;
@@ -179,11 +180,39 @@ export const useAdminActions = ({
   };
 
   /**
+   * 切換報到狀態
+   */
+  const handleToggleCheckIn = async (rowIndex: number) => {
+    const target = submissions[rowIndex];
+    const docId = target[17];
+    const currentCheckedIn = target[16] || false;
+    const newCheckedIn = !currentCheckedIn;
+
+    if (!docId) return;
+
+    setIsSubmitting(true);
+    try {
+      const docRef = doc(db, 'registrations', docId);
+      await updateDoc(docRef, { checkedIn: newCheckedIn });
+      await addLog(
+        '報到更新',
+        `將「${target[2]}」的報到狀態標記為 [${newCheckedIn ? '已報到' : '未報到'}]`
+      );
+      showAlert(newCheckedIn ? '已標記為報到' : '已取消報到標記');
+    } catch (err) {
+      console.error(err);
+      showAlert('報到狀態更新失敗');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  /**
    * 將報名資料移至回收桶 (跨集合搬移)
    */
   const handleDeleteSubmission = async (rowIndex: number) => {
     const target = submissions[rowIndex];
-    const docId = target[16];
+    const docId = target[17];
     if (!docId) return;
 
     showConfirm('確定要將這筆報名資料移至回收桶嗎？', async () => {
@@ -209,9 +238,10 @@ export const useAdminActions = ({
           pickupLocation: target[12],
           referral: target[13],
           notes: target[14],
-          playerList: target[19] || [],
-          createdAt: target[17] || serverTimestamp(),
-          certSent: target[18] || false
+          playerList: target[20] || [],
+          createdAt: target[18] || serverTimestamp(),
+          certSent: target[19] || false,
+          checkedIn: target[16] || false
         };
 
         const batch = writeBatch(db);
@@ -235,7 +265,7 @@ export const useAdminActions = ({
    */
   const handleRestoreSubmission = async (rowIndex: number) => {
     const target = deletedSubmissions[rowIndex];
-    const docId = target[16];
+    const docId = target[17];
     if (!docId) return;
 
     setIsSubmitting(true);
@@ -259,9 +289,10 @@ export const useAdminActions = ({
         pickupLocation: target[12],
         referral: target[13],
         notes: target[14],
-        playerList: target[19] || [],
-        createdAt: target[17] || serverTimestamp(),
-        certSent: target[18] || false,
+        playerList: target[20] || [],
+        createdAt: target[18] || serverTimestamp(),
+        certSent: target[19] || false,
+        checkedIn: target[16] || false,
         deleted: false // 還原後標記為未刪除
       };
 
@@ -361,8 +392,9 @@ export const useAdminActions = ({
       pickupLocation: row[12],
       referral: row[13],
       notes: row[14],
-      playerList: row[19] || [], // 載入原始隊員清單供編輯
-      id: row[16]
+      playerList: row[20] || [], // 載入原始隊員清單供編輯
+      id: row[17],
+      checkedIn: row[16] || false
     });
     setIsEditing(true);
   };
@@ -378,7 +410,7 @@ export const useAdminActions = ({
       const docRef = doc(db, 'registrations', editData.id);
 
       // 找出原始資料
-      const original = submissions.find((row) => row[16] === editData.id);
+      const original = submissions.find((row) => row[17] === editData.id);
       const diffLogs = [];
 
       if (original) {
@@ -397,38 +429,40 @@ export const useAdminActions = ({
           '預約時間',
           '地點',
           '得知管道',
-          '備註'
+          '備註',
+          '隊員名單',
+          '報到'
         ];
-        // 對比前 15 個欄位
-        for (let i = 1; i <= 14; i++) {
-          // 這裡由於 editData 的 key 順序不一定對等，改用明確欄位對比
-          const fieldMap: any = {
-            1: 'status',
-            2: 'name',
-            3: 'phone',
-            4: 'email',
-            5: 'session',
-            6: 'quantity',
-            7: 'players',
-            8: 'totalAmount',
-            9: 'paymentMethod',
-            10: 'bankLast5',
-            11: 'pickupTime',
-            12: 'pickupLocation',
-            13: 'referral',
-            14: 'notes'
-          };
+        // 對比欄位
+        const fieldMap: any = {
+          1: 'status',
+          2: 'name',
+          3: 'phone',
+          4: 'email',
+          5: 'session',
+          6: 'quantity',
+          7: 'players',
+          8: 'totalAmount',
+          9: 'paymentMethod',
+          10: 'bankLast5',
+          11: 'pickupTime',
+          12: 'pickupLocation',
+          13: 'referral',
+          14: 'notes',
+          16: 'checkedIn'
+        };
 
-          const key = fieldMap[i];
-          const currentOld = String(original[i] || '');
+        Object.keys(fieldMap).forEach((idx: any) => {
+          const key = fieldMap[idx];
+          const currentOld = String(original[idx] || '');
           const currentNew = String((editData as any)[key] || '');
 
           if (currentOld !== currentNew) {
             diffLogs.push(
-              `${fieldNames[i]}: [${currentOld}] -> [${currentNew}]`
+              `${fieldNames[idx]}: [${currentOld}] -> [${currentNew}]`
             );
           }
-        }
+        });
       }
 
       const updateData = { ...editData };
@@ -463,6 +497,7 @@ export const useAdminActions = ({
     startEditSubmission,
     handleUpdateSubmission,
     handleBatchVerifyPayment,
-    handleBatchDelete
+    handleBatchDelete,
+    handleToggleCheckIn
   };
 };

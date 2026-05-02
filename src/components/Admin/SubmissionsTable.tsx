@@ -11,6 +11,7 @@ const SubmissionsTable: React.FC = () => {
     setShowAuditModal,
     startEditSubmission,
     handleDeleteSubmission,
+    handleToggleCheckIn,
     formatFullDateTime,
     selectedIds,
     setSelectedIds
@@ -20,7 +21,7 @@ const SubmissionsTable: React.FC = () => {
     if (selectedIds.length === submissions.length - 1) {
       setSelectedIds([]);
     } else {
-      setSelectedIds(submissions.slice(1).map((row) => row[16]));
+      setSelectedIds(submissions.slice(1).map((row) => row[17]));
     }
   };
 
@@ -80,17 +81,28 @@ const SubmissionsTable: React.FC = () => {
       <tbody>
         {submissions.slice(1).map((row, i) => (
           <tr
-            key={row[16] || i}
-            className={selectedIds.includes(row[16]) ? 'selected-row' : ''}
+            key={row[17] || i}
+            className={selectedIds.includes(row[17]) ? 'selected-row' : ''}
           >
             <td>
               <input
                 type="checkbox"
-                checked={selectedIds.includes(row[16])}
-                onChange={() => toggleSelect(row[16])}
+                checked={selectedIds.includes(row[17])}
+                onChange={() => toggleSelect(row[17])}
               />
             </td>
             <td className="action-cell">
+              <button
+                onClick={() => handleToggleCheckIn(i + 1)}
+                className="edit-btn"
+                style={{
+                  background: row[16] ? '#27ae60' : 'rgba(255,255,255,0.1)',
+                  color: row[16] ? 'white' : '#bbb',
+                  border: row[16] ? 'none' : '1px solid #444'
+                }}
+              >
+                {row[16] ? '已報到' : '報到'}
+              </button>
               <button
                 onClick={() => {
                   setAuditTarget({ index: i + 1, row });
@@ -146,7 +158,7 @@ const SubmissionsTable: React.FC = () => {
                         }}
                       >
                         <span style={{ fontSize: '0.85rem' }}>{cell}</span>
-                        {row[18] === true && (
+                        {row[19] === true && (
                           <span
                             title="系統已自動發送證書"
                             style={{
@@ -162,6 +174,15 @@ const SubmissionsTable: React.FC = () => {
                           </span>
                         )}
                       </div>
+                    ) : j === 16 ? (
+                      <span
+                        style={{
+                          color: cell ? '#2ecc71' : '#e74c3c',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {cell ? '● 已報到' : '○ 未報到'}
+                      </span>
                     ) : (
                       cell
                     )}

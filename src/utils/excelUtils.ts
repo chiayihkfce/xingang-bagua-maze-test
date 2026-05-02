@@ -17,7 +17,7 @@ export const exportToExcel = (
   const reversedRows = [...rows].reverse();
 
   // 3. 重新組合並過濾掉隱藏欄位 (Firebase ID 等)
-  const exportData = [header, ...reversedRows].map((row) => row.slice(0, 16));
+  const exportData = [header, ...reversedRows].map((row) => row.slice(0, 17));
 
   const ws = XLSX.utils.aoa_to_sheet(exportData);
   const wb = XLSX.utils.book_new();

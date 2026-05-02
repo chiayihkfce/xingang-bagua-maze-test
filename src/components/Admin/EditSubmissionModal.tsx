@@ -45,6 +45,30 @@ const EditSubmissionModal: React.FC<EditSubmissionModalProps> = ({
               </select>
             </div>
             <div className="form-group">
+              <label>報到狀態</label>
+              <button
+                type="button"
+                onClick={() =>
+                  setEditData({ ...editData, checkedIn: !editData.checkedIn })
+                }
+                style={{
+                  width: '100%',
+                  padding: '0.6rem',
+                  borderRadius: '6px',
+                  background: editData.checkedIn
+                    ? '#27ae60'
+                    : 'rgba(255,255,255,0.05)',
+                  color: editData.checkedIn ? 'white' : '#bbb',
+                  border: '1px solid #444',
+                  cursor: 'pointer',
+                  fontWeight: 'bold',
+                  transition: 'all 0.3s'
+                }}
+              >
+                {editData.checkedIn ? '● 已報到' : '○ 未報到 (點擊標記)'}
+              </button>
+            </div>
+            <div className="form-group">
               <label>填表姓名</label>
               <input
                 type="text"

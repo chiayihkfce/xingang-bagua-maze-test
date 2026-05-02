@@ -73,7 +73,8 @@ export const useAdminData = ({
       '取件地點',
       '得知管道',
       '備註',
-      '隊員名單'
+      '隊員名單',
+      '報到'
     ];
 
     setSubmissions([header]);
@@ -122,10 +123,11 @@ export const useAdminData = ({
           d.referral,
           d.notes,
           playerNamesStr,
-          doc.id,
-          d.createdAt,
-          d.certSent,
-          d.playerList // 19: playerList raw
+          d.checkedIn || false, // 16: 報到狀態
+          doc.id, // 17: doc.id
+          d.createdAt, // 18: createdAt
+          d.certSent, // 19: certSent
+          d.playerList // 20: playerList raw
         ];
       });
 
@@ -176,10 +178,11 @@ export const useAdminData = ({
           d.referral,
           d.notes,
           playerNamesStr,
-          doc.id,
-          d.createdAt,
-          d.certSent,
-          d.playerList
+          d.checkedIn || false, // 16: 報到狀態
+          doc.id, // 17: doc.id
+          d.createdAt, // 18: createdAt
+          d.certSent, // 19: certSent
+          d.playerList // 20: playerList raw
         ];
       });
       setDeletedSubmissions(data);
