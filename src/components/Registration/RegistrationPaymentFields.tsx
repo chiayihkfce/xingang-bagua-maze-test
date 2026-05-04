@@ -120,7 +120,7 @@ const RegistrationPaymentFields: React.FC<RegistrationPaymentFieldsProps> = ({
               fontSize: '1.1rem'
             }}
           >
-            {t.digitalPayInfo}
+            {translateOption(selectedPaymentDetail.name, lang)} {lang === 'en' ? 'Instructions' : '說明'}:
           </p>
           <p
             style={{

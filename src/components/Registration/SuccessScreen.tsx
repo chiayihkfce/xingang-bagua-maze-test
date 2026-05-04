@@ -606,7 +606,9 @@ const SuccessScreen: React.FC<SuccessScreenProps> = ({
                     fontSize: '1rem'
                   }}
                 >
-                  {t.linePayInfo || '請點擊下方按鈕完成電子支付：'}
+                  {lang === 'en'
+                    ? `Please click the button below to complete your ${translateOption(selectedPaymentDetail.name, lang)}:`
+                    : `請點擊下方按鈕完成 ${selectedPaymentDetail.name}${selectedPaymentDetail.name.includes('支付') ? '' : '支付'}：`}
                 </p>
                 <a
                   href={selectedPaymentDetail.link}

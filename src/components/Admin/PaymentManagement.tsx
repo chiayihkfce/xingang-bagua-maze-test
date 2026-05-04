@@ -116,7 +116,7 @@ const PaymentManagement: React.FC<PaymentManagementProps> = ({
                 {m.type === 'bank'
                   ? '銀行轉帳'
                   : m.type === 'linepay'
-                    ? '電子支付'
+                    ? '電子支付/連結'
                     : m.type === 'inPerson'
                       ? '現金支付'
                       : '其他'}
