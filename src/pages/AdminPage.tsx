@@ -103,8 +103,7 @@ const AdminPage: React.FC = () => {
     setRememberMe,
     handleAdminLogin,
     handleLogout,
-    navigate,
-    dailyHex
+    navigate
   } = useAppContext();
 
   if (isAdmin) {
