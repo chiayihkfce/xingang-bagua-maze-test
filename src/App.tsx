@@ -6,7 +6,7 @@ import { zhTW } from './utils/dateUtils';
 import { AppProvider, useAppContext } from './context/AppContext';
 import AdminPage from './pages/AdminPage';
 import CustomCursor from './components/UI/CustomCursor';
-import { useSecurityGuard } from './hooks/useSecurityGuard';
+//import { useSecurityGuard } from './hooks/useSecurityGuard';
 
 // 註冊語系
 registerLocale('zh', zhTW as any);
