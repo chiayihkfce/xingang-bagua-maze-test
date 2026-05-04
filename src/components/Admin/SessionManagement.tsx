@@ -34,6 +34,9 @@ const SessionManagement: React.FC<SessionManagementProps> = (props) => {
     DatePicker
   } = props;
 
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   // 內部 ToggleSwitch 組件
   const ToggleSwitch = ({ checked, onChange, disabled }: { checked: boolean, onChange: () => void, disabled?: boolean }) => (
     <label className="switch" style={{
@@ -132,40 +135,55 @@ const SessionManagement: React.FC<SessionManagementProps> = (props) => {
         </label>
       </div>
       <div className="session-list">
-        {sessions.map((s) => (
-          <div key={s.name} className="session-item">
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: s.enabled === false ? 'var(--text-muted)' : 'var(--text-light)' }}>
-                {s.name} - ${s.price}
-              </span>
-              {s.enabled === false && (
-                <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-muted)' }}>
-                  已隱藏
+        {sessions.map((s) => {
+          const isExpired = s.isSpecial && s.fixedDate && new Date(s.fixedDate.replace(/-/g, '/')) < today;
+          const isEffectivelyEnabled = s.enabled !== false && !isExpired;
+
+          return (
+            <div key={s.id || s.name} className="session-item" style={{ opacity: isEffectivelyEnabled ? 1 : 0.7 }}>
+              <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ color: isEffectivelyEnabled ? 'var(--text-light)' : 'var(--text-muted)' }}>
+                  {s.name} - ${s.price}
                 </span>
-              )}
-            </div>
-            <div className="action-cell" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '0.85rem', color: s.enabled === false ? 'var(--text-muted)' : 'var(--primary-gold)' }}>
-                  {s.enabled === false ? '隱藏' : '顯示'}
-                </span>
-                <ToggleSwitch 
-                  checked={s.enabled !== false} 
-                  onChange={() => toggleSessionEnabled(s)} 
-                />
+                {isExpired && (
+                  <span style={{ fontSize: '0.75rem', background: 'rgba(231, 76, 60, 0.1)', padding: '2px 6px', borderRadius: '4px', color: '#e74c3c' }}>
+                    已過期
+                  </span>
+                )}
+                {!isEffectivelyEnabled && !isExpired && (
+                  <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-muted)' }}>
+                    已手動隱藏
+                  </span>
+                )}
               </div>
-              <button onClick={() => startEditSession(s)} className="edit-btn">
-                修改
-              </button>
-              <button
-                onClick={() => handleDeleteSession(s.name, (s as any).id)}
-                className="delete-btn"
-              >
-                刪除
-              </button>
+              <div className="action-cell" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ 
+                    fontSize: '0.85rem', 
+                    color: isEffectivelyEnabled ? 'var(--primary-gold)' : 'var(--text-muted)',
+                    fontWeight: isEffectivelyEnabled ? 'bold' : 'normal'
+                  }}>
+                    {isExpired ? '自動隱藏' : (isEffectivelyEnabled ? '顯示中' : '隱藏中')}
+                  </span>
+                  <ToggleSwitch 
+                    checked={isEffectivelyEnabled} 
+                    onChange={() => toggleSessionEnabled(s)} 
+                    disabled={isExpired}
+                  />
+                </div>
+                <button onClick={() => startEditSession(s)} className="edit-btn">
+                  修改
+                </button>
+                <button
+                  onClick={() => handleDeleteSession(s.name, (s as any).id)}
+                  className="delete-btn"
+                >
+                  刪除
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       <div className="add-session-form">
         <h3 className="form-section-title">新增場次</h3>
@@ -191,27 +209,6 @@ const SessionManagement: React.FC<SessionManagementProps> = (props) => {
                 setNewSession({ ...newSession, price: e.target.value })
               }
             />
-          </div>
-          <div className="form-group">
-            <label>前台顯示狀態</label>
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '12px',
-              padding: '8px 12px',
-              background: 'rgba(255,255,255,0.03)',
-              borderRadius: '8px',
-              border: '1px solid var(--border-subtle)',
-              height: '42px'
-            }}>
-              <ToggleSwitch 
-                checked={newSession.enabled} 
-                onChange={() => setNewSession({ ...newSession, enabled: !newSession.enabled })} 
-              />
-              <span style={{ color: newSession.enabled ? 'var(--primary-gold)' : 'var(--text-muted)', fontWeight: 'bold' }}>
-                {newSession.enabled ? '🟢 顯示於前台' : '🔴 隱藏不顯示'}
-              </span>
-            </div>
           </div>
           <div className="form-group">
             <label>場次分組 (決定儲存分頁) *</label>
