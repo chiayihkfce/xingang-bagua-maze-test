@@ -98,7 +98,8 @@ const SubmissionsTable: React.FC = () => {
                 style={{
                   background: row[16] ? '#27ae60' : 'rgba(255,255,255,0.1)',
                   color: row[16] ? 'white' : '#bbb',
-                  border: row[16] ? 'none' : '1px solid #444'
+                  border: row[16] ? 'none' : '1px solid #444',
+                  minWidth: '70px'
                 }}
               >
                 {row[16] ? '已報到' : '報到'}
