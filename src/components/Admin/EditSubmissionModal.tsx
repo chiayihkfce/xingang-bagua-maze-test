@@ -312,9 +312,14 @@ const EditSubmissionModal: React.FC<EditSubmissionModalProps> = ({
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => {
-                          const nextArr = isChecked
+                          let nextArr = isChecked
                             ? currentReferrals.filter((r: string) => r !== option)
                             : [...currentReferrals, option];
+
+                          // 關鍵修正：確保只保留預定義清單中的選項，自動移除不匹配的舊資料 (如 "親友告知")
+                          nextArr = nextArr.filter((r: string) => translations.zh.referrals.includes(r));
+
+                          // 儲存為陣列，確保與前台邏輯一致，並徹底覆蓋舊值
                           setEditData({ ...editData, referral: nextArr });
                         }}
                         style={{ 
@@ -328,6 +333,7 @@ const EditSubmissionModal: React.FC<EditSubmissionModalProps> = ({
                           appearance: 'auto' // 強制使用瀏覽器原生外觀
                         }}
                       />
+
                       <span>{option}</span>
                     </label>
                   );
