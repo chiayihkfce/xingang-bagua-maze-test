@@ -121,7 +121,8 @@ export const translations = {
     referrals: [
       '基金會FB',
       '基金會LINE',
-      '基金會電子報',
+      '基金會官網',
+      '基金會會訊',
       '活動現場',
       '親友介紹',
       '其他FB社團',
@@ -351,7 +352,8 @@ export const translations = {
     referrals: [
       'Foundation Facebook',
       'Foundation LINE',
-      'Email Newsletter',
+      'Foundation Website',
+      'Foundation Newsletter',
       'At an Event',
       'Friends/Family',
       'Other Facebook Groups',
