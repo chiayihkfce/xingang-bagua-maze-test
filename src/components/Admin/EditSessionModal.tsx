@@ -77,6 +77,22 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({
                 style={{ width: '100%' }}
               />
             </div>
+            <div className="form-group">
+              <label>前台顯示狀態</label>
+              <select
+                value={editingSession.enabled ? 'true' : 'false'}
+                onChange={(e) =>
+                  setEditingSession({
+                    ...editingSession,
+                    enabled: e.target.value === 'true'
+                  })
+                }
+                style={{ width: '100%' }}
+              >
+                <option value="true">🟢 顯示於前台</option>
+                <option value="false">🔴 隱藏不顯示</option>
+              </select>
+            </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label>場次分組 (決定儲存分頁) *</label>
               <select

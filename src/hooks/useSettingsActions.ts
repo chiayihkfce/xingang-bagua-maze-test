@@ -34,6 +34,7 @@ interface UseSettingsActionsProps {
     fixedDate: string;
     fixedTime: string;
     isSpecial: boolean;
+    enabled: boolean;
   };
   editingSession: {
     id: string;
@@ -43,6 +44,7 @@ interface UseSettingsActionsProps {
     fixedDate: string;
     fixedTime: string;
     isSpecial: boolean;
+    enabled: boolean;
   };
   setNewSession: (data: any) => void;
   setNewManualTime: (time: string) => void;
@@ -84,6 +86,27 @@ export const useSettingsActions = ({
   showAlert,
   showConfirm
 }: UseSettingsActionsProps) => {
+  /**
+   * 切換場次啟用狀態
+   */
+  const toggleSessionEnabled = async (session: Session) => {
+    if (!session.id) return;
+    const newStatus = session.enabled === false; // 如果是 false 則轉 true, 否則轉 false
+    const collectionName = session.isSpecial ? 'special_sessions' : 'sessions';
+    try {
+      await updateDoc(doc(db, collectionName, session.id), {
+        enabled: newStatus
+      });
+      await addLog(
+        '修改場次',
+        `將場次 ${session.name} 設定為 ${newStatus ? '顯示' : '隱藏'}`
+      );
+    } catch (err) {
+      console.error(err);
+      showAlert('狀態更新失敗');
+    }
+  };
+
   /**
    * 新增或更新身分金額設定
    */
@@ -200,6 +223,7 @@ export const useSettingsActions = ({
       await addDoc(collection(db, collectionName), {
         ...newSession,
         price: Number(newSession.price),
+        enabled: newSession.enabled ?? true,
         createdAt: serverTimestamp()
       });
       setNewSession({
@@ -207,7 +231,8 @@ export const useSettingsActions = ({
         price: '',
         fixedDate: '',
         fixedTime: '',
-        isSpecial: false
+        isSpecial: false,
+        enabled: true
       });
       await addLog(
         '新增場次',
@@ -237,7 +262,8 @@ export const useSettingsActions = ({
       isSpecial:
         session.isSpecial !== undefined
           ? session.isSpecial
-          : !!session.fixedDate
+          : !!session.fixedDate,
+      enabled: session.enabled !== false
     });
     setIsEditingSession(true);
   };
@@ -259,7 +285,8 @@ export const useSettingsActions = ({
         price: Number(editingSession.newPrice),
         fixedDate: editingSession.fixedDate,
         fixedTime: editingSession.fixedTime,
-        isSpecial: editingSession.isSpecial
+        isSpecial: editingSession.isSpecial,
+        enabled: editingSession.enabled
       });
       setIsEditingSession(false);
       await addLog(
@@ -473,6 +500,7 @@ export const useSettingsActions = ({
             fixedDate: row[3] ? String(row[3]) : '',
             fixedTime: row[4] ? String(row[4]) : '',
             enName: row[5] ? String(row[5]) : '',
+            enabled: true,
             createdAt: serverTimestamp()
           };
 
@@ -513,6 +541,7 @@ export const useSettingsActions = ({
     startEditSession,
     handleUpdateSession,
     handleDeleteSession,
+    toggleSessionEnabled,
     saveTimeSlotsConfig,
     addPaymentMethod,
     deletePaymentMethod,

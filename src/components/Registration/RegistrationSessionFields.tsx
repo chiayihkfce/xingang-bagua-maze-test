@@ -42,7 +42,7 @@ const RegistrationSessionFields: React.FC<RegistrationSessionFieldsProps> = ({
   today.setHours(0, 0, 0, 0);
 
   const hasSpecialSessions = sessions.some((s) => {
-    if (!s.isSpecial) return false;
+    if (!s.isSpecial || s.enabled === false) return false;
     if (s.fixedDate) {
       const sessionDate = new Date(s.fixedDate.replace(/-/g, '/'));
       return sessionDate >= today;
@@ -74,6 +74,7 @@ const RegistrationSessionFields: React.FC<RegistrationSessionFieldsProps> = ({
             }
 
             const filtered = sessions.filter((s) => {
+              if (s.enabled === false) return false;
               const isTypeMatch =
                 newType === '特別預約' ? s.isSpecial : !s.isSpecial;
               if (!isTypeMatch) return false;
@@ -236,7 +237,7 @@ const RegistrationSessionFields: React.FC<RegistrationSessionFieldsProps> = ({
                 {sessions.length > 0 ? (
                   sessions
                     .filter((s) => {
-                      if (!s.isSpecial) return false;
+                      if (!s.isSpecial || s.enabled === false) return false;
                       if (!s.fixedDate) return true;
                       const sessionDate = new Date(
                         s.fixedDate.replace(/-/g, '/')

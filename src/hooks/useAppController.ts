@@ -296,6 +296,7 @@ export const useAppController = () => {
     ...adminData,
     ...adminActions,
     ...settingsActions,
+    toggleSessionEnabled: settingsActions.toggleSessionEnabled,
     ...registrationActions,
     ...easterEggs,
     isLookupOpen: state.isLookupOpen,

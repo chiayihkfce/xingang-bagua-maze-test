@@ -65,6 +65,7 @@ interface AdminDashboardProps {
   sessions: Session[];
   startEditSession: (session: Session) => void;
   handleDeleteSession: (name: string, id?: string) => void;
+  toggleSessionEnabled: (session: Session) => void;
   newSession: any;
   setNewSession: (session: any) => void;
   handleAddSession: () => void;

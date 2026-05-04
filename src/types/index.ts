@@ -19,6 +19,7 @@ export interface Session {
   fixedTime?: string;
   isSpecial?: boolean;
   enName?: string;
+  enabled?: boolean;
 }
 
 export interface PaymentMethod {

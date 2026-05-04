@@ -5,6 +5,7 @@ interface SessionManagementProps {
   sessions: Session[];
   startEditSession: (session: Session) => void;
   handleDeleteSession: (name: string, id?: string) => void;
+  toggleSessionEnabled: (session: Session) => void;
   newSession: any;
   setNewSession: (session: any) => void;
   handleAddSession: () => void;
@@ -21,6 +22,7 @@ const SessionManagement: React.FC<SessionManagementProps> = (props) => {
     sessions,
     startEditSession,
     handleDeleteSession,
+    toggleSessionEnabled,
     newSession,
     setNewSession,
     handleAddSession,
@@ -88,10 +90,24 @@ const SessionManagement: React.FC<SessionManagementProps> = (props) => {
       <div className="session-list">
         {sessions.map((s) => (
           <div key={s.name} className="session-item">
-            <span style={{ color: 'var(--text-light)', flex: 1 }}>
-              {s.name} - ${s.price}
-            </span>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <span style={{ color: s.enabled === false ? 'var(--text-muted)' : 'var(--text-light)' }}>
+                {s.name} - ${s.price}
+              </span>
+              {s.enabled === false && (
+                <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.1)', padding: '2px 6px', borderRadius: '4px', color: 'var(--text-muted)' }}>
+                  已隱藏
+                </span>
+              )}
+            </div>
             <div className="action-cell">
+              <button 
+                onClick={() => toggleSessionEnabled(s)} 
+                className={s.enabled === false ? "edit-btn" : "delete-btn"}
+                style={{ minWidth: '70px', padding: '4px 8px' }}
+              >
+                {s.enabled === false ? '顯示' : '隱藏'}
+              </button>
               <button onClick={() => startEditSession(s)} className="edit-btn">
                 修改
               </button>
@@ -130,7 +146,19 @@ const SessionManagement: React.FC<SessionManagementProps> = (props) => {
               }
             />
           </div>
-          <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+          <div className="form-group">
+            <label>前台顯示狀態</label>
+            <select
+              value={newSession.enabled ? 'true' : 'false'}
+              onChange={(e) =>
+                setNewSession({ ...newSession, enabled: e.target.value === 'true' })
+              }
+            >
+              <option value="true">🟢 顯示於前台</option>
+              <option value="false">🔴 隱藏不顯示</option>
+            </select>
+          </div>
+          <div className="form-group">
             <label>場次分組 (決定儲存分頁) *</label>
             <select
               value={newSession.isSpecial ? 'special' : 'general'}
@@ -142,10 +170,10 @@ const SessionManagement: React.FC<SessionManagementProps> = (props) => {
               }
             >
               <option value="general">
-                📅 一般預約場次 (存入「一般場次」分頁)
+                📅 一般預約場次
               </option>
               <option value="special">
-                ✨ 固定特別場次 (存入「特別場次」分頁)
+                ✨ 固定特別場次
               </option>
             </select>
           </div>

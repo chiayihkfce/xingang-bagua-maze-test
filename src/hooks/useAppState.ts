@@ -74,7 +74,8 @@ export const useAppState = () => {
     newPrice: '',
     fixedDate: '',
     fixedTime: '',
-    isSpecial: false
+    isSpecial: false,
+    enabled: true
   });
   const [adminTab, setAdminTab] = useState<
     'sessions' | 'submissions' | 'timeslots' | 'logs' | 'payments' | 'analytics'
@@ -84,7 +85,8 @@ export const useAppState = () => {
     price: '',
     fixedDate: '',
     fixedTime: '',
-    isSpecial: false
+    isSpecial: false,
+    enabled: true
   });
   const [adminFilterDate, setAdminFilterDate] = useState<Date | null>(null);
   const [adminSearchKeyword, setAdminSearchKeyword] = useState('');

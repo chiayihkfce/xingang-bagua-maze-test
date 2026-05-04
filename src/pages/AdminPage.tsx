@@ -89,6 +89,7 @@ const AdminPage: React.FC = () => {
     deleteIdentityPricing,
     closedDaysConfig,
     saveClosedDaysConfig,
+    toggleSessionEnabled,
     handleClearLogs,
     handleClearRecycleBin,
     showAlert,
@@ -193,6 +194,7 @@ const AdminPage: React.FC = () => {
             deleteIdentityPricing,
             closedDaysConfig,
             saveClosedDaysConfig,
+            toggleSessionEnabled,
             showAlert,
             showConfirm
           }}
