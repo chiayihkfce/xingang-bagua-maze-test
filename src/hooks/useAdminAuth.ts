@@ -223,6 +223,8 @@ export const useAdminAuth = (props?: UseAdminAuthProps) => {
   const handleLogout = () => {
     setIsAdmin(false);
     setCurrentAdmin(null);
+    setAdminUser('');
+    setAdminPassword('');
     localStorage.removeItem('admin_session');
   };
 

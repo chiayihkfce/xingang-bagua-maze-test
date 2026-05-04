@@ -118,7 +118,7 @@ const AdminPage: React.FC = () => {
             setIsAdmin: (val: boolean) => {
               if (!val) {
                 handleLogout();
-                navigate('/');
+                // 移除 navigate('/')，讓使用者留在原 URL 並顯示登入框
               } else {
                 setIsAdmin(true);
               }
