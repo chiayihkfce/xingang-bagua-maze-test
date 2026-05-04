@@ -1,5 +1,6 @@
 import React from 'react';
 import { Session } from '../../types';
+import { translations } from '../../locales/translations';
 
 interface EditSubmissionModalProps {
   isEditing: boolean;
@@ -272,13 +273,56 @@ const EditSubmissionModal: React.FC<EditSubmissionModalProps> = ({
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label>如何得知本活動內容?</label>
-              <input
-                type="text"
-                value={editData.referral}
-                onChange={(e) =>
-                  setEditData({ ...editData, referral: e.target.value })
-                }
-              />
+              <div
+                style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '15px',
+                  marginTop: '10px',
+                  background: 'rgba(255,255,255,0.03)',
+                  padding: '15px',
+                  borderRadius: '8px',
+                  border: '1px solid var(--border-subtle)'
+                }}
+              >
+                {translations.zh.referrals.map((option) => {
+                  // 處理 referral 可能為字串或陣列的情況
+                  const currentReferrals = Array.isArray(editData.referral)
+                    ? editData.referral
+                    : typeof editData.referral === 'string'
+                      ? editData.referral.split(',').filter(Boolean)
+                      : [];
+
+                  const isChecked = currentReferrals.includes(option);
+
+                  return (
+                    <label
+                      key={option}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        fontSize: '0.9rem',
+                        color: isChecked ? 'var(--primary-gold)' : '#bbb'
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={isChecked}
+                        onChange={() => {
+                          const nextReferrals = isChecked
+                            ? currentReferrals.filter((r: string) => r !== option)
+                            : [...currentReferrals, option];
+                          setEditData({ ...editData, referral: nextReferrals });
+                        }}
+                        style={{ cursor: 'pointer' }}
+                      />
+                      {option}
+                    </label>
+                  );
+                })}
+              </div>
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label>備註</label>

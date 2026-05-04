@@ -161,7 +161,7 @@ const SessionManagement: React.FC<SessionManagementProps> = (props) => {
                   <ToggleSwitch 
                     checked={isEffectivelyEnabled} 
                     onChange={() => toggleSessionEnabled(s)} 
-                    disabled={isExpired}
+                    disabled={!!isExpired}
                   />
                 </div>
                 <button onClick={() => startEditSession(s)} className="edit-btn">
