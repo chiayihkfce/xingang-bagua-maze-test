@@ -40,8 +40,8 @@ function AppContent() {
   const app = useAppContext();
   const { SECRET_ADMIN_PATH, currentPath, submitted, isAuthenticating } = app;
 
-  // 啟動系統安全守衛
-  useSecurityGuard();
+  // 啟動系統安全守衛 (暫時關閉以排查黑屏問題)
+  // useSecurityGuard();
 
   if (isAuthenticating) {
     return <LoadingFallback />;

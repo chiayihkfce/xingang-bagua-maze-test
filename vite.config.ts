@@ -6,13 +6,14 @@ import javascriptObfuscator from 'vite-plugin-javascript-obfuscator';
 export default defineConfig({
   plugins: [
     react(),
+    /*
     javascriptObfuscator({
       options: {
         compact: true,
-        controlFlowFlattening: false, // 關閉此項以大幅提升載入效能與穩定性
+        controlFlowFlattening: false,
         deadCodeInjection: false,
-        debugProtection: false, // 由 useSecurityGuard 接手基本防護，避免卡死
-        selfDefending: false,   // 關閉此項避免在某些環境下被誤判為篡改而自殺
+        debugProtection: false,
+        selfDefending: false,
         splitStrings: false,
         stringArray: true,
         stringArrayEncoding: ['base64'],
@@ -21,6 +22,7 @@ export default defineConfig({
       },
       apply: 'build'
     })
+    */
   ],
   base: './',
   build: {
