@@ -26,12 +26,12 @@ interface UseAppEffectsProps {
   sysModalShow: boolean;
   showConfirmation: boolean;
   isSubmitting: boolean;
-  isDataLoading: boolean;
   showAuditModal: boolean;
   isEditing: boolean;
   isEditingSession: boolean;
   showRecycleBin: boolean;
   shouldRenderEntry: boolean;
+  isAdmin: boolean;
 }
 
 /**
@@ -51,12 +51,12 @@ export const useAppEffects = ({
   sysModalShow,
   showConfirmation,
   isSubmitting,
-  isDataLoading,
   showAuditModal,
   isEditing,
   isEditingSession,
   showRecycleBin,
-  shouldRenderEntry
+  shouldRenderEntry,
+  isAdmin
 }: UseAppEffectsProps) => {
   /**
    * 副作用 1：當購買份數改變時，自動校正遊玩人數
@@ -147,19 +147,19 @@ export const useAppEffects = ({
   ]);
 
   /**
-   * 副作用 4：當彈窗或載入畫面顯示時，禁止背景滑動
+   * 副作用 4：當彈窗顯示時，禁止背景滑動 (排除純資料載入狀態)
    */
   useEffect(() => {
+    // 關鍵修正：管理員登入後，不應受 EntryAnimation (shouldRenderEntry) 影響而鎖死捲動
     const isAnyModalOpen =
       sysModalShow ||
       showConfirmation ||
       isSubmitting ||
-      isDataLoading ||
       showAuditModal ||
       isEditing ||
       isEditingSession ||
       showRecycleBin ||
-      shouldRenderEntry;
+      (!isAdmin && shouldRenderEntry);
 
     if (isAnyModalOpen) {
       document.body.classList.add('modal-open');
@@ -171,11 +171,11 @@ export const useAppEffects = ({
     sysModalShow,
     showConfirmation,
     isSubmitting,
-    isDataLoading,
     showAuditModal,
     isEditing,
     isEditingSession,
     showRecycleBin,
-    shouldRenderEntry
+    shouldRenderEntry,
+    isAdmin
   ]);
 };

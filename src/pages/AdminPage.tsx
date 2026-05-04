@@ -103,7 +103,8 @@ const AdminPage: React.FC = () => {
     setRememberMe,
     handleAdminLogin,
     handleLogout,
-    navigate
+    navigate,
+    dailyHex
   } = useAppContext();
 
   if (isAdmin) {
@@ -203,7 +204,8 @@ const AdminPage: React.FC = () => {
             saveClosedDaysConfig,
             toggleSessionEnabled,
             showAlert,
-            showConfirm
+            showConfirm,
+            dailyHex
           }}
         />
         <SystemModal

@@ -178,6 +178,7 @@ export const useAppController = () => {
   });
   const adminData = useAdminData({
     isAdmin: auth.isAdmin,
+    adminTab: state.adminTab,
     adminFilterDate: state.adminFilterDate,
     adminSearchKeyword: state.adminSearchKeyword,
     setIsDataLoading: state.setIsDataLoading
@@ -249,12 +250,12 @@ export const useAppController = () => {
     sysModalShow: modal.sysModal.show,
     showConfirmation: state.showConfirmation,
     isSubmitting: state.isSubmitting,
-    isDataLoading: state.isDataLoading,
     showAuditModal: state.showAuditModal,
     isEditing: state.isEditing,
     isEditingSession: state.isEditingSession,
     showRecycleBin: state.showRecycleBin,
-    shouldRenderEntry: firebase.shouldRenderEntry
+    shouldRenderEntry: firebase.shouldRenderEntry,
+    isAdmin: auth.isAdmin
   });
 
   const loadPage = (page: number) => state.setCurrentPage(page);

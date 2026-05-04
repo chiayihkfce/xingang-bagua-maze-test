@@ -201,7 +201,11 @@ export const useFirebaseListeners = (
     };
 
     const fetchSessions = () => {
-      console.log('🚀 啟動 Firebase 監聽器...');
+      // 僅在第一次執行時印出啟動日誌 (避免 StrictMode 重複印)
+      if (window.performance && !window.performance.getEntriesByName('fb-init')[0]) {
+        console.log('🚀 [系統] 啟動 Firebase 監聽器...');
+        window.performance.mark('fb-init');
+      }
 
       const qGeneral = query(collection(db, 'sessions'), orderBy('name'));
       const qSpecial = query(

@@ -136,6 +136,7 @@ interface AdminDashboardProps {
     onCancel?: () => void,
     title?: string
   ) => void;
+  dailyHex?: { name: string; tip: string } | null;
 }
 
 const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
@@ -179,7 +180,8 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
     handleClearLogs,
     handleClearRecycleBin,
     showAlert,
-    showConfirm
+    showConfirm,
+    dailyHex
   } = props;
 
   const [showSettings, setShowSettings] = useState(false);
@@ -306,7 +308,32 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
             {theme === 'dark' ? '🌙' : '☀️'}
           </button>
         </div>
-        <h1>管理後台</h1>
+        <div style={{ textAlign: 'center', position: 'relative' }}>
+          <h1>管理後台</h1>
+          {dailyHex && (
+            <div
+              className="daily-hexagram-badge"
+              title={dailyHex.tip}
+              style={{
+                fontSize: '0.85rem',
+                color: 'var(--primary-gold)',
+                marginTop: '-5px',
+                marginBottom: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                cursor: 'help'
+              }}
+            >
+              <span>☯ 每日一卦：</span>
+              <strong style={{ letterSpacing: '2px' }}>{dailyHex.name}</strong>
+              <span style={{ opacity: 0.7, fontSize: '0.75rem' }}>
+                ({dailyHex.tip})
+              </span>
+            </div>
+          )}
+        </div>
         <div className="admin-nav">
           <button
             onClick={() => setAdminTab('sessions')}

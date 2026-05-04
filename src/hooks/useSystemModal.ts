@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 
 /**
  * 處理系統層級的自訂彈窗狀態 (Alert 與 Confirm)
@@ -21,46 +21,52 @@ export const useSystemModal = () => {
     onConfirm: () => {}
   });
 
-  const showAlert = (
-    message: string,
-    title = '提示',
-    onConfirm?: () => void,
-    confirmText = '確定'
-  ) => {
-    setSysModal({
-      show: true,
-      type: 'alert',
-      title,
-      message,
-      confirmText,
-      onConfirm: () => {
-        setSysModal((prev) => ({ ...prev, show: false }));
-        if (onConfirm) onConfirm();
-      }
-    });
-  };
+  const showAlert = useCallback(
+    (
+      message: string,
+      title = '提示',
+      onConfirm?: () => void,
+      confirmText = '確定'
+    ) => {
+      setSysModal({
+        show: true,
+        type: 'alert',
+        title,
+        message,
+        confirmText,
+        onConfirm: () => {
+          setSysModal((prev) => ({ ...prev, show: false }));
+          if (onConfirm) onConfirm();
+        }
+      });
+    },
+    []
+  );
 
-  const showConfirm = (
-    message: string,
-    onConfirm: () => void,
-    onCancel?: () => void,
-    title = '確認動作'
-  ) => {
-    setSysModal({
-      show: true,
-      type: 'confirm',
-      title,
-      message,
-      onConfirm: () => {
-        setSysModal((prev) => ({ ...prev, show: false }));
-        onConfirm();
-      },
-      onCancel: () => {
-        setSysModal((prev) => ({ ...prev, show: false }));
-        if (onCancel) onCancel();
-      }
-    });
-  };
+  const showConfirm = useCallback(
+    (
+      message: string,
+      onConfirm: () => void,
+      onCancel?: () => void,
+      title = '確認動作'
+    ) => {
+      setSysModal({
+        show: true,
+        type: 'confirm',
+        title,
+        message,
+        onConfirm: () => {
+          setSysModal((prev) => ({ ...prev, show: false }));
+          onConfirm();
+        },
+        onCancel: () => {
+          setSysModal((prev) => ({ ...prev, show: false }));
+          if (onCancel) onCancel();
+        }
+      });
+    },
+    []
+  );
 
   return {
     sysModal,

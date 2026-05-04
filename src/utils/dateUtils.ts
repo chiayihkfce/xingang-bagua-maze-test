@@ -144,8 +144,17 @@ export const parseDateSafely = (dateStr: any) => {
 
 export const formatFullDateTime = (date: any) => {
   const d = parseDateSafely(date);
-  const p = (n: number) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`;
+  const year = d.getFullYear();
+  const month = d.getMonth() + 1;
+  const day = d.getDate();
+  const hours = d.getHours();
+  const minutes = pad(d.getMinutes());
+  const seconds = pad(d.getSeconds());
+  
+  const ampm = hours < 12 ? '上午' : '下午';
+  const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+  
+  return `${year}/${month}/${day} ${ampm} ${displayHours}:${minutes}:${seconds}`;
 };
 
 export const formatDateTimeMinute = (date: any) => {

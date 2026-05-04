@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+
 /**
  * 新港八卦謎蹤 - 彩蛋 Hook
  */
@@ -12,8 +13,10 @@ export const useEasterEggs = (props?: {
   showAlert: (message: string, title?: string) => void;
 }) => {
   const [isAwakened, setIsAwakened] = useState(false);
+  const [dailyHex, setDailyHex] = useState<{ name: string; tip: string } | null>(null);
+  const isLogged = useRef(false);
 
-  // 優先使用 props，若無則不執行（相容舊邏輯但避免崩潰）
+  // 優先使用 props，若無則不執行
   const isFlashlightOn = props?.isFlashlightOn ?? false;
   const setIsFlashlightOn = props?.setIsFlashlightOn ?? (() => {});
   const setHasPoetrySlip = props?.setHasPoetrySlip ?? (() => {});
@@ -108,6 +111,7 @@ export const useEasterEggs = (props?: {
     });
   };
 
+  // 3. 探照燈與滑鼠追蹤
   useEffect(() => {
     const updatePosition = (x: number, y: number) => {
       const lens = document.getElementById('bagua-lens-cursor');
@@ -125,11 +129,9 @@ export const useEasterEggs = (props?: {
         clue.style.opacity = dist < 150 ? '1' : '0';
       });
     };
-    const handleMouseMove = (e: MouseEvent) =>
-      updatePosition(e.clientX, e.clientY);
+    const handleMouseMove = (e: MouseEvent) => updatePosition(e.clientX, e.clientY);
     const handleTouchMove = (e: TouchEvent) => {
-      if (e.touches.length > 0)
-        updatePosition(e.touches[0].clientX, e.touches[0].clientY);
+      if (e.touches.length > 0) updatePosition(e.touches[0].clientX, e.touches[0].clientY);
     };
 
     if (isFlashlightOn) {
@@ -143,8 +145,7 @@ export const useEasterEggs = (props?: {
       lens.style.cssText = `position: fixed; width: 300px; height: 300px; border: 2px solid #d4af37; border-radius: 50%; top: 0; left: 0; transform: translate(-50%, -50%); z-index: 999999999; pointer-events: none; display: flex; align-items: center; justify-content: center; color: rgba(212, 175, 55, 0.3); font-size: 10rem; box-shadow: 0 0 50px rgba(212, 175, 55, 0.5);`;
       const tip = document.createElement('div');
       tip.id = 'bagua-lens-tip';
-      tip.innerHTML =
-        '【探照模式】移動尋找隱藏線索... (再按一次手電筒或 Esc 關閉)';
+      tip.innerHTML = '【探照模式】移動尋找隱藏線索... (再按一次手電筒或 Esc 關閉)';
       tip.style.cssText = `position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); color: #d4af37; z-index: 999999999; font-family: 'Noto Serif TC', serif; background: rgba(0,0,0,0.8); padding: 5px 20px; border-radius: 20px; font-size: 0.9rem;`;
       document.body.appendChild(overlay);
       document.body.appendChild(lens);
@@ -169,95 +170,56 @@ export const useEasterEggs = (props?: {
     };
   }, [isFlashlightOn]);
 
+  // 4. 每日一卦邏輯
   useEffect(() => {
+    const today = new Date();
+    const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
     const hexagrams = [
-      { name: '乾為天', tip: '大吉。元亨利貞，天行健。' },
-      { name: '坤為地', tip: '厚德載物。' },
-      { name: '水雷屯', tip: '宜建侯而不寧。' },
-      { name: '山水蒙', tip: '啟蒙之時。' }
+      { name: '乾為天', tip: '大吉。元亨利貞，天行健。', lines: [1, 1, 1, 1, 1, 1] },
+      { name: '坤為地', tip: '厚德載物。', lines: [0, 0, 0, 0, 0, 0] },
+      { name: '水雷屯', tip: '宜建侯而不寧。', lines: [0, 1, 0, 0, 0, 1] },
+      { name: '山水蒙', tip: '啟蒙之時。', lines: [1, 0, 0, 0, 1, 0] },
+      { name: '地水師', tip: '貞，丈人吉，無咎。', lines: [0, 0, 0, 0, 1, 0] },
+      { name: '天水訟', tip: '有孚，窒惕，中吉。', lines: [1, 1, 1, 0, 1, 0] },
+      { name: '地山謙', tip: '亨，君子有終。', lines: [0, 0, 0, 1, 0, 0] },
+      { name: '雷地豫', tip: '利建侯行師。', lines: [0, 0, 1, 0, 0, 0] }
     ];
-    const randomHex = hexagrams[Math.floor(Math.random() * hexagrams.length)];
-    console.log(
-      `%c【 新港八卦謎蹤 - 每日一卦 】\n卦名：${randomHex.name}\n指引：${randomHex.tip}`,
-      'color: #d4af37; font-weight: bold;'
-    );
+    const index = dateSeed % hexagrams.length;
+    const hex = hexagrams[index];
+    setDailyHex(hex);
 
-    const konamiCode = [
-      'ArrowUp',
-      'ArrowUp',
-      'ArrowDown',
-      'ArrowDown',
-      'ArrowLeft',
-      'ArrowRight',
-      'ArrowLeft',
-      'ArrowRight',
-      'b',
-      'a'
-    ];
+    if (!isLogged.current) {
+      const logStyle = 'color: #d4af37; font-weight: bold; font-size: 1.1rem; text-shadow: 0 0 5px rgba(212,175,55,0.5);';
+      const drawLines = hex.lines.map(l => l === 1 ? '│  ━━━━━━━━━  │' : '│  ━━━━   ━━━━  │').join('\n');
+      const art = `┌─────────────┐\n${drawLines}\n└─────────────┘`;
+      console.log('%c【 新港八卦謎蹤 - 每日一卦 】', logStyle);
+      console.log(`%c卦名：${hex.name}\n指引：${hex.tip}\n${art}`, logStyle);
+      isLogged.current = true;
+    }
+  }, []);
 
-    // 英文備用密令
+  // 5. 鍵盤密令
+  useEffect(() => {
+    const konamiCode = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
     const clueCode = ['c', 'l', 'u', 'e'];
-    const bCode = ['b', 'a', 'g', 'u', 'a']; // 保留原英文作為技術後門
-    let kIdx = 0,
-      cIdx = 0,
-      bIdx = 0;
+    const bCode = ['b', 'a', 'g', 'u', 'a'];
+    let kIdx = 0, cIdx = 0, bIdx = 0;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       const key = e.key.toLowerCase();
       if (e.key === 'Escape' && isFlashlightOn) setIsFlashlightOn(false);
-
-      // 上上下下左右左右BA (無敵模式)
-      if (e.key === konamiCode[kIdx]) {
-        kIdx++;
-        if (kIdx === konamiCode.length) {
-          kIdx = 0;
-          setIsAwakened(true);
-        }
-      } else kIdx = 0;
-
-      // 英文密令保留作為後門
-      if (key === clueCode[cIdx]) {
-        cIdx++;
-        if (cIdx === clueCode.length) {
-          cIdx = 0;
-          setHasPoetrySlip(true);
-          showAlert('獲得了【神祕詩籤】！已放入道具箱。', '📜 獲得道具');
-        }
-      } else cIdx = 0;
-
-      if (key === bCode[bIdx]) {
-        bIdx++;
-        if (bIdx === bCode.length) {
-          bIdx = 0;
-          triggerBaguaBox();
-        }
-      } else bIdx = 0;
+      if (e.key === konamiCode[kIdx]) { kIdx++; if (kIdx === konamiCode.length) { kIdx = 0; setIsAwakened(true); } } else kIdx = 0;
+      if (key === clueCode[cIdx]) { cIdx++; if (cIdx === clueCode.length) { cIdx = 0; setHasPoetrySlip(true); showAlert('獲得了【神祕詩籤】！已放入道具箱。', '📜 獲得道具'); } } else cIdx = 0;
+      if (key === bCode[bIdx]) { bIdx++; if (bIdx === bCode.length) { bIdx = 0; triggerBaguaBox(); } } else bIdx = 0;
     };
 
-    // 處理自定義密令事件 (支援中文)
     const handleSecretCommand = (e: any) => {
       const command = (e.detail || '').trim();
-
-      if (command === '培桂堂') {
-        setHasPoetrySlip(true);
-        showAlert('感應到培桂堂的氣息...獲得了【神祕詩籤】！', '📜 獲得道具');
-      } else if (command === '乾坤' || command === '八卦') {
-        triggerBaguaBox();
-      } else if (command === '鴨肉羹') {
-        setHasDuckSoup(true);
-        showAlert(
-          '聞到了大火爆香的鴨肉與筍絲香味...獲得了【新港鴨肉羹】！',
-          '🍜 獲得美食'
-        );
-      } else if (command === '老鼠糖' || command === '新港飴') {
-        setHasCandy(true);
-        showAlert(
-          '嚼著香 Q 帶勁的花生麥芽糖...獲得了【新港飴(老鼠糖)】！',
-          '🍬 獲得美食'
-        );
-      } else if (command === '太平') {
-        showAlert('萬象歸宗，天下太平。', '☯ 啟示');
-      }
+      if (command === '培桂堂') { setHasPoetrySlip(true); showAlert('感應到培桂堂的氣息...獲得了【神祕詩籤】！', '📜 獲得道具'); }
+      else if (command === '乾坤' || command === '八卦') triggerBaguaBox();
+      else if (command === '鴨肉羹') { setHasDuckSoup(true); showAlert('聞到了大火爆香的鴨肉與筍絲香味...獲得了【新港鴨肉羹】！', '🍜 獲得美食'); }
+      else if (command === '老鼠糖' || command === '新港飴') { setHasCandy(true); showAlert('嚼著香 Q 帶勁的花生麥芽糖...獲得了【新港飴(老鼠糖)】！', '🍬 獲得美食'); }
+      else if (command === '太平') showAlert('萬象歸宗，天下太平。', '☯ 啟示');
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -266,13 +228,7 @@ export const useEasterEggs = (props?: {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('secret-command' as any, handleSecretCommand);
     };
-  }, [
-    isFlashlightOn,
-    setIsFlashlightOn,
-    setHasPoetrySlip,
-    setHasTigerSeal,
-    showAlert
-  ]);
+  }, [isFlashlightOn, setIsFlashlightOn, setHasPoetrySlip, showAlert]);
 
-  return { isAwakened, triggerBaguaBox, showMysticScroll };
+  return { isAwakened, triggerBaguaBox, showMysticScroll, dailyHex };
 };
