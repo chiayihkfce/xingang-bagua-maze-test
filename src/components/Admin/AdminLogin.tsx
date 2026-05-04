@@ -8,6 +8,8 @@ interface AdminLoginProps {
   setAdminUser: (user: string) => void;
   adminPassword: string;
   setAdminPassword: (pw: string) => void;
+  rememberMe: boolean;
+  setRememberMe: (val: boolean) => void;
   handleAdminLogin: (e: React.FormEvent) => void;
   isDataLoading: boolean;
 }
@@ -20,6 +22,8 @@ const AdminLogin: React.FC<AdminLoginProps> = ({
   setAdminUser,
   adminPassword,
   setAdminPassword,
+  rememberMe,
+  setRememberMe,
   handleAdminLogin,
   isDataLoading
 }) => {
@@ -67,6 +71,43 @@ const AdminLogin: React.FC<AdminLoginProps> = ({
               onChange={(e) => setAdminPassword(e.target.value)}
               autoComplete="current-password"
             />
+          </div>
+
+          <div 
+            className="form-group" 
+            style={{ 
+              flexDirection: 'row', 
+              alignItems: 'center', 
+              gap: '10px',
+              justifyContent: 'flex-start',
+              marginTop: '-0.5rem',
+              marginBottom: '1.5rem'
+            }}
+          >
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              style={{ 
+                width: '18px', 
+                height: '18px', 
+                cursor: 'pointer',
+                margin: 0
+              }}
+            />
+            <label 
+              htmlFor="rememberMe" 
+              style={{ 
+                fontSize: '0.95rem', 
+                color: '#aaa', 
+                cursor: 'pointer',
+                margin: 0,
+                fontWeight: 'normal'
+              }}
+            >
+              記住我的登入狀態
+            </label>
           </div>
 
           {isDataLoading && (

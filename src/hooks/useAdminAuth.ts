@@ -30,10 +30,64 @@ export const useAdminAuth = (props?: UseAdminAuthProps) => {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [adminUser, setAdminUser] = useState('');
   const [adminPassword, setAdminPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true); // 預設開啟
   const [currentAdmin, setCurrentAdmin] = useState<AdminAccount | null>(null);
 
   // 避免重複登入的標記
   const hasAttemptedLogin = useRef(false);
+
+  // --- 新增：初始化檢查 localStorage 自動登入 ---
+  useEffect(() => {
+    const attemptAutoLogin = async () => {
+      if (isAdmin || hasAttemptedLogin.current || !props) return;
+
+      const savedAdmin = localStorage.getItem('admin_session');
+      if (savedAdmin) {
+        try {
+          const parsed = JSON.parse(savedAdmin);
+          // 為了安全與資料即時性，自動登入時重新從 Firebase 驗證一次
+          if (parsed.username && parsed.password) {
+            hasAttemptedLogin.current = true;
+            const { addLog, setIsDataLoading } = props;
+            setIsDataLoading(true);
+
+            const q = query(
+              collection(db, 'admins'),
+              where('username', '==', parsed.username),
+              where('password', '==', parsed.password),
+              limit(1)
+            );
+
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+              const adminDoc = querySnapshot.docs[0];
+              const adminData = {
+                id: adminDoc.id,
+                ...adminDoc.data()
+              } as AdminAccount;
+
+              setCurrentAdmin(adminData);
+              setIsAdmin(true);
+
+              await addLog(
+                '系統',
+                `管理者 [${adminData.nickname || adminData.username}] 透過自動登入成功`,
+                adminData.nickname || adminData.username
+              );
+            } else {
+              // 密碼可能被改過，清除無效 session
+              localStorage.removeItem('admin_session');
+            }
+            setIsDataLoading(false);
+          }
+        } catch (e) {
+          console.error('Auto login parse error:', e);
+        }
+      }
+    };
+
+    attemptAutoLogin();
+  }, [props, isAdmin]);
 
   // --- 新增：LINE 一鍵登入自動偵測邏輯 ---
   useEffect(() => {
@@ -142,6 +196,16 @@ export const useAdminAuth = (props?: UseAdminAuthProps) => {
           `管理者 [${adminData.nickname || adminData.username}] 登入成功`,
           adminData.nickname || adminData.username
         );
+
+        // 如果勾選記住我，儲存至 localStorage
+        if (rememberMe) {
+          localStorage.setItem(
+            'admin_session',
+            JSON.stringify({ username: adminUser, password: adminPassword })
+          );
+        } else {
+          localStorage.removeItem('admin_session');
+        }
       } else {
         showAlert('帳號或密碼錯誤');
       }
@@ -153,6 +217,15 @@ export const useAdminAuth = (props?: UseAdminAuthProps) => {
     }
   };
 
+  /**
+   * 登出處理
+   */
+  const handleLogout = () => {
+    setIsAdmin(false);
+    setCurrentAdmin(null);
+    localStorage.removeItem('admin_session');
+  };
+
   return {
     isAdmin,
     setIsAdmin,
@@ -161,8 +234,11 @@ export const useAdminAuth = (props?: UseAdminAuthProps) => {
     setAdminUser,
     adminPassword,
     setAdminPassword,
+    rememberMe,
+    setRememberMe,
     currentAdmin,
     setCurrentAdmin,
-    handleAdminLogin
+    handleAdminLogin,
+    handleLogout
   };
 };

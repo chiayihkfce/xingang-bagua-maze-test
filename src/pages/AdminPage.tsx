@@ -99,7 +99,10 @@ const AdminPage: React.FC = () => {
     setAdminUser,
     adminPassword,
     setAdminPassword,
+    rememberMe,
+    setRememberMe,
     handleAdminLogin,
+    handleLogout,
     navigate
   } = useAppContext();
 
@@ -112,8 +115,12 @@ const AdminPage: React.FC = () => {
             theme,
             toggleTheme,
             setIsAdmin: (val: boolean) => {
-              setIsAdmin(val);
-              if (!val) navigate('/');
+              if (!val) {
+                handleLogout();
+                navigate('/');
+              } else {
+                setIsAdmin(true);
+              }
             },
             adminTab,
             setAdminTab,
@@ -224,6 +231,8 @@ const AdminPage: React.FC = () => {
           setAdminUser,
           adminPassword,
           setAdminPassword,
+          rememberMe,
+          setRememberMe,
           handleAdminLogin,
           isDataLoading
         }}
