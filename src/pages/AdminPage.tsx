@@ -204,8 +204,7 @@ const AdminPage: React.FC = () => {
             saveClosedDaysConfig,
             toggleSessionEnabled,
             showAlert,
-            showConfirm,
-            dailyHex
+            showConfirm
           }}
         />
         <SystemModal
