@@ -125,7 +125,7 @@ export const useRegistrationActions = ({
         paymentMethod: formData.paymentMethod.split(' (')[0],
         bankLast5: last5 || '無',
         totalAmount: calculatedTotal,
-        referral: formData.referral.join(', '),
+        referral: formData.referral.join('、'),
         timestamp: formatFullDateTime(new Date()),
         status: '待審核',
         createdAt: serverTimestamp(),

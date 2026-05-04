@@ -318,9 +318,9 @@ const EditSubmissionModal: React.FC<EditSubmissionModalProps> = ({
 
                           // 關鍵修正：確保只保留預定義清單中的選項，自動移除不匹配的舊資料 (如 "親友告知")
                           nextArr = nextArr.filter((r: string) => translations.zh.referrals.includes(r));
-
-                          // 儲存為陣列，確保與前台邏輯一致，並徹底覆蓋舊值
-                          setEditData({ ...editData, referral: nextArr });
+                          
+                          // 強制轉回字串格式並使用「、」分隔，確保徹底覆蓋 Firebase 中的舊欄位內容
+                          setEditData({ ...editData, referral: nextArr.join('、') });
                         }}
                         style={{ 
                           cursor: 'pointer', 

@@ -120,7 +120,9 @@ export const useAdminData = ({
           d.bankLast5,
           d.pickupTime,
           d.pickupLocation,
-          d.referral,
+          Array.isArray(d.referral) 
+            ? d.referral.join('、') 
+            : (d.referral || '').replace(/,\s*/g, '、'),
           d.notes,
           playerNamesStr,
           d.checkedIn || false, // 16: 報到狀態
@@ -175,7 +177,9 @@ export const useAdminData = ({
           d.bankLast5,
           d.pickupTime,
           d.pickupLocation,
-          d.referral,
+          Array.isArray(d.referral) 
+            ? d.referral.join('、') 
+            : (d.referral || '').replace(/,\s*/g, '、'),
           d.notes,
           playerNamesStr,
           d.checkedIn || false, // 16: 報到狀態
