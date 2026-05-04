@@ -132,15 +132,12 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({
                 borderRadius: '8px',
                 border: '1px solid var(--border-subtle)',
                 height: '42px',
-                width: '100%'
+                width: 'fit-content'
               }}>
                 <ToggleSwitch 
                   checked={editingSession.enabled} 
                   onChange={() => setEditingSession({ ...editingSession, enabled: !editingSession.enabled })} 
                 />
-                <span style={{ color: editingSession.enabled ? 'var(--primary-gold)' : 'var(--text-muted)', fontWeight: 'bold' }}>
-                  {editingSession.enabled ? '🟢 顯示於前台' : '🔴 隱藏不顯示'}
-                </span>
               </div>
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>

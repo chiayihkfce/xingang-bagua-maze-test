@@ -157,14 +157,7 @@ const SessionManagement: React.FC<SessionManagementProps> = (props) => {
                 )}
               </div>
               <div className="action-cell" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ 
-                    fontSize: '0.85rem', 
-                    color: isEffectivelyEnabled ? 'var(--primary-gold)' : 'var(--text-muted)',
-                    fontWeight: isEffectivelyEnabled ? 'bold' : 'normal'
-                  }}>
-                    {isExpired ? '自動隱藏' : (isEffectivelyEnabled ? '顯示中' : '隱藏中')}
-                  </span>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
                   <ToggleSwitch 
                     checked={isEffectivelyEnabled} 
                     onChange={() => toggleSessionEnabled(s)} 
