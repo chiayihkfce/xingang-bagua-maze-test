@@ -277,20 +277,19 @@ const EditSubmissionModal: React.FC<EditSubmissionModalProps> = ({
                 style={{
                   display: 'flex',
                   flexWrap: 'wrap',
-                  gap: '15px',
-                  marginTop: '10px',
+                  gap: '10px 20px',
+                  marginTop: '5px',
+                  padding: '10px',
                   background: 'rgba(255,255,255,0.03)',
-                  padding: '15px',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   border: '1px solid var(--border-subtle)'
                 }}
               >
                 {translations.zh.referrals.map((option) => {
-                  // 處理 referral 可能為字串或陣列的情況
                   const currentReferrals = Array.isArray(editData.referral)
                     ? editData.referral
                     : typeof editData.referral === 'string'
-                      ? editData.referral.split(',').filter(Boolean)
+                      ? editData.referral.split(',').map((s: string) => s.trim()).filter(Boolean)
                       : [];
 
                   const isChecked = currentReferrals.includes(option);
@@ -304,21 +303,32 @@ const EditSubmissionModal: React.FC<EditSubmissionModalProps> = ({
                         gap: '8px',
                         cursor: 'pointer',
                         fontSize: '0.9rem',
-                        color: isChecked ? 'var(--primary-gold)' : '#bbb'
+                        color: isChecked ? 'var(--primary-gold)' : '#aaa',
+                        margin: 0,
+                        padding: '2px 0'
                       }}
                     >
                       <input
                         type="checkbox"
                         checked={isChecked}
                         onChange={() => {
-                          const nextReferrals = isChecked
+                          const nextArr = isChecked
                             ? currentReferrals.filter((r: string) => r !== option)
                             : [...currentReferrals, option];
-                          setEditData({ ...editData, referral: nextReferrals });
+                          setEditData({ ...editData, referral: nextArr });
                         }}
-                        style={{ cursor: 'pointer' }}
+                        style={{ 
+                          cursor: 'pointer', 
+                          width: '16px', 
+                          height: '16px',
+                          margin: 0,
+                          flexShrink: 0,
+                          accentColor: 'var(--accent-orange)',
+                          display: 'inline-block',
+                          appearance: 'auto' // 強制使用瀏覽器原生外觀
+                        }}
                       />
-                      {option}
+                      <span>{option}</span>
                     </label>
                   );
                 })}

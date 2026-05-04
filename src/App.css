@@ -1669,8 +1669,8 @@ button,
   text-align: left !important;
 }
 
-.admin-login-modal input,
-.admin-edit-modal input,
+.admin-login-modal input:not([type='checkbox']):not([type='radio']),
+.admin-edit-modal input:not([type='checkbox']):not([type='radio']),
 .admin-edit-modal select,
 .admin-edit-modal textarea {
   width: 100% !important;
