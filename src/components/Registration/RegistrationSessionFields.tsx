@@ -38,6 +38,18 @@ const RegistrationSessionFields: React.FC<RegistrationSessionFieldsProps> = ({
   getSessionDisplayName,
   showAlert
 }) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const hasSpecialSessions = sessions.some((s) => {
+    if (!s.isSpecial) return false;
+    if (s.fixedDate) {
+      const sessionDate = new Date(s.fixedDate.replace(/-/g, '/'));
+      return sessionDate >= today;
+    }
+    return true;
+  });
+
   return (
     <div className="form-card">
       <h3 className="form-section-title">{t.regInfo}</h3>
@@ -60,9 +72,6 @@ const RegistrationSessionFields: React.FC<RegistrationSessionFieldsProps> = ({
               } as any);
               return;
             }
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
 
             const filtered = sessions.filter((s) => {
               const isTypeMatch =
@@ -104,7 +113,9 @@ const RegistrationSessionFields: React.FC<RegistrationSessionFieldsProps> = ({
             {t.sessionTypePlaceholder}
           </option>
           <option value="一般預約">{t.generalReg}</option>
-          <option value="特別預約">{t.specialReg}</option>
+          {hasSpecialSessions && (
+            <option value="特別預約">{t.specialReg}</option>
+          )}
         </select>
       </div>
 
