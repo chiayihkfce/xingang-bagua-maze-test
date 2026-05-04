@@ -9,21 +9,17 @@ export default defineConfig({
     javascriptObfuscator({
       options: {
         compact: true,
-        controlFlowFlattening: true,
-        controlFlowFlatteningThreshold: 0.75,
-        deadCodeInjection: true,
-        deadCodeInjectionThreshold: 0.4,
-        debugProtection: true,
-        debugProtectionInterval: 4000,
-        disableConsoleOutput: true,
-        selfDefending: true,
+        controlFlowFlattening: false, // 關閉此項以大幅提升載入效能與穩定性
+        deadCodeInjection: false,
+        debugProtection: false, // 由 useSecurityGuard 接手基本防護，避免卡死
+        selfDefending: false,   // 關閉此項避免在某些環境下被誤判為篡改而自殺
         splitStrings: false,
         stringArray: true,
         stringArrayEncoding: ['base64'],
         stringArrayThreshold: 0.75,
         unicodeEscapeSequence: false
       },
-      apply: 'build' // 僅在打包正式版時執行，避免影響開發速度
+      apply: 'build'
     })
   ],
   base: './',

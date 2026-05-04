@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 
 /**
- * 系統安全守衛：防止 F12、右鍵與開發者工具檢視
+ * 系統安全守衛：防止 F12、右鍵選單檢視
  */
 export const useSecurityGuard = () => {
   useEffect(() => {
-    // 僅在正式環境或特定需求下啟用 (若需開發時偵錯可加條件)
-    const isDev = window.location.hostname === 'localhost';
+    const isDev =
+      window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1';
     if (isDev) return;
 
     // 1. 禁用右鍵選單
@@ -20,33 +21,19 @@ export const useSecurityGuard = () => {
         e.key === 'F12' ||
         (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
         (e.ctrlKey && e.key === 'U') ||
-        (e.metaKey && e.altKey && e.key === 'i') // Mac CMD+ALT+I
+        (e.metaKey && e.altKey && e.key === 'i')
       ) {
         e.preventDefault();
         return false;
       }
     };
 
-    // 3. 開發者工具偵測與反制 (Debugger 陷阱)
-    const trap = setInterval(() => {
-      const startTime = performance.now();
-      debugger; // 如果開啟 F12，會卡在這裡
-      const endTime = performance.now();
-      
-      // 如果執行時間過長，代表可能被 debugger 攔截
-      if (endTime - startTime > 100) {
-        console.clear();
-        // 這裡可以選擇 reload 或導向警告頁面
-      }
-    }, 2000);
-
-    window.addEventListener('contextmenu', handleContextMenu);
-    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('contextmenu', handleContextMenu, true);
+    window.addEventListener('keydown', handleKeyDown, true);
 
     return () => {
-      window.removeEventListener('contextmenu', handleContextMenu);
-      window.removeEventListener('keydown', handleKeyDown);
-      clearInterval(trap);
+      window.removeEventListener('contextmenu', handleContextMenu, true);
+      window.removeEventListener('keydown', handleKeyDown, true);
     };
   }, []);
 };
