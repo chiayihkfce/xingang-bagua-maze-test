@@ -26,6 +26,50 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({
 }) => {
   if (!isEditingSession) return null;
 
+  // 內部 ToggleSwitch 組件 (與 SessionManagement 保持一致)
+  const ToggleSwitch = ({ checked, onChange, disabled }: { checked: boolean, onChange: () => void, disabled?: boolean }) => (
+    <label className="switch" style={{
+      position: 'relative',
+      display: 'inline-block',
+      width: '46px',
+      height: '24px',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      opacity: disabled ? 0.6 : 1
+    }}>
+      <input 
+        type="checkbox" 
+        checked={checked} 
+        onChange={onChange} 
+        disabled={disabled}
+        style={{ opacity: 0, width: 0, height: 0 }} 
+      />
+      <span className="slider" style={{
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: checked ? 'var(--accent-orange, #e67e22)' : '#444',
+        transition: '.3s',
+        borderRadius: '24px',
+        boxShadow: checked ? '0 0 8px rgba(230, 126, 34, 0.4)' : 'none'
+      }}>
+        <span style={{
+          position: 'absolute',
+          content: '""',
+          height: '18px',
+          width: '18px',
+          left: checked ? '24px' : '4px',
+          bottom: '3px',
+          backgroundColor: 'white',
+          transition: '.3s',
+          borderRadius: '50%',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.3)'
+        }}></span>
+      </span>
+    </label>
+  );
+
   return (
     <div className="modal-overlay">
       <div
@@ -79,19 +123,25 @@ const EditSessionModal: React.FC<EditSessionModalProps> = ({
             </div>
             <div className="form-group">
               <label>前台顯示狀態</label>
-              <select
-                value={editingSession.enabled ? 'true' : 'false'}
-                onChange={(e) =>
-                  setEditingSession({
-                    ...editingSession,
-                    enabled: e.target.value === 'true'
-                  })
-                }
-                style={{ width: '100%' }}
-              >
-                <option value="true">🟢 顯示於前台</option>
-                <option value="false">🔴 隱藏不顯示</option>
-              </select>
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '12px',
+                padding: '8px 12px',
+                background: 'rgba(255,255,255,0.03)',
+                borderRadius: '8px',
+                border: '1px solid var(--border-subtle)',
+                height: '42px',
+                width: '100%'
+              }}>
+                <ToggleSwitch 
+                  checked={editingSession.enabled} 
+                  onChange={() => setEditingSession({ ...editingSession, enabled: !editingSession.enabled })} 
+                />
+                <span style={{ color: editingSession.enabled ? 'var(--primary-gold)' : 'var(--text-muted)', fontWeight: 'bold' }}>
+                  {editingSession.enabled ? '🟢 顯示於前台' : '🔴 隱藏不顯示'}
+                </span>
+              </div>
             </div>
             <div className="form-group" style={{ gridColumn: '1 / -1' }}>
               <label>場次分組 (決定儲存分頁) *</label>
