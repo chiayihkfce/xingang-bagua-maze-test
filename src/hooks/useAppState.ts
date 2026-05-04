@@ -57,7 +57,7 @@ export const useAppState = () => {
     bankLast5: '',
     pickupTime: '',
     pickupLocation: '新港文教基金會(閱讀館)',
-    referral: ['基金會FB'] as string[],
+    referral: [] as string[],
     notes: '',
     hp_field: '',
     identityType: '一般民眾'

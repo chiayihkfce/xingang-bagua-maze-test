@@ -42,11 +42,17 @@ const RegistrationSessionFields: React.FC<RegistrationSessionFieldsProps> = ({
   today.setHours(0, 0, 0, 0);
 
   const hasSpecialSessions = sessions.some((s) => {
+    // 1. 如果已經被手動關閉，直接不顯示
     if (!s.isSpecial || s.enabled === false) return false;
+    
+    // 2. 如果是特別場次且有固定日期，檢查是否過期
     if (s.fixedDate) {
       const sessionDate = new Date(s.fixedDate.replace(/-/g, '/'));
-      return sessionDate >= today;
+      // 如果場次日期小於今天，視為自動隱藏
+      if (sessionDate < today) return false;
     }
+    
+    // 3. 通過以上檢查則顯示
     return true;
   });
 
@@ -74,11 +80,14 @@ const RegistrationSessionFields: React.FC<RegistrationSessionFieldsProps> = ({
             }
 
             const filtered = sessions.filter((s) => {
+              // 基礎檢查：是否手動隱藏
               if (s.enabled === false) return false;
+              
               const isTypeMatch =
                 newType === '特別預約' ? s.isSpecial : !s.isSpecial;
               if (!isTypeMatch) return false;
 
+              // 日期檢查：如果過期則隱藏
               if (s.fixedDate) {
                 const sessionDate = new Date(s.fixedDate.replace(/-/g, '/'));
                 return sessionDate >= today;

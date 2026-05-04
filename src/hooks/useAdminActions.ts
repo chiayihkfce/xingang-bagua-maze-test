@@ -390,7 +390,7 @@ export const useAdminActions = ({
       bankLast5: row[10],
       pickupTime: rawTime,
       pickupLocation: row[12],
-      referral: row[13],
+      referral: row[13] || '', // 確保抓取第 13 欄資料
       notes: row[14],
       playerList: row[20] || [], // 載入原始隊員清單供編輯
       id: row[17],
