@@ -175,25 +175,127 @@ export const useEasterEggs = (props?: {
     const today = new Date();
     const dateSeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
     const hexagrams = [
-      { name: '乾為天', tip: '大吉。元亨利貞，天行健。', lines: [1, 1, 1, 1, 1, 1] },
-      { name: '坤為地', tip: '厚德載物。', lines: [0, 0, 0, 0, 0, 0] },
-      { name: '水雷屯', tip: '宜建侯而不寧。', lines: [0, 1, 0, 0, 0, 1] },
-      { name: '山水蒙', tip: '啟蒙之時。', lines: [1, 0, 0, 0, 1, 0] },
-      { name: '地水師', tip: '貞，丈人吉，無咎。', lines: [0, 0, 0, 0, 1, 0] },
-      { name: '天水訟', tip: '有孚，窒惕，中吉。', lines: [1, 1, 1, 0, 1, 0] },
-      { name: '地山謙', tip: '亨，君子有終。', lines: [0, 0, 0, 1, 0, 0] },
-      { name: '雷地豫', tip: '利建侯行師。', lines: [0, 0, 1, 0, 0, 0] }
+      { 
+        name: '乾為天', 
+        tip: '大吉。元亨利貞，天行健。', 
+        lines: [1, 1, 1, 1, 1, 1],
+        poem: ['飛龍在天意氣揚', '元亨利貞大吉祥', '乾元之氣通天地', '四海功名姓名香']
+      },
+      { 
+        name: '坤為地', 
+        tip: '厚德載物。', 
+        lines: [0, 0, 0, 0, 0, 0],
+        poem: ['厚德載物利安貞', '柔順之道萬事興', '坤厚無疆生萬物', '包容廣大得太平']
+      },
+      { 
+        name: '水雷屯', 
+        tip: '宜建侯而不寧。', 
+        lines: [0, 1, 0, 0, 0, 1],
+        poem: ['雲雷交作路艱辛', '創業維艱待聖人', '守正居仁莫輕進', '冬去春來轉乾坤']
+      },
+      { 
+        name: '山水蒙', 
+        tip: '啟蒙之時。', 
+        lines: [1, 0, 0, 0, 1, 0],
+        poem: ['山下泉清啟聖功', '蒙以養正道方通', '至誠感格師徒意', '智慧開明透長空']
+      },
+      { 
+        name: '地水師', 
+        tip: '貞，丈人吉，無咎。', 
+        lines: [0, 0, 0, 0, 1, 0],
+        poem: ['地中有水蓄其英', '統帥大軍定太平', '剛中守正民心服', '凱旋歸來利有終']
+      },
+      { 
+        name: '天水訟', 
+        tip: '有孚，窒惕，中吉。', 
+        lines: [1, 1, 1, 0, 1, 0],
+        poem: ['天與水違各一方', '訟則不利戒張狂', '退步抽身全美意', '謀始防非保安康']
+      },
+      { 
+        name: '地山謙', 
+        tip: '亨，君子有終。', 
+        lines: [0, 0, 0, 1, 0, 0],
+        poem: ['地中有山不露尖', '虛懷若谷德完全', '裒多益寡稱心意', '君子有終萬事便']
+      },
+      { 
+        name: '雷地豫', 
+        tip: '利建侯行師。', 
+        lines: [0, 0, 1, 0, 0, 0],
+        poem: ['雷出地奮樂悠悠', '順時而動解憂愁', '和氣致祥生百福', '萬象更新福長留']
+      }
     ];
     const index = dateSeed % hexagrams.length;
     const hex = hexagrams[index];
     setDailyHex(hex);
 
     if (!isLogged.current) {
-      const logStyle = 'color: #d4af37; font-weight: bold; font-size: 1.1rem; text-shadow: 0 0 5px rgba(212,175,55,0.5);';
-      const drawLines = hex.lines.map(l => l === 1 ? '│  ━━━━━━━━━  │' : '│  ━━━━   ━━━━  │').join('\n');
-      const art = `┌─────────────┐\n${drawLines}\n└─────────────┘`;
-      console.log('%c【 新港八卦謎蹤 - 每日一卦 】', logStyle);
-      console.log(`%c卦名：${hex.name}\n指引：${hex.tip}\n${art}`, logStyle);
+      // 繪製廟籤風格 SVG (包含標題、圖案、詩籤與指引)
+      const fortuneSlipSvg = `
+<svg xmlns="http://www.w3.org/2000/svg" width="520" height="960" viewBox="0 0 520 960">
+  <rect width="520" height="960" fill="#071014"/>
+  
+  <!-- 廟籤外框 -->
+  <rect x="10" y="10" width="500" height="940" fill="none" stroke="#d4af37" stroke-width="2"/>
+  <rect x="20" y="20" width="480" height="920" fill="none" stroke="#d4af37" stroke-width="4" opacity="0.6"/>
+  
+  <!-- 標題區域 -->
+  <text x="260" y="70" text-anchor="middle" fill="#d4af37" font-size="28" font-weight="bold" letter-spacing="4">【 新港八卦謎蹤 】</text>
+  <text x="260" y="105" text-anchor="middle" fill="#d4af37" font-size="22" font-weight="bold" letter-spacing="10">每日一卦</text>
+  <line x1="100" y1="130" x2="420" y2="130" stroke="#d4af37" stroke-width="1" opacity="0.5"/>
+
+  <!-- 八卦圖案 (置中位置) -->
+  <g transform="translate(0, 100)">
+    <g transform="rotate(22.5, 260, 260)">
+      <path d="M260 40 L415.5 104.5 L480 260 L415.5 415.5 L260 480 L104.5 415.5 L40 260 L104.5 104.5 Z" 
+            fill="none" stroke="#d4af37" stroke-width="10"/>
+      <path d="M260 140 L344.8 175.2 L380 260 L344.8 344.8 L260 380 L175.2 344.8 L140 260 L175.2 175.2 Z" 
+            fill="none" stroke="#d4af37" stroke-width="4" opacity="0.6"/>
+    </g>
+    <g transform="translate(260, 260)">
+      <circle r="85" fill="#fff"/>
+      <path d="M 0 -85 A 85 85 0 0 1 0 85 Z" fill="#000"/>
+      <circle cy="-42.5" r="42.5" fill="#fff"/>
+      <circle cy="42.5" r="42.5" fill="#000"/>
+      <circle cy="-42.5" r="16" fill="#000"/>
+      <circle cy="42.5" r="16" fill="#fff"/>
+    </g>
+    <text x="260" y="105" text-anchor="middle" dominant-baseline="middle" fill="#d4af37" font-size="45" font-weight="bold" transform="rotate(0, 260, 105)">☰</text>
+    <text x="370" y="150" text-anchor="middle" dominant-baseline="middle" fill="#d4af37" font-size="45" font-weight="bold" transform="rotate(45, 370, 150)">☱</text>
+    <text x="415" y="260" text-anchor="middle" dominant-baseline="middle" fill="#d4af37" font-size="45" font-weight="bold" transform="rotate(90, 415, 260)">☲</text>
+    <text x="370" y="370" text-anchor="middle" dominant-baseline="middle" fill="#d4af37" font-size="45" font-weight="bold" transform="rotate(135, 370, 370)">☳</text>
+    <text x="260" y="415" text-anchor="middle" dominant-baseline="middle" fill="#d4af37" font-size="45" font-weight="bold" transform="rotate(180, 260, 415)">☷</text>
+    <text x="150" y="370" text-anchor="middle" dominant-baseline="middle" fill="#d4af37" font-size="45" font-weight="bold" transform="rotate(225, 150, 370)">☶</text>
+    <text x="105" y="260" text-anchor="middle" dominant-baseline="middle" fill="#d4af37" font-size="45" font-weight="bold" transform="rotate(270, 105, 260)">☵</text>
+    <text x="150" y="150" text-anchor="middle" dominant-baseline="middle" fill="#d4af37" font-size="45" font-weight="bold" transform="rotate(315, 150, 150)">☴</text>
+  </g>
+
+  <!-- 卦名 (調整至圖案下方、詩句上方) -->
+  <line x1="100" y1="590" x2="420" y2="590" stroke="#d4af37" stroke-width="1" opacity="0.5"/>
+  <text x="260" y="635" text-anchor="middle" fill="#d4af37" font-size="30" font-weight="bold" letter-spacing="4">【 ${hex.name} 】</text>
+  
+  <!-- 詩籤內容 -->
+  <g fill="#fff" font-size="22" font-family="serif" letter-spacing="6">
+    <text x="260" y="685" text-anchor="middle">${hex.poem[0]}</text>
+    <text x="260" y="725" text-anchor="middle">${hex.poem[1]}</text>
+    <text x="260" y="765" text-anchor="middle">${hex.poem[2]}</text>
+    <text x="260" y="805" text-anchor="middle">${hex.poem[3]}</text>
+  </g>
+  
+  <!-- 指引 -->
+  <line x1="100" y1="840" x2="420" y2="840" stroke="#d4af37" stroke-width="1" opacity="0.5"/>
+  <text x="260" y="890" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="18" font-style="italic">${hex.tip}</text>
+</svg>`;
+
+      console.log(
+        "%c ",
+        `
+        font-size:300px;
+        padding:150px 100px;
+        line-height:600px;
+        background:url("data:image/svg+xml;utf8,${encodeURIComponent(fortuneSlipSvg)}") no-repeat center;
+        background-size:contain;
+        `
+      );
       isLogged.current = true;
     }
   }, []);
