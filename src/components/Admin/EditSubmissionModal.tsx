@@ -293,7 +293,7 @@ const EditSubmissionModal: React.FC<EditSubmissionModalProps> = ({
                   const currentReferrals = Array.isArray(editData.referral)
                     ? editData.referral
                     : typeof editData.referral === 'string'
-                      ? editData.referral.split(',').map((s: string) => s.trim()).filter(Boolean)
+                      ? editData.referral.split(/[、,]/).map((s: string) => s.trim()).filter(Boolean)
                       : [];
 
                   const isChecked = currentReferrals.includes(option);
