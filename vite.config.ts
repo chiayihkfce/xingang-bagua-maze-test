@@ -5,24 +5,26 @@ import javascriptObfuscator from 'vite-plugin-javascript-obfuscator';
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    react()
-    /*
+    react(),
     javascriptObfuscator({
       options: {
         compact: true,
-        controlFlowFlattening: false,
-        deadCodeInjection: false,
-        debugProtection: false,
-        debugProtectionInterval: 0,
-        disableConsoleOutput: false,
+        controlFlowFlattening: true,
+        controlFlowFlatteningThreshold: 0.75,
+        deadCodeInjection: true,
+        deadCodeInjectionThreshold: 0.4,
+        debugProtection: true,
+        debugProtectionInterval: 4000,
+        disableConsoleOutput: true,
         selfDefending: true,
-        splitStrings: false, // 關鍵：設為 false 避免破壞動態導入路徑
+        splitStrings: false,
         stringArray: true,
         stringArrayEncoding: ['base64'],
-        stringArrayThreshold: 0.5,
+        stringArrayThreshold: 0.75,
+        unicodeEscapeSequence: false
       },
+      apply: 'build' // 僅在打包正式版時執行，避免影響開發速度
     })
-    */
   ],
   base: './',
   build: {

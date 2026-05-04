@@ -6,6 +6,7 @@ import { zhTW } from './utils/dateUtils';
 import { AppProvider, useAppContext } from './context/AppContext';
 import AdminPage from './pages/AdminPage';
 import CustomCursor from './components/UI/CustomCursor';
+import { useSecurityGuard } from './hooks/useSecurityGuard';
 
 // 註冊語系
 registerLocale('zh', zhTW as any);
@@ -38,6 +39,9 @@ const LoadingFallback = () => (
 function AppContent() {
   const app = useAppContext();
   const { SECRET_ADMIN_PATH, currentPath, submitted, isAuthenticating } = app;
+
+  // 啟動系統安全守衛
+  useSecurityGuard();
 
   if (isAuthenticating) {
     return <LoadingFallback />;
