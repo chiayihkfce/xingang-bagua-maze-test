@@ -1667,6 +1667,15 @@ function getAdminNameByLineId(userId) {
 function addLogToFirebase(type, details, userId) {
   try {
     var adminName = userId ? getAdminNameByLineId(userId) : '系統';
+    var now = new Date();
+
+    // 強制格式化為 YYYY-MM-DD HH:mm:ss 確保與網頁版一致
+    var timestampStr = Utilities.formatDate(
+      now,
+      'Asia/Taipei',
+      'yyyy-MM-dd HH:mm:ss'
+    );
+
     var baseUrl =
       'https://firestore.googleapis.com/v1/projects/' +
       FIREBASE_PROJECT_ID +
@@ -1676,11 +1685,7 @@ function addLogToFirebase(type, details, userId) {
     var fields = {
       type: { stringValue: type },
       details: { stringValue: '[' + adminName + '] ' + details },
-      timestamp: {
-        stringValue: new Date().toLocaleString('zh-TW', {
-          timeZone: 'Asia/Taipei'
-        })
-      },
+      timestamp: { stringValue: timestampStr },
       operator: { stringValue: adminName } // 新增操作者欄位
     };
 

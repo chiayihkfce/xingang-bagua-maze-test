@@ -203,13 +203,22 @@ export const useAdminData = ({
 
       // 強制前端二次排序：確保絕對的時間倒序 (由新到舊)
       data.sort((a, b) => {
-        const dateA = new Date(
-          String(a[0] || '').replace(/\//g, '-')
-        ).getTime();
-        const dateB = new Date(
-          String(b[0] || '').replace(/\//g, '-')
-        ).getTime();
-        return dateB - dateA;
+        const parseDate = (dateStr: string) => {
+          if (!dateStr) return 0;
+          // 處理 Line Bot 的「上午/下午」格式並轉為 Date 能識別的格式
+          let cleanStr = dateStr.replace(/\//g, '-');
+          if (cleanStr.includes('上午')) {
+            cleanStr = cleanStr.replace('上午', ' ').trim();
+          } else if (cleanStr.includes('下午')) {
+            cleanStr = cleanStr.replace('下午', ' ').trim();
+            // 這裡不需手動加 12，因為 new Date() 在多數瀏覽器能識別 24 小時制或帶上午下午的格式
+            // 但為了保險，我們只做基本的清洗，交給 Date 物件
+          }
+          const d = new Date(cleanStr);
+          return isNaN(d.getTime()) ? 0 : d.getTime();
+        };
+
+        return parseDate(String(b[0])) - parseDate(String(a[0]));
       });
 
       setLogs([logHeader, ...data]);
