@@ -1,5 +1,5 @@
 import React from 'react';
-import { Session } from '../../types';
+import { Session, PaymentMethod } from '../../types';
 import { translations } from '../../locales/translations';
 
 interface EditSubmissionModalProps {
@@ -9,6 +9,7 @@ interface EditSubmissionModalProps {
   setEditData: (data: any) => void;
   handleUpdateSubmission: (e: React.FormEvent) => void;
   sessions: Session[];
+  paymentMethods: PaymentMethod[];
   isSubmitting: boolean;
 }
 
@@ -19,6 +20,7 @@ const EditSubmissionModal: React.FC<EditSubmissionModalProps> = ({
   setEditData,
   handleUpdateSubmission,
   sessions,
+  paymentMethods,
   isSubmitting
 }) => {
   if (!isEditing || !editData) return null;
@@ -223,9 +225,11 @@ const EditSubmissionModal: React.FC<EditSubmissionModalProps> = ({
                   setEditData({ ...editData, paymentMethod: e.target.value })
                 }
               >
-                <option value="現金支付">現金支付</option>
-                <option value="銀行轉帳/ATM">銀行轉帳/ATM</option>
-                <option value="電子支付">電子支付</option>
+                {paymentMethods.map((m) => (
+                  <option key={m.id} value={m.name}>
+                    {m.name}
+                  </option>
+                ))}
               </select>
             </div>
             {editData.paymentMethod === '銀行轉帳/ATM' && (

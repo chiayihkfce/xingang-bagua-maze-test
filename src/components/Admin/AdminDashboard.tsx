@@ -243,6 +243,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = (props) => {
         setEditData={setEditData}
         handleUpdateSubmission={handleUpdateSubmission}
         sessions={sessions}
+        paymentMethods={paymentMethods}
         isSubmitting={isSubmitting}
       />
 
